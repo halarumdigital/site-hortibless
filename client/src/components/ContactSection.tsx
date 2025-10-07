@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -9,6 +11,32 @@ export default function ContactSection() {
     message: ""
   });
   const { toast } = useToast();
+
+  const contactMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const res = await apiRequest("POST", "/api/contact", data);
+      return await res.json() as { success: boolean; message: string; id: string };
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Message Sent!",
+        description: data.message || "Thank you for your message. We'll get back to you soon.",
+      });
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: ""
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -31,19 +59,7 @@ export default function ContactSection() {
       return;
     }
 
-    // Simulate form submission
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for your message. We'll get back to you soon.",
-    });
-
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      subject: "",
-      message: ""
-    });
+    contactMutation.mutate(formData);
   };
 
   return (
