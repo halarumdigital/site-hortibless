@@ -3,6 +3,7 @@ import HeroSection from "@/components/HeroSection";
 import ServicesSection from "@/components/ServicesSection";
 import AboutSection from "@/components/AboutSection";
 import WhyChooseSection from "@/components/WhyChooseSection";
+import PortfolioSection from "@/components/PortfolioSection";
 import TeamSection from "@/components/TeamSection";
 import ArticlesSection from "@/components/ArticlesSection";
 import CallToAction from "@/components/CallToAction";
@@ -23,6 +24,9 @@ export default function Home() {
         <section id="about">
           <AboutSection />
           <WhyChooseSection />
+        </section>
+        <section id="portfolio">
+          <PortfolioSection />
         </section>
         <section id="features">
           <TeamSection />
