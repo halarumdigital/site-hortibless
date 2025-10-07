@@ -57,11 +57,15 @@ export class MySQLStorage implements IStorage {
   }
 
   async updateUser(id: number, updateUser: UpdateUser): Promise<User | undefined> {
-    if (updateUser.password) {
-      updateUser.password = await bcrypt.hash(updateUser.password, 10);
+    const dataToUpdate = { ...updateUser };
+    
+    if (dataToUpdate.password && dataToUpdate.password.trim() !== "") {
+      dataToUpdate.password = await bcrypt.hash(dataToUpdate.password, 10);
+    } else {
+      delete dataToUpdate.password;
     }
     
-    await db.update(users).set(updateUser).where(eq(users.id, id));
+    await db.update(users).set(dataToUpdate).where(eq(users.id, id));
     return this.getUser(id);
   }
 

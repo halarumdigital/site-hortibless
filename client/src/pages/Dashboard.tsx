@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema, updateUserSchema, type InsertUser, type UpdateUser } from "@shared/schema";
-import { LogOut, UserPlus, Pencil, Trash2, Users } from "lucide-react";
+import { LogOut, UserPlus, Pencil, Trash2, Users, Menu, X } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface User {
@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { data: usersData, isLoading: usersLoading } = useQuery<{ success: boolean; users: User[] }>({
     queryKey: ["/api/users"],
@@ -98,26 +99,94 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">ZATPLANT Admin Dashboard</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Welcome, {user?.name}</p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+      {/* Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:z-0 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-bold text-[#79B42A]">ZATPLANT</h2>
+            <Button
+              data-testid="button-close-sidebar"
+              variant="ghost"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <X className="w-5 h-5" />
+            </Button>
           </div>
-          <Button
-            data-testid="button-logout"
-            variant="outline"
-            onClick={() => logoutMutation.mutate()}
-            disabled={logoutMutation.isPending}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
-        </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <nav className="flex-1 p-4">
+            <div className="space-y-1">
+              <button
+                data-testid="menu-users"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#79B42A] text-white"
+              >
+                <Users className="w-5 h-5" />
+                Usuários
+              </button>
+            </div>
+          </nav>
+
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-[#79B42A] flex items-center justify-center text-white font-semibold">
+                {user?.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user?.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+              </div>
+            </div>
+            <Button
+              data-testid="button-logout"
+              variant="outline"
+              className="w-full"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+          <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                data-testid="button-toggle-sidebar"
+                variant="ghost"
+                size="sm"
+                className="lg:hidden"
+                onClick={() => setIsSidebarOpen(true)}
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Gerenciamento de usuários</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -211,7 +280,8 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
-      </main>
+        </main>
+      </div>
 
       <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
         <DialogContent>
@@ -427,6 +497,26 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input data-testid="input-edit-email" type="email" placeholder="john@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nova Senha (Opcional)</FormLabel>
+              <FormControl>
+                <Input 
+                  data-testid="input-edit-password" 
+                  type="password" 
+                  placeholder="Deixe em branco para manter a senha atual" 
+                  {...field} 
+                  value={field.value || ""} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
