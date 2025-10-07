@@ -11,17 +11,29 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen scroll-smooth">
       <Header />
       <main>
-        <HeroSection />
-        <ServicesSection />
-        <AboutSection />
-        <WhyChooseSection />
-        <TeamSection />
-        <ArticlesSection />
+        <section id="home">
+          <HeroSection />
+        </section>
+        <section id="services">
+          <ServicesSection />
+        </section>
+        <section id="about">
+          <AboutSection />
+          <WhyChooseSection />
+        </section>
+        <section id="features">
+          <TeamSection />
+        </section>
+        <section id="articles">
+          <ArticlesSection />
+        </section>
         <CallToAction />
-        <ContactSection />
+        <section id="contact">
+          <ContactSection />
+        </section>
       </main>
       <Footer />
     </div>

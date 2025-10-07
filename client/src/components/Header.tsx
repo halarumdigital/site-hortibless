@@ -48,27 +48,27 @@ export default function Header() {
             </div>
           </div>
           <div className="hidden md:flex items-center space-x-8 text-gray-700 font-medium">
-            <a href="#" className="hover:text-[#2E593F]" data-testid="nav-home">HOME</a>
-            <a href="#" className="hover:text-[#2E593F]" data-testid="nav-about">ABOUT US</a>
+            <a href="#home" className="hover:text-[#2E593F]" data-testid="nav-home">HOME</a>
+            <a href="#about" className="hover:text-[#2E593F]" data-testid="nav-about">ABOUT US</a>
             <div className="relative group">
-              <button className="hover:text-[#2E593F] flex items-center" data-testid="nav-services">
+              <a href="#services" className="hover:text-[#2E593F] flex items-center" data-testid="nav-services">
                 SERVICES
                 <span className="iconify ml-1" data-icon="mdi:chevron-down"></span>
-              </button>
+              </a>
             </div>
             <div className="relative group">
-              <button className="hover:text-[#2E593F] flex items-center" data-testid="nav-features">
+              <a href="#features" className="hover:text-[#2E593F] flex items-center" data-testid="nav-features">
                 FEATURES
                 <span className="iconify ml-1" data-icon="mdi:chevron-down"></span>
-              </button>
+              </a>
             </div>
             <div className="relative group">
-              <button className="hover:text-[#2E593F] flex items-center" data-testid="nav-articles">
+              <a href="#articles" className="hover:text-[#2E593F] flex items-center" data-testid="nav-articles">
                 ARTICLE & NEWS
                 <span className="iconify ml-1" data-icon="mdi:chevron-down"></span>
-              </button>
+              </a>
             </div>
-            <a href="#" className="hover:text-[#2E593F]" data-testid="nav-contact">CONTACT US</a>
+            <a href="#contact" className="hover:text-[#2E593F]" data-testid="nav-contact">CONTACT US</a>
           </div>
         </div>
       </nav>
