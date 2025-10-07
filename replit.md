@@ -4,6 +4,21 @@
 
 ZATPLANT is a marketing and informational website for a hydroponic farming and sustainable agriculture company. The platform showcases hydroponic solutions, educational content, team profiles, and contact capabilities. Built as a full-stack web application with a React frontend and Express backend, it provides a modern, responsive user experience for learning about hydroponic farming technologies and services.
 
+## Recent Updates (October 2025)
+
+### New Features Implemented
+1. **Smooth Scrolling Navigation** - Seamless scroll-to-section navigation using CSS scroll-smooth and hash anchors
+2. **Dropdown Navigation Menus** - Hover-activated dropdown menus for Services, Features, and Articles with icons
+3. **Contact Form Backend** - POST /api/contact endpoint with Zod validation and in-memory storage
+4. **Services Page** - Dedicated /services route with detailed service information, features, and benefits
+5. **Articles Page** - Dedicated /articles route with article grid, category filters, and pagination UI
+6. **Portfolio Gallery** - Interactive project showcase with category filtering (All, Commercial, Residential, Educational, Community)
+
+### Navigation Updates
+- All header links now use absolute paths (e.g., "/#about") to work correctly from any route
+- Services and Articles have dedicated pages accessible via dropdown and main navigation
+- Portfolio section added to homepage with #portfolio anchor
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
