@@ -20,7 +20,7 @@ export default function ServicesSection() {
             <p className="text-gray-600 mb-6">
               Complete hydroponic setup and installation services for residential and commercial applications.
             </p>
-            <a href="#" className="text-[#79B42A] font-semibold hover:underline" data-testid="link-learn-more-systems">
+            <a href="/services" className="text-[#79B42A] font-semibold hover:underline" data-testid="link-learn-more-systems">
               Learn More →
             </a>
           </div>
@@ -34,7 +34,7 @@ export default function ServicesSection() {
             <p className="text-gray-600 mb-6">
               Expert training programs and consultation services to help you succeed in hydroponic farming.
             </p>
-            <a href="#" className="text-[#79B42A] font-semibold hover:underline" data-testid="link-learn-more-training">
+            <a href="/services" className="text-[#79B42A] font-semibold hover:underline" data-testid="link-learn-more-training">
               Learn More →
             </a>
           </div>
@@ -48,7 +48,7 @@ export default function ServicesSection() {
             <p className="text-gray-600 mb-6">
               High-quality hydroponic supplies, nutrients, and equipment for optimal plant growth.
             </p>
-            <a href="#" className="text-[#79B42A] font-semibold hover:underline" data-testid="link-learn-more-supplies">
+            <a href="/services" className="text-[#79B42A] font-semibold hover:underline" data-testid="link-learn-more-supplies">
               Learn More →
             </a>
           </div>
