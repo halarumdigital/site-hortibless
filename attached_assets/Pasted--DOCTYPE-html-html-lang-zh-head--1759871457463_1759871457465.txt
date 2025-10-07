@@ -1,0 +1,1008 @@
+
+                <!DOCTYPE html>
+                <html lang="zh">
+                <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Page 1</title>
+                  <style>
+                    *,
+                    *::before,
+                    *::after {
+                      box-sizing: border-box;
+                      margin: 0;
+                    }
+                    .iframe-outer {
+                      position: fixed;
+                      top: 0;
+                      left: 0;
+                      bottom: 0;
+                      right: 0;
+                      display: flex;
+                      justify-content: center;
+                      background-color: #E0E0E0;
+                    }
+                    .iframe-wrapper {
+                      width: 100%;
+                      height: 100%;
+                      margin: 0 auto;
+                      transform-origin: center top;
+                      flex-shrink: 0;
+                    }
+                    #dynamicIframe {
+                      border: none;
+                      width: 100%;
+                      height: 100%;
+                    }
+                  </style>
+                  <script>
+                const width = 1920
+                const height = 1080
+                const resolutionRatio = width && height ? width / height : 1
+                const pageNameMap = {
+                  'page_1': 'Page 1'
+                }
+                function setIframeSize(w, h) {
+                  const currentContainerRadio = w / h
+                  let widthValue = w
+                  let heightValue = h
+                  let zoom = 1
+                  if (currentContainerRadio > resolutionRatio) {
+                    widthValue = h * resolutionRatio
+                    heightValue = h
+                  } else {
+                    widthValue = w
+                    heightValue = w / resolutionRatio
+                  }
+                  zoom = width ? widthValue / width : 1
+                  return {
+                    width: widthValue / zoom + 'px',
+                    height: heightValue / zoom + 'px',
+                    zoom,
+                  }
+                }
+                function adjustIframeSize() {
+                  const iframeWrapper = document.querySelector(".iframe-wrapper")
+                  const { width, height, zoom } = setIframeSize(window.innerWidth, window.innerHeight)
+                  iframeWrapper.style.height = height
+                  iframeWrapper.style.width = width
+                  iframeWrapper.style.transform = 'scale(' + zoom + ')'
+                }
+                function sanitizeFilename(name) {
+                  return name.replace(/[\/:*?"<>|]/g, '_')
+                }
+                function handlePostMessage(event) {
+                  if (!event.data) {
+                    return
+                  }
+                  const { type, targetPageId } = event.data
+                  const targetPageName = pageNameMap[targetPageId]
+                  if (type === "iframeNavigation" && targetPageId && targetPageName) {
+                    window.location.href = targetPageName + '.html'
+                  }
+                }
+                window.addEventListener('message', handlePostMessage)
+                window.onload = adjustIframeSize
+                window.onresize = adjustIframeSize
+                window.onunload = () => {
+                  window.removeEventListener('message', handlePostMessage)
+                }
+              </script>
+                </head>
+                <body>
+                  <div class="iframe-outer">
+                    <div class="iframe-wrapper">
+                      <iframe id="dynamicIframe" srcdoc='<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZATPLANT - Hydroponic &amp;amp; Horticulture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./assets/3/3.1.0/iconify.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;amp;display=swap" rel="stylesheet">
+    <style>
+    body {
+        font-family: &#39;Poppins&#39;, sans-serif;
+    }
+    .hero-bg {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(&#39;https://images.unsplash.com/photo-1746457714681-c87322e03c71?crop=entropy&amp;cs=tinysrgb&amp;fit=crop&amp;fm=jpg&amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwyfHxncmVlbmhvdXNlJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzU5NzYzNjMxfDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1920&amp;h=960&#39;);
+        background-size: cover;
+        background-position: center;
+    }
+    .cta-bg {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(&#39;https://images.unsplash.com/photo-1624720113760-c13e2133a3f5?crop=entropy&amp;cs=tinysrgb&amp;fit=crop&amp;fm=jpg&amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwyfHxsZXR0dWNlJTIwbGVhdmVzJTIwY2xvc2UtdXB8ZW58MHx8fHwxNzU5NzYzNjM2fDA&amp;ixlib=rb-4.1.0&amp;q=80&amp;w=1920&amp;h=400&#39;);
+        background-size: cover;
+        background-position: center;
+    }
+    .team-bg {
+        background-color: #2e593f;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns=&#39;http://www.w3.org/2000/svg&#39; width=&#39;100&#39; height=&#39;100&#39; viewBox=&#39;0 0 100 100&#39;%3E%3Cg fill-rule=&#39;evenodd&#39;%3E%3Cg fill=&#39;%23ffffff&#39; fill-opacity=&#39;0.05&#39;%3E%3Cpath opacity=&#39;.5&#39; d=&#39;M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z&#39;/%3E%3Cpath d=&#39;M6 5V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9H6v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6V5zm10 0h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9h-9v9h-1v-9H16v-9h-9v9h-1v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6v-9H0v-1h6V0h1v5h9V0h1v5h9V0h1v5h9V0h1v5Z&#39;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .wave-bottom {
+        position: relative;
+    }
+    .wave-bottom::after {
+        content: &#39;&#39;;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        background: url("data:image/svg+xml,%3Csvg xmlns=&#39;http://www.w3.org/2000/svg&#39; viewBox=&#39;0 0 1440 320&#39;%3E%3Cpath fill=&#39;%23eff6ef&#39; fill-opacity=&#39;1&#39; d=&#39;M0,192L80,176C160,160,320,128,480,138.7C640,149,800,203,960,208C1120,213,1280,171,1360,149.3L1440,128L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z&#39;%3E%3C/path%3E%3C/svg%3E") no-repeat bottom;
+        background-size: cover;
+        transform: translateY(99px); /* Adjust to align properly */
+    }
+</style>
+  </head>
+  <body class="font-poppins">
+    <main>
+      <div data-section-id="Header" data-section-type="header" class="w-full">
+        <div class="bg-[#1A472A] text-white">
+          <div class="container mx-auto px-4 py-2 flex justify-between items-center text-sm">
+            <div class="flex items-center space-x-6">
+              <div class="flex items-center space-x-2">
+                <span class="iconify" data-icon="mdi:email-outline" data-width="16"></span><span>awesomeconsult@email.com</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="iconify" data-icon="mdi:phone-outline" data-width="16"></span><span>Call Free - (123) - 234 - 1234</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="iconify" data-icon="mdi:clock-outline" data-width="16"></span><span>Mon - Fri : 9:00 - 17:00</span>
+              </div>
+            </div>
+            <div class="flex items-center space-x-4">
+              <a href="#" class="hover:text-gray-300"><span class="iconify" data-icon="mdi:twitter" data-width="16"></span></a><a href="#" class="hover:text-gray-300"><span class="iconify" data-icon="mdi:facebook" data-width="16"></span></a><a href="#" class="hover:text-gray-300"><span class="iconify" data-icon="mdi:instagram" data-width="16"></span></a><a href="#" class="hover:text-gray-300"><span class="iconify" data-icon="mdi:linkedin" data-width="16"></span></a><a href="#" class="bg-white text-[#2E593F] font-semibold px-6 py-2 rounded-md hover:bg-gray-200 transition">Get Quotes</a>
+            </div>
+          </div>
+        </div>
+        <nav class="bg-white shadow-md sticky top-0 z-50">
+          <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+              <img src="https://spark-builder.s3.us-east-1.amazonaws.com/image/2025/10/6/a6dc3f61-a93d-4e6d-9c67-9af26c2c8dce.png" alt="ZATPLANT logo with a green leaf design" class="h-12 mr-2"><span class="text-3xl font-bold text-[#2E593F]">ZATPLANT</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-8 text-gray-700 font-medium">
+              <a href="#" class="hover:text-[#2E593F]">HOME</a><a href="#" class="hover:text-[#2E593F]">ABOUT US</a>
+              <div class="relative group">
+                <button class="hover:text-[#2E593F] flex items-center">
+                  SERVICES
+                  <span class="iconify ml-1" data-icon="mdi:chevron-down"></span>
+                </button>
+              </div>
+              <div class="relative group">
+                <button class="hover:text-[#2E593F] flex items-center">
+                  FEATURES
+                  <span class="iconify ml-1" data-icon="mdi:chevron-down"></span>
+                </button>
+              </div>
+              <div class="relative group">
+                <button class="hover:text-[#2E593F] flex items-center">
+                  ARTICLE &amp;amp; NEWS
+                  <span class="iconify ml-1" data-icon="mdi:chevron-down"></span>
+                </button>
+              </div>
+              <a href="#" class="hover:text-[#2E593F]">CONTACT US</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+      <div data-section-id="HeroSection" data-section-type="section" class="w-full">
+        <div class="hero-bg text-white relative">
+          <div id="i5pf6" class="container mx-auto px-4 flex flex-col items-center justify-center text-center" style="height: 700px;">
+            <p class="text-lg mb-4">Hydroponic Garden &amp;amp; Horticulture</p>
+            <h1 class="text-7xl font-bold leading-tight">
+              Learn how to Organic <br>
+              Fruit, Herbs &amp;amp; <br>
+              Vegetable.
+            </h1>
+            <p class="mt-6 text-lg max-w-lg">
+              Starting a hydroponic business can be an exciting and rewarding
+              venture.
+            </p>
+          </div>
+          <div class="absolute -bottom-24 left-1/2 -translate-x-1/2 w-full max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-px bg-white/20 rounded-xl overflow-hidden backdrop-blur-sm">
+              <div class="bg-[#2E593F]/80 p-6 text-center">
+                <h3 class="text-xl font-semibold mb-2">Water-Saving</h3>
+                <p class="text-sm text-gray-200">
+                  Massa tempor nec feugiat nisl. Ultrices eros in cursus turpis.
+                </p>
+                <div class="mt-4 flex justify-center">
+                  <div class="bg-[#79B42A] rounded-full p-2">
+                    <span class="iconify text-white" data-icon="mdi:arrow-up" data-width="24"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-[#2E593F]/80 p-6 text-center">
+                <h3 class="text-xl font-semibold mb-2">Efficient Nutrition</h3>
+                <p class="text-sm text-gray-200">
+                  Integer eget aliquet nibh praesent tristique magna sit amet
+                  purus.
+                </p>
+                <div class="mt-4 flex justify-center">
+                  <div class="bg-[#79B42A] rounded-full p-2">
+                    <span class="iconify text-white" data-icon="mdi:arrow-up" data-width="24"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-[#2E593F]/80 p-6 text-center">
+                <h3 class="text-xl font-semibold mb-2">Production Quality</h3>
+                <p class="text-sm text-gray-200">
+                  Porttitor lacus luctus accumsan tortor posuere ac malesuada
+                  fames.
+                </p>
+                <div class="mt-4 flex justify-center">
+                  <div class="bg-[#79B42A] rounded-full p-2">
+                    <span class="iconify text-white" data-icon="mdi:arrow-up" data-width="24"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-[#2E593F]/80 p-6 text-center">
+                <h3 class="text-xl font-semibold mb-2">Not Use Pesticides</h3>
+                <p class="text-sm text-gray-200">
+                  Enim diam vulputate ut pharetra sit amet aliquam mauris nunc
+                  congue.
+                </p>
+                <div class="mt-4 flex justify-center">
+                  <div class="bg-[#79B42A] rounded-full p-2">
+                    <span class="iconify text-white" data-icon="mdi:arrow-up" data-width="24"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="AboutUsSection" data-section-type="section" class="bg-[#EFF6EF] pt-48 pb-24">
+        <div class="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <p class="text-gray-500 mb-2">About us</p>
+            <h2 class="text-5xl font-bold text-[#2E593F] leading-tight">
+              Supply the necessary elements for plant growth
+            </h2>
+            <p class="mt-6 text-gray-600">
+              Pharetra convallis posuere morbi leo urna molestie at elementum.
+              Sit amet mattis vulputate enim vestibulum lectus mauris.
+            </p>
+            <p class="mt-4 text-gray-600">
+              Orbi tristique senectus et netus et malesuada fames ac turpis.
+              Odio morbi quis commodo odio aenean sed adipiscing diam
+              donec.Pellentesque adipiscing commodo elit at imperdiet dui
+              accumsan.
+            </p>
+            <a href="#" class="mt-8 inline-block bg-[#2E593F] text-white font-semibold px-8 py-3 rounded-lg hover:bg-[#1A472A] transition">Discover Now</a>
+          </div>
+          <div class="relative">
+            <img src="https://images.unsplash.com/photo-1709636212311-e2cb9b9efcd8?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxmYXJtZXJzJTIwaW5zcGVjdGluZyUyMGxldHR1Y2V8ZW58MHx8fHwxNzU5NzYzNjMxfDA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=550&amp;amp;h=650" alt="A male and female farmer inspecting lettuce plants inside a large, bright greenhouse." class="rounded-3xl shadow-lg">
+            <div class="absolute bottom-8 right-8 bg-white/80 backdrop-blur-sm p-4 rounded-lg flex items-center space-x-3 shadow-md">
+              <div class="bg-[#2E593F] text-white p-3 rounded-full">
+                <span class="iconify" data-icon="mdi:shield-check" data-width="32"></span>
+              </div>
+              <span class="text-[#2E593F] font-bold text-lg">TRUSTED QUALIFIED</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="WhyChooseUsSection" data-section-type="section" class="bg-[#EFF6EF] py-24">
+        <div class="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
+          <div class="grid grid-cols-2 grid-rows-2 gap-4">
+            <div class="col-span-2 row-span-2">
+              <img src="https://images.unsplash.com/photo-1654727317152-b8178b6083ef?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwyfHxoYXBweSUyMGNvdXBsZSUyMGZhcm18ZW58MHx8fHwxNzU5NzYzNjMwfDA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=400&amp;amp;h=300" alt="A happy couple in straw hats holding a wooden crate filled with fresh green lettuce in a greenhouse." class="rounded-3xl object-cover w-full h-full">
+            </div>
+            <img src="https://images.unsplash.com/photo-1730395727692-2c2aaeddd0b0?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxmYXJtZXIlMjBncmVlbmhvdXNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzU5NzYzNjI0fDA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=200&amp;amp;h=150" alt="A man in a straw hat and glasses smiling with arms crossed in a greenhouse." class="rounded-3xl object-cover w-full h-full"><img src="https://images.unsplash.com/photo-1724556295094-62d093eddd87?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwyfHx3b21hbiUyMHRlbmRpbmclMjBwbGFudHN8ZW58MHx8fHwxNzU5NzYzNjI4fDA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=200&amp;amp;h=150" alt="A woman in an apron tending to small plants in a hydroponic setup." class="rounded-3xl object-cover w-full h-full">
+          </div>
+          <div>
+            <p class="text-gray-500 mb-2">Why Choose Us</p>
+            <h2 class="text-5xl font-bold text-[#2E593F] leading-tight">
+              The Best Choice for Hydroponic Plants.
+            </h2>
+            <p class="mt-6 text-gray-600">
+              Nibh nisl condimentum id venenatis. Consectetur adipiscing elit
+              pellentesque habitant morbi tristique.
+            </p>
+            <p class="mt-4 text-gray-600">
+              Commodo sed egestas egestas fringilla phasellus faucibus
+              scelerisque eleifend. Sed egestas egestas fringilla phasellus.
+              Amet massa vitae tortor condimentum lacinia quis vel.
+            </p>
+            <div class="mt-8 space-y-4">
+              <div class="bg-[#2E593F] text-white p-5 rounded-2xl flex items-center space-x-4">
+                <span class="iconify text-3xl" data-icon="mdi:check-circle-outline"></span><span class="text-lg font-medium">Trusted Experience Company</span>
+              </div>
+              <div class="bg-[#2E593F] text-white p-5 rounded-2xl flex items-center space-x-4">
+                <span class="iconify text-3xl" data-icon="mdi:check-circle-outline"></span><span class="text-lg font-medium">Licensees and Modern Equipment</span>
+              </div>
+              <div class="bg-[#2E593F] text-white p-5 rounded-2xl flex items-center space-x-4">
+                <span class="iconify text-3xl" data-icon="mdi:check-circle-outline"></span><span class="text-lg font-medium">Professional Hydroponic Consulting</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="StatsSection" data-section-type="section" class="bg-gradient-to-r from-yellow-400 to-lime-600 py-16 text-white text-center">
+        <div class="container mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div>
+            <p class="text-5xl font-bold">
+              2.5K<span class="text-3xl">+</span>
+            </p>
+            <p class="mt-2">Satisfied Customers</p>
+          </div>
+          <div>
+            <p class="text-5xl font-bold">18</p>
+            <p class="mt-2">Hydroponic Plants</p>
+          </div>
+          <div>
+            <p class="text-5xl font-bold">
+              1.2K<span class="text-3xl">+</span>
+            </p>
+            <p class="mt-2">Member &amp;amp; Employees</p>
+          </div>
+          <div>
+            <p class="text-5xl font-bold">24</p>
+            <p class="mt-2">Years of Experience</p>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="VideoPromoSection" data-section-type="section" class="bg-[#3A6B4B] py-24">
+        <div class="container mx-auto px-4 flex justify-center">
+          <div class="relative w-full max-w-5xl">
+            <img src="https://images.unsplash.com/photo-1758524056796-491c017ec37a?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxjb3VwbGUlMjBncmVlbmhvdXNlJTIwdGFibGV0fGVufDB8fHx8MTc1OTc2MzYyNnww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=960&amp;amp;h=540" alt="A man and a woman looking at a tablet together while standing next to a wooden crate of fresh lettuce in a large greenhouse." class="rounded-2xl shadow-xl">
+            <div class="absolute inset-0 flex justify-center items-center">
+              <button class="bg-white/30 backdrop-blur-sm p-6 rounded-full group">
+                <span class="iconify text-white text-6xl group-hover:scale-110 transition-transform" data-icon="mdi:play"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="ServicesSection" data-section-type="section" class="bg-[#EFF6EF] py-24">
+        <div class="container mx-auto px-4 text-center">
+          <p class="text-gray-500 mb-2">Business Models</p>
+          <h2 class="text-5xl font-bold text-[#2E593F]">
+            Hydroponics as a Service
+          </h2>
+          <p class="mt-4 max-w-2xl mx-auto text-gray-600">
+            Sed ullamcorper morbi tincidunt ornare massa eget egestas. Aliquet
+            enim tortor at auctor urna nunc.
+          </p>
+          <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 text-center">
+              <div class="inline-block bg-[#2E593F] text-white p-4 rounded-full mb-4">
+                <span class="iconify text-4xl" data-icon="streamline:collaboration-idea-solid"></span>
+              </div>
+              <h3 class="text-xl font-bold text-[#2E593F] mb-2">
+                Farming Consultancy
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
+                tellus.
+              </p>
+              <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-2 rounded-lg hover:bg-[#1A472A] transition">Read More</a>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 text-center">
+              <div class="inline-block bg-[#2E593F] text-white p-4 rounded-full mb-4">
+                <span class="iconify text-4xl" data-icon="mdi:water-pump"></span>
+              </div>
+              <h3 class="text-xl font-bold text-[#2E593F] mb-2">
+                Hydroponic Maintenance
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
+                tellus.
+              </p>
+              <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-2 rounded-lg hover:bg-[#1A472A] transition">Read More</a>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 text-center">
+              <div class="inline-block bg-[#2E593F] text-white p-4 rounded-full mb-4">
+                <span class="iconify text-4xl" data-icon="mdi:leaf-check"></span>
+              </div>
+              <h3 class="text-xl font-bold text-[#2E593F] mb-2">
+                Installation and Setup
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
+                tellus.
+              </p>
+              <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-2 rounded-lg hover:bg-[#1A472A] transition">Read More</a>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 text-center">
+              <div class="inline-block bg-[#2E593F] text-white p-4 rounded-full mb-4">
+                <span class="iconify text-4xl" data-icon="mdi:barley"></span>
+              </div>
+              <h3 class="text-xl font-bold text-[#2E593F] mb-2">
+                Crop and Production
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
+                tellus.
+              </p>
+              <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-2 rounded-lg hover:bg-[#1A472A] transition">Read More</a>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 text-center">
+              <div class="inline-block bg-[#2E593F] text-white p-4 rounded-full mb-4">
+                <span class="iconify text-4xl" data-icon="mdi:school-outline"></span>
+              </div>
+              <h3 class="text-xl font-bold text-[#2E593F] mb-2">
+                Education and Training
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
+                tellus.
+              </p>
+              <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-2 rounded-lg hover:bg-[#1A472A] transition">Read More</a>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 text-center">
+              <div class="inline-block bg-[#2E593F] text-white p-4 rounded-full mb-4">
+                <span class="iconify text-4xl" data-icon="mdi:store-outline"></span>
+              </div>
+              <h3 class="text-xl font-bold text-[#2E593F] mb-2">
+                Retails and Supplies System
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
+                tellus.
+              </p>
+              <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-2 rounded-lg hover:bg-[#1A472A] transition">Read More</a>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 text-center">
+              <div class="inline-block bg-[#2E593F] text-white p-4 rounded-full mb-4">
+                <span class="iconify text-4xl" data-icon="mdi:sprout-outline"></span>
+              </div>
+              <h3 class="text-xl font-bold text-[#2E593F] mb-2">
+                Vertical Farming and Strategy
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
+                tellus.
+              </p>
+              <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-2 rounded-lg hover:bg-[#1A472A] transition">Read More</a>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 text-center">
+              <div class="inline-block bg-[#2E593F] text-white p-4 rounded-full mb-4">
+                <span class="iconify text-4xl" data-icon="mdi:lightbulb-on-outline"></span>
+              </div>
+              <h3 class="text-xl font-bold text-[#2E593F] mb-2">
+                Hydroponics Strategic Advise
+              </h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
+                tellus.
+              </p>
+              <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-2 rounded-lg hover:bg-[#1A472A] transition">Read More</a>
+            </div>
+          </div>
+          <p class="mt-12 text-gray-600">
+            24/7 Premium Support, Check for
+            <a href="#" class="text-lime-600 font-semibold underline">Customer Support</a>
+          </p>
+        </div>
+      </div>
+      <div data-section-id="CtaSection" data-section-type="section" class="cta-bg py-24">
+        <div class="container mx-auto px-4 text-center text-white">
+          <h2 class="text-5xl font-bold">Let&#39;s Begin A New Project with Us</h2>
+          <p class="mt-4 max-w-2xl mx-auto">
+            Sed ullamcorper morbi tincidunt ornare massa eget egestas. Aliquet
+            enim tortor at auctor urna nunc.
+          </p>
+          <div class="mt-8 flex justify-center items-center space-x-6">
+            <a href="#" class="bg-[#2E593F] text-white font-semibold px-8 py-3 rounded-lg hover:bg-[#1A472A] transition">Get A Quotes</a>
+            <div class="flex items-center space-x-3">
+              <div class="bg-white text-[#2E593F] p-3 rounded-full">
+                <span class="iconify text-2xl" data-icon="mdi:phone"></span>
+              </div>
+              <div>
+                <p class="text-sm">For Futher Inquiry</p>
+                <p class="font-bold text-lg">(+123) - 1234 - 1234</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="PlantsSection" data-section-type="section" class="bg-[#EFF6EF] py-24">
+        <div class="container mx-auto px-4">
+          <div class="flex justify-between items-start mb-12">
+            <div class="max-w-md">
+              <p class="text-gray-500 mb-2">Hydroponic plants</p>
+              <h2 class="text-5xl font-bold text-[#2E593F] leading-tight">
+                A Wide Variety of Plants can be Grown Hydroponically
+              </h2>
+            </div>
+            <p class="text-gray-600 max-w-md mt-2">
+              Commodo sed egestas egestas fringilla phasellus faucibus
+              scelerisque eleifend. Sed egestas egestas fringilla phasellus.
+              Amet massa vitae tortor condimentum lacinia quis vel.
+            </p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-200">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1655608866460-d6ab49aa9762?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwzfHxoeWRyb3BvbmljJTIwZmFybXxlbnwwfHx8fDE3NTk3NjM2MzB8MA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=370&amp;amp;h=240" alt="Long rows of vibrant green lettuce growing in a hydroponic farm setup." class="rounded-xl w-full">
+                <div class="absolute -bottom-5 right-5 bg-lime-500 text-white p-3 rounded-full">
+                  <span class="iconify" data-icon="mdi:leaf" data-width="24"></span>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-bold text-[#2E593F] mt-2 mb-2">
+                  Leafy Greens
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 h-12">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
+                  elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus
+                  leo.
+                </p>
+                <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1A472A] transition w-full block text-center mt-4">Read More</a>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-200">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1553275991-b6ba99f234e1?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxwb3R0ZWQlMjBoZXJic3xlbnwwfHx8fDE3NTk3NjM2MzR8MA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=370&amp;amp;h=240" alt="A collection of various herbs in terracotta pots on a wooden shelf, with a pumpkin in the background." class="rounded-xl w-full">
+                <div class="absolute -bottom-5 right-5 bg-lime-500 text-white p-3 rounded-full">
+                  <span class="iconify" data-icon="mdi:barley" data-width="24"></span>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-bold text-[#2E593F] mt-2 mb-2">
+                  Herbs
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 h-12">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
+                  elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus
+                  leo.
+                </p>
+                <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1A472A] transition w-full block text-center mt-4">Read More</a>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-200">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1648090229186-6188eaefcc6a?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHx2ZWdldGFibGUlMjBhc3NvcnRtZW50fGVufDB8fHx8MTc1OTc2MzYyNnww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=370&amp;amp;h=240" alt="A colorful assortment of fresh fruiting vegetables including tomatoes, cucumbers, peppers, and gourds." class="rounded-xl w-full">
+                <div class="absolute -bottom-5 right-5 bg-lime-500 text-white p-3 rounded-full">
+                  <span class="iconify" data-icon="mdi:fruit-grapes" data-width="24"></span>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-bold text-[#2E593F] mt-2 mb-2">
+                  Fruiting Vegetables
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 h-12">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
+                  elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus
+                  leo.
+                </p>
+                <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1A472A] transition w-full block text-center mt-4">Read More</a>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-200">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1655745570225-d92558d90e7d?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxyaXBlJTIwc3RyYXdiZXJyaWVzfGVufDB8fHx8MTc1OTc2MzYyN3ww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=370&amp;amp;h=240" alt="Close-up of ripe, red strawberries growing on a plant with green leaves." class="rounded-xl w-full">
+                <div class="absolute -bottom-5 right-5 bg-lime-500 text-white p-3 rounded-full">
+                  <span class="iconify" data-icon="mdi:strawberry" data-width="24"></span>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-bold text-[#2E593F] mt-2 mb-2">
+                  Strawberries
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 h-12">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
+                  elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus
+                  leo.
+                </p>
+                <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1A472A] transition w-full block text-center mt-4">Read More</a>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-200">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1640671511581-0cc93ea3ebf2?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxtaWNyb2dyZWVucyUyMHNwcm91dHN8ZW58MHx8fHwxNzU5NzYzNjI1fDA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=370&amp;amp;h=240" alt="A dense tray of bright green microgreens and sprouts, freshly grown." class="rounded-xl w-full">
+                <div class="absolute -bottom-5 right-5 bg-lime-500 text-white p-3 rounded-full">
+                  <span class="iconify" data-icon="mdi:seed" data-width="24"></span>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-bold text-[#2E593F] mt-2 mb-2">
+                  Microgreens and Sprouts
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 h-12">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
+                  elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus
+                  leo.
+                </p>
+                <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1A472A] transition w-full block text-center mt-4">Read More</a>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-200">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1565980102051-97fa602b66f4?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwzfHxncmVlbmhvdXNlJTIwZmxvd2Vyc3xlbnwwfHx8fDE3NTk3NjM2MjV8MA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=370&amp;amp;h=240" alt="A view inside a greenhouse filled with rows of colorful hydrangea flowers." class="rounded-xl w-full">
+                <div class="absolute -bottom-5 right-5 bg-lime-500 text-white p-3 rounded-full">
+                  <span class="iconify" data-icon="mdi:flower-tulip" data-width="24"></span>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-bold text-[#2E593F] mt-2 mb-2">
+                  Flowers &amp;amp; Ornamental
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 h-12">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
+                  elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus
+                  leo.
+                </p>
+                <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1A472A] transition w-full block text-center mt-4">Read More</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="TeamSection" data-section-type="section" class="team-bg wave-bottom pt-24 pb-36">
+        <div class="container mx-auto px-4 text-center text-white">
+          <p class="text-gray-300 mb-2">Our Dedicated Team</p>
+          <h2 class="text-5xl font-bold">Hard Working People</h2>
+          <p class="mt-4 max-w-2xl mx-auto text-gray-300">
+            Sed ullamcorper morbi tincidunt ornare massa eget egestas. Aliquet
+            enim tortor at auctor urna nunc.
+          </p>
+          <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="text-center">
+              <div class="bg-white p-1.5 rounded-full inline-block">
+                <img src="https://images.unsplash.com/photo-1730395727692-2c2aaeddd0b0?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwyfHxtYWxlJTIwZ3JlZW5ob3VzZSUyMHBvcnRyYWl0fGVufDB8fHx8MTc1OTc2MzYyOHww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=160&amp;amp;h=160" alt="Portrait of Zed Armans, Co-Founder" class="rounded-full">
+              </div>
+              <h3 class="text-xl font-bold mt-4">Zed Armans</h3>
+              <p class="text-gray-300">Co-Founder</p>
+              <div class="flex justify-center space-x-3 mt-3">
+                <a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:twitter"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:facebook"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:instagram"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:linkedin"></span></a>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="bg-white p-1.5 rounded-full inline-block">
+                <img src="https://images.unsplash.com/photo-1725179317686-257d18f61335?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxmZW1hbGUlMjBncmVlbmhvdXNlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzU5NzYzNjI0fDA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=160&amp;amp;h=160" alt="Portrait of Carryn Zenith, Assistant" class="rounded-full">
+              </div>
+              <h3 class="text-xl font-bold mt-4">Carryn Zenith</h3>
+              <p class="text-gray-300">Assistant</p>
+              <div class="flex justify-center space-x-3 mt-3">
+                <a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:twitter"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:facebook"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:instagram"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:linkedin"></span></a>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="bg-white p-1.5 rounded-full inline-block">
+                <img src="https://images.unsplash.com/photo-1717674798426-2e9506c25527?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwzfHxmZW1hbGUlMjBncmVlbmhvdXNlJTIwd29ya2VyJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzU5NzYzNjMzfDA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=160&amp;amp;h=160" alt="Portrait of Rebecca Donna, Supervisor" class="rounded-full">
+              </div>
+              <h3 class="text-xl font-bold mt-4">Rebecca Donna</h3>
+              <p class="text-gray-300">Supervisor</p>
+              <div class="flex justify-center space-x-3 mt-3">
+                <a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:twitter"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:facebook"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:instagram"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:linkedin"></span></a>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="bg-white p-1.5 rounded-full inline-block">
+                <img src="https://images.unsplash.com/photo-1730395727692-2c2aaeddd0b0?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwyfHxtYWxlJTIwZ3JlZW5ob3VzZSUyMHBvcnRyYWl0fGVufDB8fHx8MTc1OTc2MzYyOHww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=160&amp;amp;h=160" alt="Portrait of Frans Emanuels, Technician" class="rounded-full">
+              </div>
+              <h3 class="text-xl font-bold mt-4">Frans Emanuels</h3>
+              <p class="text-gray-300">Technician</p>
+              <div class="flex justify-center space-x-3 mt-3">
+                <a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:twitter"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:facebook"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:instagram"></span></a><a href="#" class="bg-white/20 p-2 rounded-full hover:bg-white/40"><span class="iconify text-white" data-icon="mdi:linkedin"></span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="BenefitsSection" data-section-type="section" class="bg-[#EFF6EF] pt-12 pb-12">
+        <div class="container mx-auto px-4">
+          <div class="bg-white rounded-2xl shadow-md p-8 grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+            <div class="flex items-center space-x-4 pt-4 md:pt-0">
+              <span class="iconify text-5xl text-[#2E593F]" data-icon="mdi:truck-fast-outline"></span>
+              <div>
+                <h4 class="font-bold text-lg text-gray-800">Free Shipping</h4>
+                <p class="text-gray-500 text-sm">On all orders above 50%</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-4 pt-4 md:pt-0 md:pl-8">
+              <span class="iconify text-5xl text-[#2E593F]" data-icon="mdi:shield-check-outline"></span>
+              <div>
+                <h4 class="font-bold text-lg text-gray-800">Days Warranty</h4>
+                <p class="text-gray-500 text-sm">Money back guarantee</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-4 pt-4 md:pt-0 md:pl-8">
+              <span class="iconify text-5xl text-[#2E593F]" data-icon="mdi:headset"></span>
+              <div>
+                <h4 class="font-bold text-lg text-gray-800">24/7 Support</h4>
+                <p class="text-gray-500 text-sm">Premium Support Client</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-4 pt-4 md:pt-0 md:pl-8">
+              <span class="iconify text-5xl text-[#2E593F]" data-icon="mdi:credit-card-outline"></span>
+              <div>
+                <h4 class="font-bold text-lg text-gray-800">100% Secure</h4>
+                <p class="text-gray-500 text-sm">100% Secure Checkout</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="TestimonialsSection" data-section-type="section" class="bg-[#EFF6EF] py-24">
+        <div class="container mx-auto px-4 text-center">
+          <p class="text-gray-500 mb-2">Client Testimonial</p>
+          <h2 class="text-5xl font-bold text-[#2E593F]">
+            What Our Client Says
+          </h2>
+          <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div class="text-left">
+              <span class="iconify text-5xl text-gray-300" data-icon="mdi:format-quote-open"></span>
+              <p class="text-gray-600 italic mt-2">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              </p>
+              <div class="flex items-center mt-4 space-x-3">
+                <img src="https://images.unsplash.com/photo-1591026892824-330dd1666a2f?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxmZW1hbGUlMjBwb3J0cmFpdCUyMGhlYWRzaG90fGVufDB8fHx8MTc1OTc2MzYzMnww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=50&amp;amp;h=50" alt="Portrait of Jhoe Vallens" class="rounded-full">
+                <div>
+                  <p class="font-bold text-gray-800">Jhoe Vallens</p>
+                  <p class="text-sm text-gray-500">Client</p>
+                </div>
+              </div>
+            </div>
+            <div class="text-left">
+              <span class="iconify text-5xl text-gray-300" data-icon="mdi:format-quote-open"></span>
+              <p class="text-gray-600 italic mt-2">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              </p>
+              <div class="flex items-center mt-4 space-x-3">
+                <img src="https://images.unsplash.com/photo-1656338997878-279d71d48f6e?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwzfHxtYWxlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzU5NzYzNjMwfDA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=50&amp;amp;h=50" alt="Portrait of Daniel Doel" class="rounded-full">
+                <div>
+                  <p class="font-bold text-gray-800">Daniel Doel</p>
+                  <p class="text-sm text-gray-500">occupation</p>
+                </div>
+              </div>
+            </div>
+            <div class="text-left">
+              <span class="iconify text-5xl text-gray-300" data-icon="mdi:format-quote-open"></span>
+              <p class="text-gray-600 italic mt-2">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              </p>
+              <div class="flex items-center mt-4 space-x-3">
+                <img src="https://images.unsplash.com/photo-1706824265660-5ca5effaf122?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBmZW1hbGUlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTk3NjM2MzN8MA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=50&amp;amp;h=50" alt="Portrait of Elena Doe" class="rounded-full">
+                <div>
+                  <p class="font-bold text-gray-800">Elena Doe</p>
+                  <p class="text-sm text-gray-500">occupation</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-center mt-8 space-x-2">
+            <button class="w-3 h-3 bg-[#2E593F] rounded-full"></button><button class="w-3 h-3 bg-gray-300 rounded-full"></button><button class="w-3 h-3 bg-gray-300 rounded-full"></button>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="PartnersSection" data-section-type="section" class="bg-[#EFF6EF] pb-24">
+        <div class="container mx-auto px-4">
+          <div class="border-t border-gray-200 pt-16">
+            <p class="text-center text-gray-500 mb-8">Our Partnership</p>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 items-center">
+              <div class="bg-white/70 p-6 rounded-lg border border-gray-200 flex justify-center items-center h-28">
+                <img src="https://spark-builder.s3.us-east-1.amazonaws.com/image/2025/10/6/67428aa6-88f4-47ea-b66d-65210ee7fafe.png" alt="Widefarm Solution Farms Logo" class="max-h-12 w-auto">
+              </div>
+              <div class="bg-white/70 p-6 rounded-lg border border-gray-200 flex justify-center items-center h-28">
+                <img src="https://spark-builder.s3.us-east-1.amazonaws.com/image/2025/10/6/c3ec67b4-e4ab-4aba-b18c-78d79579620f.png" alt="Farm Sun Farm Education Logo" class="max-h-12 w-auto">
+              </div>
+              <div class="bg-white/70 p-6 rounded-lg border border-gray-200 flex justify-center items-center h-28">
+                <img src="https://spark-builder.s3.us-east-1.amazonaws.com/image/2025/10/6/8b833f71-333b-4f7f-810b-90ecd29d0ede.png" alt="Handfarm Luxe The Farm Logo" class="max-h-12 w-auto">
+              </div>
+              <div class="bg-white/70 p-6 rounded-lg border border-gray-200 flex justify-center items-center h-28">
+                <img src="https://spark-builder.s3.us-east-1.amazonaws.com/image/2025/10/6/5c2fe8ca-6330-423c-8c14-91ebb082926d.png" alt="Organics Love Natural Logo" class="max-h-12 w-auto">
+              </div>
+              <div class="bg-white/70 p-6 rounded-lg border border-gray-200 flex justify-center items-center h-28">
+                <img src="https://spark-builder.s3.us-east-1.amazonaws.com/image/2025/10/6/e0642869-56bb-4035-9add-c367e268d4b9.png" alt="Greenhils Wind Farm Logo" class="max-h-12 w-auto">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="BlogSection" data-section-type="section" class="bg-[#EFF6EF] pb-24">
+        <div class="container mx-auto px-4">
+          <div class="flex justify-between items-center mb-12">
+            <div>
+              <p class="text-gray-500">Latest News</p>
+              <h2 class="text-5xl font-bold text-[#2E593F]">
+                New Tips &amp;amp; Tricks
+              </h2>
+            </div>
+            <a href="#" class="bg-[#2E593F] text-white font-semibold px-8 py-3 rounded-lg hover:bg-[#1A472A] transition">See More</a>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-200">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1727099079513-952d40de9d78?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwyfHxmYXJtZXJzJTIwZ3JlZW5ob3VzZSUyMGdyb3VwfGVufDB8fHx8MTc1OTc2MzYzNHww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=370&amp;amp;h=240" alt="A group of smiling farmers, including young and old, posing for a photo in a greenhouse." class="rounded-xl w-full">
+                <div class="absolute bottom-4 right-4 bg-lime-500 text-white text-center rounded-lg px-3 py-1">
+                  <p class="text-lg font-bold">06</p>
+                  <p class="text-xs">Aug</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-bold text-[#2E593F] mt-2 mb-2 h-16">
+                  Reasons to Get Started In Hydroponics
+                </h3>
+                <p class="text-gray-500 text-xs mb-4">
+                  Single Blog By Hendrik Morelia 2023/08/06
+                </p>
+                <p class="text-gray-600 text-sm mb-4 h-20">
+                  Started Single Blog Homepage Reasons to Get Started in...
+                </p>
+                <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1A472A] transition w-full block text-center mt-4">Read More</a>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-200">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1706468721914-208c709bd731?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwzfHxwZW9wbGUlMjBpbnNwZWN0aW5nJTIwcGxhbnRzfGVufDB8fHx8MTc1OTc2MzYyN3ww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=370&amp;amp;h=240" alt="Two young people, a man and a woman, closely inspecting plants in a garden plot." class="rounded-xl w-full">
+                <div class="absolute bottom-4 right-4 bg-lime-500 text-white text-center rounded-lg px-3 py-1">
+                  <p class="text-lg font-bold">06</p>
+                  <p class="text-xs">Aug</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-bold text-[#2E593F] mt-2 mb-2 h-16">
+                  8 Economic Benefits of Commercial Hydroponics
+                </h3>
+                <p class="text-gray-500 text-xs mb-4">
+                  Single Blog By Hendrik Morelia 2023/08/06
+                </p>
+                <p class="text-gray-600 text-sm mb-4 h-20">
+                  Benefit Single Blog Homepage 8 Economic Benefits of
+                  Commercial...
+                </p>
+                <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1A472A] transition w-full block text-center mt-4">Read More</a>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-md border border-gray-200">
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1563198804-2309e2b129ac?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxtYW4lMjBob2xkaW5nJTIwc2VlZGxpbmdzfGVufDB8fHx8MTc1OTc2MzYzNnww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=370&amp;amp;h=240" alt="A man with a beard holding a tray of young seedlings inside a greenhouse, with plants in the background." class="rounded-xl w-full">
+                <div class="absolute bottom-4 right-4 bg-lime-500 text-white text-center rounded-lg px-3 py-1">
+                  <p class="text-lg font-bold">06</p>
+                  <p class="text-xs">Aug</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-bold text-[#2E593F] mt-2 mb-2 h-16">
+                  Steps To Plan A Large Scale Hydroponics Farm
+                </h3>
+                <p class="text-gray-500 text-xs mb-4">
+                  Single Blog By Hendrik Morelia 2023/08/06
+                </p>
+                <p class="text-gray-600 text-sm mb-4 h-20">
+                  Education Single Blog Homepage Steps To Plan A Large...
+                </p>
+                <a href="#" class="bg-[#2E593F] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1A472A] transition w-full block text-center mt-4">Read More</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="GallerySection" data-section-type="section" class="bg-[#EFF6EF] pb-24">
+        <div class="container mx-auto px-4">
+          <div class="relative">
+            <div class="grid grid-cols-4 gap-0">
+              <img src="https://images.unsplash.com/photo-1601601319316-bace8ae2b548?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHxyZXNlYXJjaGVycyUyMGdyZWVuaG91c2V8ZW58MHx8fHwxNzU5NzYzNjI5fDA&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=400&amp;amp;h=300" alt="Two researchers, a man and a woman, observing plants and taking notes in a greenhouse." class="w-full h-auto"><img src="https://placehold.co/400x300.png?text=Couple+Inspecting+Lettuce" alt="A couple wearing straw hats closely inspecting green lettuce in a hydroponic setup." class="w-full h-auto"><img src="https://images.unsplash.com/photo-1758524052304-4ae9cb73c7e1?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwxfHx3b21hbiUyMGdyZWVuaG91c2UlMjBsZXR0dWNlfGVufDB8fHx8MTc1OTc2MzYzM3ww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=400&amp;amp;h=300" alt="A smiling woman in an apron holding a tray of fresh lettuce in a greenhouse." class="w-full h-auto"><img src="https://images.unsplash.com/photo-1758524052916-30baf457aeff?crop=entropy&amp;amp;cs=tinysrgb&amp;amp;fit=crop&amp;amp;fm=jpg&amp;amp;ixid=M3w3MjkzNDZ8MHwxfHNlYXJjaHwyfHxjb3VwbGUlMjBncmVlbmhvdXNlfGVufDB8fHx8MTc1OTc2MzYzNnww&amp;amp;ixlib=rb-4.1.0&amp;amp;q=80&amp;amp;w=400&amp;amp;h=300" alt="A man and a woman inspecting plants in a large, bright, modern greenhouse." class="w-full h-auto">
+            </div>
+            <button class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 p-3 rounded-full hover:bg-white/80">
+              <span class="iconify" data-icon="mdi:chevron-left" data-width="24"></span></button><button class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 p-3 rounded-full hover:bg-white/80">
+              <span class="iconify" data-icon="mdi:chevron-right" data-width="24"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div data-section-id="ContactCtaSection" data-section-type="section" class="bg-gradient-to-r from-lime-400 to-green-600">
+        <div class="container mx-auto px-4 py-16 flex justify-between items-center text-white">
+          <div>
+            <h2 class="text-4xl font-bold">
+              Need a Hydroponic For your Home? Please Call : (+123) - 1234 - 234
+            </h2>
+          </div>
+          <a href="#" class="bg-gray-800 text-white font-semibold px-8 py-3 rounded-lg hover:bg-gray-700 transition whitespace-nowrap">Contact Us</a>
+        </div>
+      </div>
+      <div data-section-id="Footer" data-section-type="footer" class="w-full">
+        <div class="bg-[#1A472A] text-gray-300 pt-20 pb-10">
+          <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="md:col-span-1">
+              <div class="bg-white p-4 rounded-lg inline-flex items-center space-x-2 mb-4">
+                <img src="https://spark-builder.s3.us-east-1.amazonaws.com/image/2025/10/6/f0f74500-b32c-47bd-8ed3-afe70cd2fc1c.png" alt="ZATPLANT logo with a green leaf design" class="h-10">
+                <div>
+                  <span class="text-2xl font-bold text-[#2E593F]">ZATPLANT</span>
+                  <p class="text-xs text-gray-600">
+                    Hydroponic &amp;amp; Horticulture
+                  </p>
+                </div>
+              </div>
+              <p class="text-sm">
+                Ipsum dolor sit amet consectetur adipiscing elit duisd
+                chothonus.
+              </p>
+              <div class="flex space-x-4 mt-4">
+                <a href="#" class="hover:text-white"><span class="iconify" data-icon="mdi:twitter"></span></a><a href="#" class="hover:text-white"><span class="iconify" data-icon="mdi:facebook"></span></a><a href="#" class="hover:text-white"><span class="iconify" data-icon="mdi:instagram"></span></a><a href="#" class="hover:text-white"><span class="iconify" data-icon="mdi:linkedin"></span></a>
+              </div>
+            </div>
+            <div>
+              <h4 class="text-white font-bold text-xl mb-4">Company</h4>
+              <ul class="space-y-2 text-sm">
+                <li>
+                  <a href="#" class="hover:text-white">About Us Company</a>
+                </li>
+                <li><a href="#" class="hover:text-white">Why Choose Us</a></li>
+                <li>
+                  <a href="#" class="hover:text-white">Our Team Professional</a>
+                </li>
+                <li>
+                  <a href="#" class="hover:text-white">Article &amp;amp; News</a>
+                </li>
+                <li>
+                  <a href="#" class="hover:text-white">Trusted &amp;amp; Experience</a>
+                </li>
+                <li>
+                  <a href="#" class="hover:text-white">What Client Say</a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="text-white font-bold text-xl mb-4">Services</h4>
+              <ul class="space-y-2 text-sm">
+                <li>
+                  <a href="#" class="hover:text-white">Farming Consultancy</a>
+                </li>
+                <li>
+                  <a href="#" class="hover:text-white">Hydroponic Maintenance</a>
+                </li>
+                <li>
+                  <a href="#" class="hover:text-white">Installation and Setup</a>
+                </li>
+                <li>
+                  <a href="#" class="hover:text-white">Crop and Production</a>
+                </li>
+                <li>
+                  <a href="#" class="hover:text-white">Education and Training</a>
+                </li>
+                <li><a href="#" class="hover:text-white">Check Other</a></li>
+              </ul>
+            </div>
+            <div>
+              <div class="bg-gray-800/50 p-6 rounded-lg">
+                <h4 class="text-white font-bold text-xl mb-4 text-center">
+                  Working Hours
+                </h4>
+                <ul class="space-y-3 text-sm">
+                  <li class="flex justify-between border-b border-gray-600 pb-2">
+                    <span>Monday</span><span>09:00 - 17:00</span>
+                  </li>
+                  <li class="flex justify-between border-b border-gray-600 pb-2">
+                    <span>Tuesday</span><span>09:00 - 17:00</span>
+                  </li>
+                  <li class="flex justify-between border-b border-gray-600 pb-2">
+                    <span>Wednesday</span><span>09:00 - 17:00</span>
+                  </li>
+                  <li class="flex justify-between border-b border-gray-600 pb-2">
+                    <span>Thursday</span><span>09:00 - 17:00</span>
+                  </li>
+                  <li class="flex justify-between border-b border-gray-600 pb-2">
+                    <span>Friday</span><span>09:00 - 17:00</span>
+                  </li>
+                  <li class="flex justify-between text-lime-400">
+                    <span>Saturday</span><span>Closed</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-[#11291B] text-gray-400 py-4 text-center text-sm">
+          <div class="container mx-auto px-4">
+            Zatplant with Passion by Rometheme © 2023 All rights reserved.
+          </div>
+        </div>
+      </div>
+    </main>
+    <script>
+// No page-specific JavaScript needed for this static design.
+</script>
+  
+
+</body></html>'></iframe>
+                    </div>
+                  </div>
+
+                </body>
+                </html>
+            
