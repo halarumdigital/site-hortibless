@@ -40,3 +40,10 @@ export const contactMessageSchema = z.object({
 });
 
 export type ContactMessage = z.infer<typeof contactMessageSchema>;
+
+export const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export type LoginRequest = z.infer<typeof loginSchema>;

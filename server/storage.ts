@@ -1,5 +1,8 @@
-import { type User, type InsertUser, type ContactMessage } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { type User, type InsertUser, type UpdateUser, type ContactMessage } from "@shared/schema";
+import { db } from "./db";
+import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 interface StoredContactMessage extends ContactMessage {
   id: string;
@@ -7,41 +10,80 @@ interface StoredContactMessage extends ContactMessage {
 }
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
+  getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: UpdateUser): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
+  getAllUsers(): Promise<User[]>;
+  verifyPassword(username: string, password: string): Promise<User | null>;
   saveContactMessage(message: ContactMessage): Promise<string>;
   getContactMessages(): Promise<StoredContactMessage[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+export class MySQLStorage implements IStorage {
   private contactMessages: Map<string, StoredContactMessage>;
 
   constructor() {
-    this.users = new Map();
     this.contactMessages = new Map();
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
     return user;
   }
 
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
+    const [user] = await db.insert(users).values({
+      ...insertUser,
+      password: hashedPassword,
+    }).$returningId();
+    
+    const createdUser = await this.getUser(user.id);
+    if (!createdUser) throw new Error("User creation failed");
+    return createdUser;
+  }
+
+  async updateUser(id: number, updateUser: UpdateUser): Promise<User | undefined> {
+    if (updateUser.password) {
+      updateUser.password = await bcrypt.hash(updateUser.password, 10);
+    }
+    
+    await db.update(users).set(updateUser).where(eq(users.id, id));
+    return this.getUser(id);
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return true;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async verifyPassword(username: string, password: string): Promise<User | null> {
+    const user = await this.getUserByUsername(username);
+    if (!user) return null;
+    
+    const isValid = await bcrypt.compare(password, user.password);
+    return isValid ? user : null;
+  }
+
   async saveContactMessage(message: ContactMessage): Promise<string> {
-    const id = randomUUID();
+    const id = crypto.randomUUID();
     const storedMessage: StoredContactMessage = {
       ...message,
       id,
@@ -56,4 +98,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new MySQLStorage();
