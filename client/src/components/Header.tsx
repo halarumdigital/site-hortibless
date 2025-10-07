@@ -99,21 +99,21 @@ export default function Header() {
               </div>
             </div>
             <div className="relative group">
-              <a href="/#articles" className="hover:text-[#2E593F] flex items-center" data-testid="nav-articles">
+              <a href="/articles" className="hover:text-[#2E593F] flex items-center" data-testid="nav-articles">
                 ARTICLE & NEWS
                 <span className="iconify ml-1" data-icon="mdi:chevron-down"></span>
               </a>
               <div className="absolute left-0 mt-2 w-56 bg-white shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50" data-testid="dropdown-articles">
                 <div className="py-2">
-                  <a href="/#articles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#EFF6EF] hover:text-[#2E593F]" data-testid="dropdown-item-latest-news">
+                  <a href="/articles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#EFF6EF] hover:text-[#2E593F]" data-testid="dropdown-item-latest-news">
                     <span className="iconify mr-2" data-icon="mdi:newspaper"></span>
                     Latest News
                   </a>
-                  <a href="/#articles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#EFF6EF] hover:text-[#2E593F]" data-testid="dropdown-item-guides">
+                  <a href="/articles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#EFF6EF] hover:text-[#2E593F]" data-testid="dropdown-item-guides">
                     <span className="iconify mr-2" data-icon="mdi:book-open-page-variant"></span>
                     Growing Guides
                   </a>
-                  <a href="/#articles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#EFF6EF] hover:text-[#2E593F]" data-testid="dropdown-item-success-stories">
+                  <a href="/articles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#EFF6EF] hover:text-[#2E593F]" data-testid="dropdown-item-success-stories">
                     <span className="iconify mr-2" data-icon="mdi:trophy"></span>
                     Success Stories
                   </a>

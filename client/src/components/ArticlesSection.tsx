@@ -85,12 +85,13 @@ export default function ArticlesSection() {
         </div>
 
         <div className="text-center mt-12">
-          <button 
-            className="bg-[#79B42A] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
+          <a 
+            href="/articles"
+            className="inline-block bg-[#79B42A] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
             data-testid="button-view-all-articles"
           >
             View All Articles
-          </button>
+          </a>
         </div>
       </div>
     </section>
