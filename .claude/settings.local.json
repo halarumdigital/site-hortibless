@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(if not exist \"uploads\" mkdir uploads)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsx:*)",
+      "Bash(taskkill:*)",
+      "Bash(for file in SiteSettings.tsx ContactInfo.tsx Banners.tsx Gallery.tsx Testimonials.tsx Regions.tsx Faq.tsx)",
+      "Bash(do echo \"Updating $file\")",
+      "Bash(done)",
+      "Bash(for file in Dashboard.tsx SiteSettings.tsx ContactInfo.tsx Banners.tsx Gallery.tsx Testimonials.tsx Regions.tsx Faq.tsx SeasonalCalendar.tsx)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

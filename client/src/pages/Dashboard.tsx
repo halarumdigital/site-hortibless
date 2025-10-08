@@ -9,12 +9,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table as TableUI, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema, updateUserSchema, type InsertUser, type UpdateUser } from "@shared/schema";
-import { LogOut, UserPlus, Pencil, Trash2, Users, Menu, X } from "lucide-react";
+import { LogOut, UserPlus, Pencil, Trash2, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface User {
@@ -129,6 +129,94 @@ export default function Dashboard() {
                 <Users className="w-5 h-5" />
                 Usuários
               </button>
+              <button
+                data-testid="menu-site-settings"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/site-settings")}
+              >
+                <Settings className="w-5 h-5" />
+                Configurações do Site
+              </button>
+              <button
+                data-testid="menu-contact-info"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/contact-info")}
+              >
+                <Phone className="w-5 h-5" />
+                Contatos
+              </button>
+              <button
+                data-testid="menu-banners"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/banners")}
+              >
+                <Image className="w-5 h-5" />
+                Banners
+              </button>
+              <button
+                data-testid="menu-gallery"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/gallery")}
+              >
+                <Images className="w-5 h-5" />
+                Galeria
+              </button>
+              <button
+                data-testid="menu-testimonials"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/testimonials")}
+              >
+                <MessageSquare className="w-5 h-5" />
+                Depoimentos
+              </button>
+              <button
+                data-testid="menu-regions"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/regions")}
+              >
+                <MapPin className="w-5 h-5" />
+                Regiões de Atendimento
+              </button>
+              <button
+                data-testid="menu-faq"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/faq")}
+              >
+                <HelpCircle className="w-5 h-5" />
+                FAQ
+              </button>
+              <button
+                data-testid="menu-seasonal-calendar"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/seasonal-calendar")}
+              >
+                <Calendar className="w-5 h-5" />
+                Calendário Sazonal
+              </button>
+              <button
+                data-testid="menu-comparative-table"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/comparative-table")}
+              >
+                <Table className="w-5 h-5" />
+                Tabela Comparativa
+              </button>
+              <button
+                data-testid="menu-loose-items"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/loose-items")}
+              >
+                <Package className="w-5 h-5" />
+                Itens Avulsos
+              </button>
+              <button
+                data-testid="menu-baskets"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/baskets")}
+              >
+                <ShoppingBasket className="w-5 h-5" />
+                Cestas
+              </button>
             </div>
           </nav>
 
@@ -221,7 +309,7 @@ export default function Dashboard() {
             {usersLoading ? (
               <div className="text-center py-8">Loading users...</div>
             ) : (
-              <Table>
+              <TableUI>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
@@ -276,7 +364,7 @@ export default function Dashboard() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+              </TableUI>
             )}
           </CardContent>
         </Card>
