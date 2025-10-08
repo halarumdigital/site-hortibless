@@ -5,6 +5,9 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Trust proxy - necessary when behind nginx/apache
+app.set('trust proxy', 1);
+
 declare module 'express-session' {
   interface SessionData {
     userId?: number;
