@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -30,6 +31,7 @@ interface GalleryItem {
 
 export default function Gallery() {
   const { user, isLoading: authLoading } = useAuth(true);
+  const { settings } = useSiteSettings();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -193,13 +195,21 @@ export default function Gallery() {
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-[#79B42A]">ZATPLANT</h2>
+          <div className="flex items-center justify-center p-4 border-b border-gray-200 dark:border-gray-700 relative">
+            {settings?.logoPath && (
+              <div className="flex justify-center">
+                <img
+                  src={settings.logoPath}
+                  alt="Logo"
+                  className="h-16 object-contain"
+                />
+              </div>
+            )}
             <Button
               data-testid="button-close-sidebar"
               variant="ghost"
               size="sm"
-              className="lg:hidden"
+              className="lg:hidden absolute right-2"
               onClick={() => setIsSidebarOpen(false)}
             >
               <X className="w-5 h-5" />

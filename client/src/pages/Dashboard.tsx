@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema, updateUserSchema, type InsertUser, type UpdateUser } from "@shared/schema";
 import { LogOut, UserPlus, Pencil, Trash2, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface User {
   id: number;
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { settings } = useSiteSettings();
 
   const { data: usersData, isLoading: usersLoading } = useQuery<{ success: boolean; users: User[] }>({
     queryKey: ["/api/users"],
@@ -107,13 +109,21 @@ export default function Dashboard() {
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-[#79B42A]">ZATPLANT</h2>
+          <div className="flex items-center justify-center p-4 border-b border-gray-200 dark:border-gray-700 relative">
+            {settings?.logoPath && (
+              <div className="flex justify-center">
+                <img
+                  src={settings.logoPath}
+                  alt="Logo"
+                  className="h-16 object-contain"
+                />
+              </div>
+            )}
             <Button
               data-testid="button-close-sidebar"
               variant="ghost"
               size="sm"
-              className="lg:hidden"
+              className="lg:hidden absolute right-2"
               onClick={() => setIsSidebarOpen(false)}
             >
               <X className="w-5 h-5" />
@@ -238,7 +248,7 @@ export default function Dashboard() {
               disabled={logoutMutation.isPending}
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              Sair
             </Button>
           </div>
         </div>
@@ -267,7 +277,7 @@ export default function Dashboard() {
                 <Menu className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Painel Administrativo</h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Gerenciamento de usuários</p>
               </div>
             </div>
@@ -281,23 +291,23 @@ export default function Dashboard() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  User Management
+                  Gerenciamento de Usuários
                 </CardTitle>
-                <CardDescription>Manage system users and permissions</CardDescription>
+                <CardDescription>Gerencie usuários e permissões do sistema</CardDescription>
               </div>
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
                   <Button data-testid="button-create-user" className="bg-[#79B42A] hover:bg-[#6a9e24]">
                     <UserPlus className="w-4 h-4 mr-2" />
-                    Add User
+                    Adicionar Usuário
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Create New User</DialogTitle>
-                    <DialogDescription>Add a new user to the system</DialogDescription>
+                    <DialogTitle>Criar Novo Usuário</DialogTitle>
+                    <DialogDescription>Adicionar um novo usuário ao sistema</DialogDescription>
                   </DialogHeader>
-                  <CreateUserForm 
+                  <CreateUserForm
                     onSubmit={(data) => createUserMutation.mutate(data)}
                     isLoading={createUserMutation.isPending}
                   />
@@ -307,18 +317,18 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             {usersLoading ? (
-              <div className="text-center py-8">Loading users...</div>
+              <div className="text-center py-8">Carregando usuários...</div>
             ) : (
               <TableUI>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Username</TableHead>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Usuário</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Role</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead>Função</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -339,7 +349,7 @@ export default function Dashboard() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           usr.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
-                          {usr.isActive ? 'Active' : 'Inactive'}
+                          {usr.isActive ? 'Ativo' : 'Inativo'}
                         </span>
                       </TableCell>
                       <TableCell className="text-right space-x-2">
@@ -374,8 +384,8 @@ export default function Dashboard() {
       <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Update user information</DialogDescription>
+            <DialogTitle>Editar Usuário</DialogTitle>
+            <DialogDescription>Atualizar informações do usuário</DialogDescription>
           </DialogHeader>
           {editingUser && (
             <EditUserForm
@@ -390,19 +400,19 @@ export default function Dashboard() {
       <AlertDialog open={!!deletingUserId} onOpenChange={() => setDeletingUserId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the user account.
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente a conta do usuário.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               data-testid="button-confirm-delete"
               onClick={() => deletingUserId && deleteUserMutation.mutate(deletingUserId)}
               className="bg-red-600 hover:bg-red-700"
             >
-              Delete
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -433,9 +443,9 @@ function CreateUserForm({ onSubmit, isLoading }: { onSubmit: (data: InsertUser) 
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Full Name</FormLabel>
+              <FormLabel>Nome Completo</FormLabel>
               <FormControl>
-                <Input data-testid="input-create-name" placeholder="John Doe" {...field} />
+                <Input data-testid="input-create-name" placeholder="João Silva" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -447,9 +457,9 @@ function CreateUserForm({ onSubmit, isLoading }: { onSubmit: (data: InsertUser) 
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Usuário</FormLabel>
               <FormControl>
-                <Input data-testid="input-create-username" placeholder="johndoe" {...field} />
+                <Input data-testid="input-create-username" placeholder="joaosilva" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -463,7 +473,7 @@ function CreateUserForm({ onSubmit, isLoading }: { onSubmit: (data: InsertUser) 
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input data-testid="input-create-email" type="email" placeholder="john@example.com" {...field} />
+                <Input data-testid="input-create-email" type="email" placeholder="joao@exemplo.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -475,7 +485,7 @@ function CreateUserForm({ onSubmit, isLoading }: { onSubmit: (data: InsertUser) 
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Senha</FormLabel>
               <FormControl>
                 <Input data-testid="input-create-password" type="password" placeholder="••••••••" {...field} />
               </FormControl>
@@ -489,9 +499,9 @@ function CreateUserForm({ onSubmit, isLoading }: { onSubmit: (data: InsertUser) 
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone (Optional)</FormLabel>
+              <FormLabel>Telefone (Opcional)</FormLabel>
               <FormControl>
-                <Input data-testid="input-create-phone" placeholder="+1234567890" {...field} value={field.value || ""} />
+                <Input data-testid="input-create-phone" placeholder="+55 11 99999-9999" {...field} value={field.value || ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -503,16 +513,16 @@ function CreateUserForm({ onSubmit, isLoading }: { onSubmit: (data: InsertUser) 
           name="role"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Role</FormLabel>
+              <FormLabel>Função</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger data-testid="select-create-role">
-                    <SelectValue placeholder="Select role" />
+                    <SelectValue placeholder="Selecione a função" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="user">Usuário</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -520,13 +530,13 @@ function CreateUserForm({ onSubmit, isLoading }: { onSubmit: (data: InsertUser) 
           )}
         />
 
-        <Button 
+        <Button
           data-testid="button-submit-create"
-          type="submit" 
-          className="w-full bg-[#79B42A] hover:bg-[#6a9e24]" 
+          type="submit"
+          className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
           disabled={isLoading}
         >
-          {isLoading ? "Creating..." : "Create User"}
+          {isLoading ? "Criando..." : "Criar Usuário"}
         </Button>
       </form>
     </Form>
@@ -554,9 +564,9 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Full Name</FormLabel>
+              <FormLabel>Nome Completo</FormLabel>
               <FormControl>
-                <Input data-testid="input-edit-name" placeholder="John Doe" {...field} />
+                <Input data-testid="input-edit-name" placeholder="João Silva" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -568,9 +578,9 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Usuário</FormLabel>
               <FormControl>
-                <Input data-testid="input-edit-username" placeholder="johndoe" {...field} />
+                <Input data-testid="input-edit-username" placeholder="joaosilva" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -584,7 +594,7 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input data-testid="input-edit-email" type="email" placeholder="john@example.com" {...field} />
+                <Input data-testid="input-edit-email" type="email" placeholder="joao@exemplo.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -598,12 +608,12 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
             <FormItem>
               <FormLabel>Nova Senha (Opcional)</FormLabel>
               <FormControl>
-                <Input 
-                  data-testid="input-edit-password" 
-                  type="password" 
-                  placeholder="Deixe em branco para manter a senha atual" 
-                  {...field} 
-                  value={field.value || ""} 
+                <Input
+                  data-testid="input-edit-password"
+                  type="password"
+                  placeholder="Deixe em branco para manter a senha atual"
+                  {...field}
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormMessage />
@@ -616,9 +626,9 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone (Optional)</FormLabel>
+              <FormLabel>Telefone (Opcional)</FormLabel>
               <FormControl>
-                <Input data-testid="input-edit-phone" placeholder="+1234567890" {...field} value={field.value || ""} />
+                <Input data-testid="input-edit-phone" placeholder="+55 11 99999-9999" {...field} value={field.value || ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -630,16 +640,16 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
           name="role"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Role</FormLabel>
+              <FormLabel>Função</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger data-testid="select-edit-role">
-                    <SelectValue placeholder="Select role" />
+                    <SelectValue placeholder="Selecione a função" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="user">Usuário</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -656,12 +666,12 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
               <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={String(field.value)}>
                 <FormControl>
                   <SelectTrigger data-testid="select-edit-status">
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder="Selecione o status" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="true">Active</SelectItem>
-                  <SelectItem value="false">Inactive</SelectItem>
+                  <SelectItem value="true">Ativo</SelectItem>
+                  <SelectItem value="false">Inativo</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -669,13 +679,13 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
           )}
         />
 
-        <Button 
+        <Button
           data-testid="button-submit-edit"
-          type="submit" 
-          className="w-full bg-[#79B42A] hover:bg-[#6a9e24]" 
+          type="submit"
+          className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
           disabled={isLoading}
         >
-          {isLoading ? "Updating..." : "Update User"}
+          {isLoading ? "Atualizando..." : "Atualizar Usuário"}
         </Button>
       </form>
     </Form>

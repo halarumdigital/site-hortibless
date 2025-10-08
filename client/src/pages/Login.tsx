@@ -9,11 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Lock } from "lucide-react";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { settings } = useSiteSettings();
 
   const form = useForm<LoginRequest>({
     resolver: zodResolver(loginSchema),
@@ -65,13 +67,17 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-[#79B42A] rounded-full flex items-center justify-center">
-              <Lock className="w-8 h-8 text-white" />
-            </div>
+          <div className="flex justify-center mb-6">
+            {settings?.logoPath && (
+              <div className="w-48 h-48 flex items-center justify-center">
+                <img
+                  src={settings.logoPath}
+                  alt="Logo"
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+            )}
           </div>
-          <CardTitle className="text-2xl font-bold">ZATPLANT Admin</CardTitle>
-          <CardDescription>Sign in to access the dashboard</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -81,12 +87,12 @@ export default function Login() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Usuário</FormLabel>
                     <FormControl>
-                      <Input 
+                      <Input
                         data-testid="input-username"
-                        placeholder="Enter your username" 
-                        {...field} 
+                        placeholder="Digite seu usuário"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -99,13 +105,13 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Senha</FormLabel>
                     <FormControl>
-                      <Input 
+                      <Input
                         data-testid="input-password"
-                        type="password" 
-                        placeholder="Enter your password" 
-                        {...field} 
+                        type="password"
+                        placeholder="Digite sua senha"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -113,13 +119,13 @@ export default function Login() {
                 )}
               />
 
-              <Button 
+              <Button
                 data-testid="button-login"
-                type="submit" 
-                className="w-full bg-[#79B42A] hover:bg-[#6a9e24]" 
+                type="submit"
+                className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
           </Form>

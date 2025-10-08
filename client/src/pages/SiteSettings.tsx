@@ -12,12 +12,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { siteSettingsSchema, type UpdateSiteSettings } from "@shared/schema";
 import { LogOut, Settings, Menu, X, Users, Upload, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket } from "lucide-react";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface SiteSettings {
   id: number;
   siteName: string;
   logoPath?: string;
   footerLogoPath?: string;
+  faviconPath?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +31,8 @@ export default function SiteSettings() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [footerLogoPreview, setFooterLogoPreview] = useState<string | null>(null);
+  const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
+  const { settings } = useSiteSettings();
 
   const { data: settingsData, isLoading: settingsLoading } = useQuery<{ success: boolean; settings: SiteSettings }>({
     queryKey: ["/api/site-settings"],
@@ -77,11 +81,13 @@ export default function SiteSettings() {
       siteName: settingsData?.settings?.siteName || "Meu Site",
       logoPath: settingsData?.settings?.logoPath || "",
       footerLogoPath: settingsData?.settings?.footerLogoPath || "",
+      faviconPath: settingsData?.settings?.faviconPath || "",
     },
     values: {
       siteName: settingsData?.settings?.siteName || "Meu Site",
       logoPath: settingsData?.settings?.logoPath || "",
       footerLogoPath: settingsData?.settings?.footerLogoPath || "",
+      faviconPath: settingsData?.settings?.faviconPath || "",
     },
   });
 
@@ -91,6 +97,7 @@ export default function SiteSettings() {
 
     const logoInput = document.getElementById("logo-upload") as HTMLInputElement;
     const footerLogoInput = document.getElementById("footer-logo-upload") as HTMLInputElement;
+    const faviconInput = document.getElementById("favicon-upload") as HTMLInputElement;
 
     if (logoInput?.files?.[0]) {
       formData.append("logo", logoInput.files[0]);
@@ -98,6 +105,10 @@ export default function SiteSettings() {
 
     if (footerLogoInput?.files?.[0]) {
       formData.append("footerLogo", footerLogoInput.files[0]);
+    }
+
+    if (faviconInput?.files?.[0]) {
+      formData.append("favicon", faviconInput.files[0]);
     }
 
     updateSettingsMutation.mutate(formData);
@@ -125,6 +136,17 @@ export default function SiteSettings() {
     }
   };
 
+  const handleFaviconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFaviconPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -138,13 +160,21 @@ export default function SiteSettings() {
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-[#79B42A]">ZATPLANT</h2>
+          <div className="flex items-center justify-center p-4 border-b border-gray-200 dark:border-gray-700 relative">
+            {settings?.logoPath && (
+              <div className="flex justify-center">
+                <img
+                  src={settings.logoPath}
+                  alt="Logo"
+                  className="h-16 object-contain"
+                />
+              </div>
+            )}
             <Button
               data-testid="button-close-sidebar"
               variant="ghost"
               size="sm"
-              className="lg:hidden"
+              className="lg:hidden absolute right-2"
               onClick={() => setIsSidebarOpen(false)}
             >
               <X className="w-5 h-5" />
@@ -385,6 +415,31 @@ export default function SiteSettings() {
                             <img
                               src={footerLogoPreview || settingsData?.settings?.footerLogoPath}
                               alt="Footer logo preview"
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <FormLabel>Favicon</FormLabel>
+                      <div className="flex items-start gap-4">
+                        <div className="flex-1">
+                          <Input
+                            id="favicon-upload"
+                            data-testid="input-favicon"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFaviconChange}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Formatos aceitos: ICO, PNG (Recomendado: 32x32 ou 16x16 pixels)</p>
+                        </div>
+                        {(faviconPreview || settingsData?.settings?.faviconPath) && (
+                          <div className="w-24 h-24 border rounded-md overflow-hidden">
+                            <img
+                              src={faviconPreview || settingsData?.settings?.faviconPath}
+                              alt="Favicon preview"
                               className="w-full h-full object-contain"
                             />
                           </div>

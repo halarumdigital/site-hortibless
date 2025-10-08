@@ -53,6 +53,7 @@ export const siteSettings = mysqlTable("site_settings", {
   siteName: varchar("site_name", { length: 255 }).notNull().default("Meu Site"),
   logoPath: varchar("logo_path", { length: 500 }),
   footerLogoPath: varchar("footer_logo_path", { length: 500 }),
+  faviconPath: varchar("favicon_path", { length: 500 }),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
@@ -61,6 +62,7 @@ export const siteSettingsSchema = z.object({
   siteName: z.string().min(1, "Site name is required"),
   logoPath: z.string().optional(),
   footerLogoPath: z.string().optional(),
+  faviconPath: z.string().optional(),
 });
 
 export type SiteSettings = typeof siteSettings.$inferSelect;
@@ -255,6 +257,7 @@ export const baskets = mysqlTable("baskets", {
   priceSubscription: varchar("price_subscription", { length: 50 }),
   imagePath: varchar("image_path", { length: 500 }),
   isActive: boolean("is_active").notNull().default(true),
+  isFeatured: boolean("is_featured").notNull().default(false),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
@@ -274,6 +277,7 @@ export const basketSchema = z.object({
   priceSubscription: z.string().optional(),
   imagePath: z.string().optional(),
   isActive: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
 });
 
 export const basketItemSchema = z.object({

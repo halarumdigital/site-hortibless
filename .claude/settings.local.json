@@ -12,7 +12,11 @@
       "Bash(for file in SiteSettings.tsx ContactInfo.tsx Banners.tsx Gallery.tsx Testimonials.tsx Regions.tsx Faq.tsx)",
       "Bash(do echo \"Updating $file\")",
       "Bash(done)",
-      "Bash(for file in Dashboard.tsx SiteSettings.tsx ContactInfo.tsx Banners.tsx Gallery.tsx Testimonials.tsx Regions.tsx Faq.tsx SeasonalCalendar.tsx)"
+      "Bash(for file in Dashboard.tsx SiteSettings.tsx ContactInfo.tsx Banners.tsx Gallery.tsx Testimonials.tsx Regions.tsx Faq.tsx SeasonalCalendar.tsx)",
+      "Bash(sqlite3:*)",
+      "Bash(mysql:*)",
+      "Bash(cat:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

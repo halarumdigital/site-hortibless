@@ -244,7 +244,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/site-settings", requireAuth, requireAdmin, upload.fields([
     { name: "logo", maxCount: 1 },
-    { name: "footerLogo", maxCount: 1 }
+    { name: "footerLogo", maxCount: 1 },
+    { name: "favicon", maxCount: 1 }
   ]), async (req, res) => {
     try {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -258,6 +259,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (files && files.footerLogo && files.footerLogo[0]) {
         settingsData.footerLogoPath = `/uploads/${files.footerLogo[0].filename}`;
+      }
+
+      if (files && files.favicon && files.favicon[0]) {
+        settingsData.faviconPath = `/uploads/${files.favicon[0].filename}`;
       }
 
       console.log("Settings data to validate:", settingsData);
@@ -996,6 +1001,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         priceLoose: req.body.priceLoose,
         priceSubscription: req.body.priceSubscription,
         imagePath,
+        isFeatured: req.body.isFeatured === 'true' || req.body.isFeatured === true,
       });
 
       const basket = await storage.createBasket(validatedData);
@@ -1022,6 +1028,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: req.body.description,
         priceLoose: req.body.priceLoose,
         priceSubscription: req.body.priceSubscription,
+        isFeatured: req.body.isFeatured === 'true' || req.body.isFeatured === true,
       };
 
       if (req.file) {

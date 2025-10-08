@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -7,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +27,7 @@ interface Basket {
   priceSubscription?: string;
   imagePath?: string;
   isActive: boolean;
+  isFeatured: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,6 +47,7 @@ interface BasketItem {
 
 export default function Baskets() {
   const { user, isLoading: authLoading } = useAuth(true);
+  const { settings } = useSiteSettings();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -146,6 +150,35 @@ export default function Baskets() {
     },
   });
 
+  const updateBasketMutation = useMutation({
+    mutationFn: async ({ id, formData }: { id: number; formData: FormData }) => {
+      const response = await fetch(`/api/baskets/${id}`, {
+        method: "PUT",
+        body: formData,
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to update basket");
+      }
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/baskets/all"] });
+      setEditingBasket(null);
+      setSelectedFile(null);
+      setImagePreview(null);
+      toast({ title: "Cesta atualizada com sucesso" });
+    },
+    onError: (error: Error) => {
+      console.error("Update error:", error);
+      toast({
+        title: "Falha ao atualizar cesta",
+        description: error.message,
+        variant: "destructive"
+      });
+    },
+  });
+
   const addItemMutation = useMutation({
     mutationFn: async ({ basketId, looseItemId, quantity }: { basketId: number; looseItemId: number; quantity: number }) => {
       const response = await fetch(`/api/baskets/${basketId}/items`, {
@@ -215,6 +248,7 @@ export default function Baskets() {
     if (data.priceLoose) formData.append("priceLoose", data.priceLoose);
     if (data.priceSubscription) formData.append("priceSubscription", data.priceSubscription);
     if (selectedFile) formData.append("image", selectedFile);
+    formData.append("isFeatured", String(data.isFeatured || false));
 
     createBasketMutation.mutate({ formData });
   };
@@ -243,12 +277,20 @@ export default function Baskets() {
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-[#79B42A]">ZATPLANT</h2>
+          <div className="flex items-center justify-center p-4 border-b border-gray-200 dark:border-gray-700 relative">
+            {settings?.logoPath && (
+              <div className="flex justify-center">
+                <img
+                  src={settings.logoPath}
+                  alt="Logo"
+                  className="h-16 object-contain"
+                />
+              </div>
+            )}
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden"
+              className="lg:hidden absolute right-2"
               onClick={() => setIsSidebarOpen(false)}
             >
               <X className="w-5 h-5" />
@@ -489,6 +531,29 @@ export default function Baskets() {
                       </div>
                     )}
 
+                    <FormField
+                      control={form.control}
+                      name="isFeatured"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              Marcar como Destaque
+                            </FormLabel>
+                            <FormDescription>
+                              Esta cesta aparecerá em destaque na página inicial
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
                     <Button
                       type="submit"
                       disabled={createBasketMutation.isPending}
@@ -549,22 +614,35 @@ export default function Baskets() {
                               </p>
                             )}
                           </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1"
-                              onClick={() => setManagingBasketId(basket.id)}
-                            >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Gerenciar Itens
-                            </Button>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => setEditingBasket(basket)}
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Editar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => setManagingBasketId(basket.id)}
+                              >
+                                <Package className="w-4 h-4 mr-1" />
+                                Itens
+                              </Button>
+                            </div>
                             <Button
                               size="sm"
                               variant="destructive"
+                              className="w-full"
                               onClick={() => setDeletingBasketId(basket.id)}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Excluir
                             </Button>
                           </div>
                         </div>
@@ -653,6 +731,35 @@ export default function Baskets() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Basket Dialog */}
+      <Dialog open={editingBasket !== null} onOpenChange={() => {
+        setEditingBasket(null);
+        setSelectedFile(null);
+        setImagePreview(null);
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Cesta</DialogTitle>
+            <DialogDescription>
+              Atualize as informações da cesta
+            </DialogDescription>
+          </DialogHeader>
+          {editingBasket && (
+            <EditBasketForm
+              basket={editingBasket}
+              onSubmit={(formData) => {
+                updateBasketMutation.mutate({ id: editingBasket.id, formData });
+              }}
+              isLoading={updateBasketMutation.isPending}
+              selectedFile={selectedFile}
+              setSelectedFile={setSelectedFile}
+              imagePreview={imagePreview}
+              setImagePreview={setImagePreview}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deletingBasketId !== null} onOpenChange={() => setDeletingBasketId(null)}>
         <AlertDialogContent>
@@ -678,5 +785,178 @@ export default function Baskets() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+// Edit Basket Form Component
+function EditBasketForm({
+  basket,
+  onSubmit,
+  isLoading,
+  selectedFile,
+  setSelectedFile,
+  imagePreview,
+  setImagePreview
+}: {
+  basket: Basket;
+  onSubmit: (formData: FormData) => void;
+  isLoading: boolean;
+  selectedFile: File | null;
+  setSelectedFile: (file: File | null) => void;
+  imagePreview: string | null;
+  setImagePreview: (preview: string | null) => void;
+}) {
+  const form = useForm<InsertBasket>({
+    resolver: zodResolver(basketSchema),
+    defaultValues: {
+      name: basket.name,
+      description: basket.description || "",
+      priceLoose: basket.priceLoose || "",
+      priceSubscription: basket.priceSubscription || "",
+      isFeatured: basket.isFeatured || false,
+    },
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = (data: InsertBasket) => {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    if (data.description) formData.append("description", data.description);
+    if (data.priceLoose) formData.append("priceLoose", data.priceLoose);
+    if (data.priceSubscription) formData.append("priceSubscription", data.priceSubscription);
+    if (selectedFile) formData.append("image", selectedFile);
+    formData.append("isFeatured", String(data.isFeatured || false));
+
+    onSubmit(formData);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome da Cesta</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: Cesta Básica" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descrição</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Descrição da cesta"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="priceLoose"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Valor Avulso</FormLabel>
+                <FormControl>
+                  <Input placeholder="R$ 0,00" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="priceSubscription"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Valor Assinatura</FormLabel>
+                <FormControl>
+                  <Input placeholder="R$ 0,00" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <FormLabel>Imagem da Cesta</FormLabel>
+          <Input
+            id="edit-image-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          <p className="text-xs text-gray-500">Deixe em branco para manter a imagem atual</p>
+          {(imagePreview || basket.imagePath) && (
+            <div className="mt-2 border rounded-md overflow-hidden w-full h-48">
+              <img
+                src={imagePreview || basket.imagePath}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+        </div>
+
+        <FormField
+          control={form.control}
+          name="isFeatured"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>
+                  Marcar como Destaque
+                </FormLabel>
+                <FormDescription>
+                  Esta cesta aparecerá em destaque na página inicial
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <Button
+          type="submit"
+          className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
+          disabled={isLoading}
+        >
+          <Save className="w-4 h-4 mr-2" />
+          {isLoading ? "Salvando..." : "Salvar Alterações"}
+        </Button>
+      </form>
+    </Form>
   );
 }

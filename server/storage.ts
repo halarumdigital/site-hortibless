@@ -168,6 +168,7 @@ export class MySQLStorage implements IStorage {
         siteName: updateSettings.siteName || "Meu Site",
         logoPath: updateSettings.logoPath,
         footerLogoPath: updateSettings.footerLogoPath,
+        faviconPath: updateSettings.faviconPath,
       }).$returningId();
 
       const [created] = await db.select().from(siteSettings).where(eq(siteSettings.id, newSettings.id)).limit(1);
