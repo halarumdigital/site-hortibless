@@ -3,7 +3,7 @@ export default function TeamSection() {
     <section className="team-bg py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16 text-white">
-          <p className="text-[#79B42A] font-semibold mb-2">OUR TEAM</p>
+          <p className="text-[#133903] font-semibold mb-2">OUR TEAM</p>
           <h2 className="text-4xl font-bold mb-4">Meet Our Expert Team</h2>
           <p className="text-gray-200 max-w-2xl mx-auto">
             Our dedicated team of hydroponic specialists and agricultural experts are here to help you succeed.
@@ -20,16 +20,16 @@ export default function TeamSection() {
             />
             <div className="p-6">
               <h3 className="text-xl font-bold text-[#2E593F] mb-1">John Anderson</h3>
-              <p className="text-[#79B42A] mb-4">Chief Agronomist</p>
+              <p className="text-[#133903] mb-4">Chief Agronomist</p>
               <p className="text-gray-600 text-sm mb-4">Expert in hydroponic systems with 15+ years of experience.</p>
               <div className="flex space-x-3">
-                <a href="#" className="text-gray-600 hover:text-[#79B42A]" data-testid="link-john-linkedin">
+                <a href="#" className="text-gray-600 hover:text-[#133903]" data-testid="link-john-linkedin">
                   <span className="iconify" data-icon="mdi:linkedin" data-width="20"></span>
                 </a>
-                <a href="#" className="text-gray-600 hover:text-[#79B42A]" data-testid="link-john-twitter">
+                <a href="#" className="text-gray-600 hover:text-[#133903]" data-testid="link-john-twitter">
                   <span className="iconify" data-icon="mdi:twitter" data-width="20"></span>
                 </a>
-                <a href="#" className="text-gray-600 hover:text-[#79B42A]" data-testid="link-john-email">
+                <a href="#" className="text-gray-600 hover:text-[#133903]" data-testid="link-john-email">
                   <span className="iconify" data-icon="mdi:email" data-width="20"></span>
                 </a>
               </div>
@@ -45,16 +45,16 @@ export default function TeamSection() {
             />
             <div className="p-6">
               <h3 className="text-xl font-bold text-[#2E593F] mb-1">Sarah Mitchell</h3>
-              <p className="text-[#79B42A] mb-4">Nutrition Specialist</p>
+              <p className="text-[#133903] mb-4">Nutrition Specialist</p>
               <p className="text-gray-600 text-sm mb-4">Specialized in plant nutrition and hydroponic solutions.</p>
               <div className="flex space-x-3">
-                <a href="#" className="text-gray-600 hover:text-[#79B42A]" data-testid="link-sarah-linkedin">
+                <a href="#" className="text-gray-600 hover:text-[#133903]" data-testid="link-sarah-linkedin">
                   <span className="iconify" data-icon="mdi:linkedin" data-width="20"></span>
                 </a>
-                <a href="#" className="text-gray-600 hover:text-[#79B42A]" data-testid="link-sarah-twitter">
+                <a href="#" className="text-gray-600 hover:text-[#133903]" data-testid="link-sarah-twitter">
                   <span className="iconify" data-icon="mdi:twitter" data-width="20"></span>
                 </a>
-                <a href="#" className="text-gray-600 hover:text-[#79B42A]" data-testid="link-sarah-email">
+                <a href="#" className="text-gray-600 hover:text-[#133903]" data-testid="link-sarah-email">
                   <span className="iconify" data-icon="mdi:email" data-width="20"></span>
                 </a>
               </div>
@@ -70,16 +70,16 @@ export default function TeamSection() {
             />
             <div className="p-6">
               <h3 className="text-xl font-bold text-[#2E593F] mb-1">Michael Chen</h3>
-              <p className="text-[#79B42A] mb-4">Systems Engineer</p>
+              <p className="text-[#133903] mb-4">Systems Engineer</p>
               <p className="text-gray-600 text-sm mb-4">Designs and implements advanced hydroponic systems.</p>
               <div className="flex space-x-3">
-                <a href="#" className="text-gray-600 hover:text-[#79B42A]" data-testid="link-michael-linkedin">
+                <a href="#" className="text-gray-600 hover:text-[#133903]" data-testid="link-michael-linkedin">
                   <span className="iconify" data-icon="mdi:linkedin" data-width="20"></span>
                 </a>
-                <a href="#" className="text-gray-600 hover:text-[#79B42A]" data-testid="link-michael-twitter">
+                <a href="#" className="text-gray-600 hover:text-[#133903]" data-testid="link-michael-twitter">
                   <span className="iconify" data-icon="mdi:twitter" data-width="20"></span>
                 </a>
-                <a href="#" className="text-gray-600 hover:text-[#79B42A]" data-testid="link-michael-email">
+                <a href="#" className="text-gray-600 hover:text-[#133903]" data-testid="link-michael-email">
                   <span className="iconify" data-icon="mdi:email" data-width="20"></span>
                 </a>
               </div>

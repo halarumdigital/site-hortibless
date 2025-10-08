@@ -2,15 +2,17 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useContactInfo } from "@/hooks/useContactInfo";
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    subject: "",
+    whatsapp: "",
     message: ""
   });
   const { toast } = useToast();
+  const { contactInfo } = useContactInfo();
 
   const contactMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -19,20 +21,20 @@ export default function ContactSection() {
     },
     onSuccess: (data) => {
       toast({
-        title: "Message Sent!",
-        description: data.message || "Thank you for your message. We'll get back to you soon.",
+        title: "Mensagem Enviada!",
+        description: data.message || "Obrigado pela sua mensagem. Entraremos em contato em breve.",
       });
       setFormData({
         name: "",
         email: "",
-        subject: "",
+        whatsapp: "",
         message: ""
       });
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
+        title: "Erro",
+        description: "Falha ao enviar mensagem. Por favor, tente novamente.",
         variant: "destructive"
       });
     }
@@ -48,12 +50,12 @@ export default function ContactSection() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
-    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+    if (!formData.name || !formData.email || !formData.whatsapp || !formData.message) {
       toast({
-        title: "Error",
-        description: "Please fill in all fields.",
+        title: "Erro",
+        description: "Por favor, preencha todos os campos.",
         variant: "destructive"
       });
       return;
@@ -66,10 +68,10 @@ export default function ContactSection() {
     <section className="bg-[#EFF6EF] py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <p className="text-[#79B42A] font-semibold mb-2">GET IN TOUCH</p>
-          <h2 className="text-4xl font-bold text-[#2E593F] mb-4">Contact Us</h2>
+          <p className="text-[#133903] font-semibold mb-2">ENTRE EM CONTATO</p>
+          <h2 className="text-4xl font-bold text-[#2E593F] mb-4">Fale Conosco</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Have questions? We're here to help you get started with hydroponic farming.
+            Tem dúvidas? Estamos aqui para ajudar você a começar com a HortiBless.
           </p>
         </div>
 
@@ -79,60 +81,60 @@ export default function ContactSection() {
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Your Name</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-gray-700 font-semibold mb-2">Seu Nome</label>
+                  <input
+                    type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#79B42A]" 
-                    placeholder="John Doe"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#133903]"
+                    placeholder="Maria Silva"
                     data-testid="input-name"
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Email Address</label>
-                  <input 
-                    type="email" 
+                  <label className="block text-gray-700 font-semibold mb-2">Endereço de Email</label>
+                  <input
+                    type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#79B42A]" 
-                    placeholder="john@example.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#133903]"
+                    placeholder="maria@exemplo.com"
                     data-testid="input-email"
                   />
                 </div>
               </div>
               <div className="mb-6">
-                <label className="block text-gray-700 font-semibold mb-2">Subject</label>
-                <input 
-                  type="text" 
-                  name="subject"
-                  value={formData.subject}
+                <label className="block text-gray-700 font-semibold mb-2">WhatsApp</label>
+                <input
+                  type="text"
+                  name="whatsapp"
+                  value={formData.whatsapp}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#79B42A]" 
-                  placeholder="How can we help?"
-                  data-testid="input-subject"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#133903]"
+                  placeholder="(11) 98765-4321"
+                  data-testid="input-whatsapp"
                 />
               </div>
               <div className="mb-6">
-                <label className="block text-gray-700 font-semibold mb-2">Message</label>
-                <textarea 
-                  rows={5} 
+                <label className="block text-gray-700 font-semibold mb-2">Mensagem</label>
+                <textarea
+                  rows={5}
                   name="message"
                   value={formData.message}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#79B42A]" 
-                  placeholder="Tell us more about your project..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#133903]"
+                  placeholder="Conte-nos mais sobre seu interesse..."
                   data-testid="textarea-message"
                 ></textarea>
               </div>
-              <button 
-                type="submit" 
-                className="w-full bg-[#79B42A] text-white py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
+              <button
+                type="submit"
+                className="w-full bg-[#133903] text-white py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
                 data-testid="button-send-message"
               >
-                Send Message
+                Enviar Mensagem
               </button>
             </form>
           </div>
@@ -140,36 +142,39 @@ export default function ContactSection() {
           {/* Contact Information & Map */}
           <div>
             <div className="bg-white rounded-xl p-8 shadow-lg mb-6">
-              <h3 className="text-2xl font-bold text-[#2E593F] mb-6">Contact Information</h3>
+              <h3 className="text-2xl font-bold text-[#2E593F] mb-6">Informações de Contato</h3>
               <div className="space-y-4">
-                <div className="flex items-start" data-testid="contact-address">
-                  <span className="iconify text-[#79B42A] mr-4 mt-1" data-icon="mdi:map-marker" data-width="24"></span>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">Address</h4>
-                    <p className="text-gray-600">123 Hydroponic Avenue, Green City, GC 12345</p>
+                {contactInfo?.address && (
+                  <div className="flex items-start" data-testid="contact-address">
+                    <span className="iconify text-[#133903] mr-4 mt-1" data-icon="mdi:map-marker" data-width="24"></span>
+                    <div>
+                      <h4 className="font-semibold text-gray-800">Endereço</h4>
+                      <p className="text-gray-600">{contactInfo.address}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start" data-testid="contact-phone">
-                  <span className="iconify text-[#79B42A] mr-4 mt-1" data-icon="mdi:phone" data-width="24"></span>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">Phone</h4>
-                    <p className="text-gray-600">(123) 234-1234</p>
+                )}
+                {contactInfo?.whatsapp && (
+                  <div className="flex items-start" data-testid="contact-phone">
+                    <span className="iconify text-[#133903] mr-4 mt-1" data-icon="mdi:whatsapp" data-width="24"></span>
+                    <div>
+                      <h4 className="font-semibold text-gray-800">WhatsApp</h4>
+                      <a href={`https://wa.me/${contactInfo.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#133903]">
+                        {contactInfo.whatsapp}
+                      </a>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start" data-testid="contact-email">
-                  <span className="iconify text-[#79B42A] mr-4 mt-1" data-icon="mdi:email" data-width="24"></span>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">Email</h4>
-                    <p className="text-gray-600">awesomeconsult@email.com</p>
+                )}
+                {contactInfo?.email && (
+                  <div className="flex items-start" data-testid="contact-email">
+                    <span className="iconify text-[#133903] mr-4 mt-1" data-icon="mdi:email" data-width="24"></span>
+                    <div>
+                      <h4 className="font-semibold text-gray-800">Email</h4>
+                      <a href={`mailto:${contactInfo.email}`} className="text-gray-600 hover:text-[#133903]">
+                        {contactInfo.email}
+                      </a>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start" data-testid="contact-hours">
-                  <span className="iconify text-[#79B42A] mr-4 mt-1" data-icon="mdi:clock" data-width="24"></span>
-                  <div>
-                    <h4 className="font-semibold text-gray-800">Business Hours</h4>
-                    <p className="text-gray-600">Mon - Fri: 9:00 AM - 5:00 PM</p>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 

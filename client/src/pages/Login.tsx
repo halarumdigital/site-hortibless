@@ -122,7 +122,7 @@ export default function Login() {
               <Button
                 data-testid="button-login"
                 type="submit"
-                className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
+                className="w-full bg-[#133903] hover:bg-[#6a9e24]"
                 disabled={isLoading}
               >
                 {isLoading ? "Entrando..." : "Entrar"}

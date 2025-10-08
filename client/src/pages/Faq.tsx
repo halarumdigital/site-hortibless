@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { faqSchema, type InsertFaq } from "@shared/schema";
-import { LogOut, HelpCircle, Menu, X, Users, Settings, Phone, Image, Images, MessageSquare, MapPin, Trash2, Plus, Calendar, Table, Package, ShoppingBasket } from "lucide-react";
+import { LogOut, HelpCircle, Menu, X, Users, Settings, Phone, Image, Images, MessageSquare, MapPin, Trash2, Plus, Calendar, Table, Package, ShoppingBasket, Mail } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Faq {
@@ -188,7 +188,7 @@ export default function Faq() {
               </button>
               <button
                 data-testid="menu-faq"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#79B42A] text-white"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#133903] text-white"
               >
                 <HelpCircle className="w-5 h-5" />
                 FAQ
@@ -225,12 +225,20 @@ export default function Faq() {
                 <ShoppingBasket className="w-5 h-5" />
                 Cestas
               </button>
+              <button
+                data-testid="menu-duvidas"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/duvidas")}
+              >
+                <Mail className="w-5 h-5" />
+                Dúvidas
+              </button>
             </div>
           </nav>
 
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#79B42A] flex items-center justify-center text-white font-semibold">
+              <div className="w-10 h-10 rounded-full bg-[#133903] flex items-center justify-center text-white font-semibold">
                 {user?.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -334,7 +342,7 @@ export default function Faq() {
                     <Button
                       type="submit"
                       disabled={createFaqMutation.isPending}
-                      className="w-full sm:w-auto bg-[#79B42A] hover:bg-[#6a9e24]"
+                      className="w-full sm:w-auto bg-[#133903] hover:bg-[#6a9e24]"
                     >
                       {createFaqMutation.isPending ? "Salvando..." : "Adicionar FAQ"}
                     </Button>
@@ -367,7 +375,7 @@ export default function Faq() {
                         <div className="flex justify-between items-start gap-4">
                           <div className="flex-1 space-y-2">
                             <div className="flex items-start gap-2">
-                              <HelpCircle className="w-5 h-5 text-[#79B42A] mt-0.5 flex-shrink-0" />
+                              <HelpCircle className="w-5 h-5 text-[#133903] mt-0.5 flex-shrink-0" />
                               <p className="font-semibold text-gray-900 dark:text-white">
                                 {faq.question}
                               </p>

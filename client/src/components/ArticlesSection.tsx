@@ -3,7 +3,7 @@ export default function ArticlesSection() {
     <section className="bg-white py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <p className="text-[#79B42A] font-semibold mb-2">LATEST NEWS</p>
+          <p className="text-[#133903] font-semibold mb-2">LATEST NEWS</p>
           <h2 className="text-4xl font-bold text-[#2E593F] mb-4">Articles & Resources</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Stay updated with the latest trends, tips, and innovations in hydroponic farming.
@@ -23,13 +23,13 @@ export default function ArticlesSection() {
                 <span className="iconify mr-2" data-icon="mdi:calendar" data-width="16"></span>
                 <span>January 15, 2024</span>
               </div>
-              <h3 className="text-xl font-bold text-[#2E593F] mb-3 hover:text-[#79B42A] cursor-pointer">
+              <h3 className="text-xl font-bold text-[#2E593F] mb-3 hover:text-[#133903] cursor-pointer">
                 Getting Started with Hydroponic Lettuce
               </h3>
               <p className="text-gray-600 mb-4">
                 Learn the basics of growing fresh, crispy lettuce using hydroponic methods for year-round harvest.
               </p>
-              <a href="#" className="text-[#79B42A] font-semibold hover:underline" data-testid="link-read-more-lettuce">
+              <a href="#" className="text-[#133903] font-semibold hover:underline" data-testid="link-read-more-lettuce">
                 Read More →
               </a>
             </div>
@@ -47,13 +47,13 @@ export default function ArticlesSection() {
                 <span className="iconify mr-2" data-icon="mdi:calendar" data-width="16"></span>
                 <span>January 12, 2024</span>
               </div>
-              <h3 className="text-xl font-bold text-[#2E593F] mb-3 hover:text-[#79B42A] cursor-pointer">
+              <h3 className="text-xl font-bold text-[#2E593F] mb-3 hover:text-[#133903] cursor-pointer">
                 Understanding Nutrient Solutions
               </h3>
               <p className="text-gray-600 mb-4">
                 A comprehensive guide to creating and maintaining the perfect nutrient balance for optimal plant growth.
               </p>
-              <a href="#" className="text-[#79B42A] font-semibold hover:underline" data-testid="link-read-more-nutrients">
+              <a href="#" className="text-[#133903] font-semibold hover:underline" data-testid="link-read-more-nutrients">
                 Read More →
               </a>
             </div>
@@ -71,13 +71,13 @@ export default function ArticlesSection() {
                 <span className="iconify mr-2" data-icon="mdi:calendar" data-width="16"></span>
                 <span>January 8, 2024</span>
               </div>
-              <h3 className="text-xl font-bold text-[#2E593F] mb-3 hover:text-[#79B42A] cursor-pointer">
+              <h3 className="text-xl font-bold text-[#2E593F] mb-3 hover:text-[#133903] cursor-pointer">
                 The Future of Vertical Farming
               </h3>
               <p className="text-gray-600 mb-4">
                 Explore how vertical farming is revolutionizing urban agriculture and sustainable food production.
               </p>
-              <a href="#" className="text-[#79B42A] font-semibold hover:underline" data-testid="link-read-more-vertical">
+              <a href="#" className="text-[#133903] font-semibold hover:underline" data-testid="link-read-more-vertical">
                 Read More →
               </a>
             </div>
@@ -87,7 +87,7 @@ export default function ArticlesSection() {
         <div className="text-center mt-12">
           <a 
             href="/articles"
-            className="inline-block bg-[#79B42A] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
+            className="inline-block bg-[#133903] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
             data-testid="button-view-all-articles"
           >
             View All Articles

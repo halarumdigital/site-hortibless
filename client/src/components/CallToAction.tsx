@@ -8,7 +8,7 @@ export default function CallToAction() {
         </p>
         <div className="flex justify-center space-x-4">
           <button 
-            className="bg-[#79B42A] text-white px-8 py-4 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
+            className="bg-[#133903] text-white px-8 py-4 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
             data-testid="button-get-started"
           >
             Get Started Now

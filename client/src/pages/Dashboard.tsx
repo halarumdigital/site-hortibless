@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema, updateUserSchema, type InsertUser, type UpdateUser } from "@shared/schema";
-import { LogOut, UserPlus, Pencil, Trash2, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket } from "lucide-react";
+import { LogOut, UserPlus, Pencil, Trash2, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
@@ -134,7 +134,7 @@ export default function Dashboard() {
             <div className="space-y-1">
               <button
                 data-testid="menu-users"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#79B42A] text-white"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#133903] text-white"
               >
                 <Users className="w-5 h-5" />
                 Usuários
@@ -227,12 +227,28 @@ export default function Dashboard() {
                 <ShoppingBasket className="w-5 h-5" />
                 Cestas
               </button>
+              <button
+                data-testid="menu-duvidas"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/duvidas")}
+              >
+                <Mail className="w-5 h-5" />
+                Dúvidas
+              </button>
+              <button
+                data-testid="menu-scripts"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/scripts")}
+              >
+                <Code className="w-5 h-5" />
+                Scripts
+              </button>
             </div>
           </nav>
 
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#79B42A] flex items-center justify-center text-white font-semibold">
+              <div className="w-10 h-10 rounded-full bg-[#133903] flex items-center justify-center text-white font-semibold">
                 {user?.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -297,7 +313,7 @@ export default function Dashboard() {
               </div>
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button data-testid="button-create-user" className="bg-[#79B42A] hover:bg-[#6a9e24]">
+                  <Button data-testid="button-create-user" className="bg-[#133903] hover:bg-[#6a9e24]">
                     <UserPlus className="w-4 h-4 mr-2" />
                     Adicionar Usuário
                   </Button>
@@ -533,7 +549,7 @@ function CreateUserForm({ onSubmit, isLoading }: { onSubmit: (data: InsertUser) 
         <Button
           data-testid="button-submit-create"
           type="submit"
-          className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
+          className="w-full bg-[#133903] hover:bg-[#6a9e24]"
           disabled={isLoading}
         >
           {isLoading ? "Criando..." : "Criar Usuário"}
@@ -682,7 +698,7 @@ function EditUserForm({ user, onSubmit, isLoading }: { user: User; onSubmit: (da
         <Button
           data-testid="button-submit-edit"
           type="submit"
-          className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
+          className="w-full bg-[#133903] hover:bg-[#6a9e24]"
           disabled={isLoading}
         >
           {isLoading ? "Atualizando..." : "Atualizar Usuário"}

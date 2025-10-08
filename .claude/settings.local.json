@@ -16,7 +16,14 @@
       "Bash(sqlite3:*)",
       "Bash(mysql:*)",
       "Bash(cat:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(find:*)",
+      "Bash(del create-contact-messages-table.js)",
+      "Bash(for file in Banners.tsx ContactInfo.tsx Faq.tsx Gallery.tsx LooseItems.tsx Regions.tsx SeasonalCalendar.tsx ComparativeTable.tsx Testimonials.tsx Baskets.tsx)",
+      "Bash(do)",
+      "Bash(echo \"Updating $file\")",
+      "Bash(curl:*)",
+      "Bash(timeout 5 bash -c 'while ! curl -s http://localhost:5000/api/seasonal-calendar > /dev/null; do sleep 1; done')"
     ],
     "deny": [],
     "ask": []

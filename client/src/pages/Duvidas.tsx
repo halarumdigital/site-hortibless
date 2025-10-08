@@ -2,56 +2,44 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { looseItemSchema, type InsertLooseItem } from "@shared/schema";
-import { LogOut, Menu, X, Users, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Trash2, Plus, Package, ShoppingBasket, Mail } from "lucide-react";
+import { LogOut, Mail, Menu, X, Users, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Trash2, Calendar, Table, Package, ShoppingBasket, Eye, EyeOff } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-interface LooseItem {
+interface ContactMessage {
   id: number;
   name: string;
-  category: "Frutas" | "Legumes" | "Verduras" | "Temperos";
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  email: string;
+  whatsapp: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-const categories = ["Frutas", "Legumes", "Verduras", "Temperos"] as const;
-
-export default function LooseItems() {
+export default function Duvidas() {
   const { user, isLoading: authLoading } = useAuth(true);
   const { settings } = useSiteSettings();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [deletingItemId, setDeletingItemId] = useState<number | null>(null);
+  const [deletingMessageId, setDeletingMessageId] = useState<number | null>(null);
+  const [viewingMessage, setViewingMessage] = useState<ContactMessage | null>(null);
 
-  const { data: itemsData, isLoading: itemsLoading } = useQuery<{ success: boolean; items: LooseItem[] }>({
-    queryKey: ["/api/loose-items/all"],
+  const { data: messagesData, isLoading: messagesLoading } = useQuery<{ success: boolean; messages: ContactMessage[] }>({
+    queryKey: ["/api/contact-messages"],
     enabled: !!user,
-  });
-
-  const form = useForm<InsertLooseItem>({
-    resolver: zodResolver(looseItemSchema),
-    defaultValues: {
-      name: "",
-      category: "Frutas",
-    },
   });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/logout", { method: "POST" });
-      return response.json();
+      return await apiRequest("POST", "/api/logout");
     },
     onSuccess: () => {
       toast({ title: "Logged out successfully" });
@@ -59,75 +47,53 @@ export default function LooseItems() {
     },
   });
 
-  const createItemMutation = useMutation({
-    mutationFn: async (data: InsertLooseItem) => {
-      const response = await fetch("/api/loose-items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to create item");
-      }
-      return result;
+  const markAsReadMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("PATCH", `/api/contact-messages/${id}/read`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/loose-items/all"] });
-      toast({ title: "Item adicionado com sucesso" });
-      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/contact-messages"] });
+      toast({ title: "Mensagem marcada como lida" });
     },
     onError: (error: Error) => {
-      console.error("Create error:", error);
+      console.error("Mark as read error:", error);
       toast({
-        title: "Falha ao adicionar item",
+        title: "Erro ao marcar como lida",
         description: error.message,
         variant: "destructive"
       });
     },
   });
 
-  const deleteItemMutation = useMutation({
+  const deleteMessageMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`/api/loose-items/${id}`, {
-        method: "DELETE",
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to delete item");
-      }
-      return data;
+      return await apiRequest("DELETE", `/api/contact-messages/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/loose-items/all"] });
-      setDeletingItemId(null);
-      toast({ title: "Item deletado com sucesso" });
+      queryClient.invalidateQueries({ queryKey: ["/api/contact-messages"] });
+      setDeletingMessageId(null);
+      toast({ title: "Mensagem excluída com sucesso" });
     },
     onError: (error: Error) => {
       console.error("Delete error:", error);
       toast({
-        title: "Falha ao deletar item",
+        title: "Erro ao excluir mensagem",
         description: error.message,
         variant: "destructive"
       });
     },
   });
 
-  const onSubmit = (data: InsertLooseItem) => {
-    createItemMutation.mutate(data);
+  const handleViewMessage = (message: ContactMessage) => {
+    setViewingMessage(message);
+    if (!message.isRead) {
+      markAsReadMutation.mutate(message.id);
+    }
   };
 
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
-
-  const groupedItems = itemsData?.items.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
-    acc[item.category].push(item);
-    return acc;
-  }, {} as Record<string, LooseItem[]>);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
@@ -243,7 +209,8 @@ export default function LooseItems() {
               </button>
               <button
                 data-testid="menu-loose-items"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#133903] text-white"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/loose-items")}
               >
                 <Package className="w-5 h-5" />
                 Itens Avulsos
@@ -258,8 +225,7 @@ export default function LooseItems() {
               </button>
               <button
                 data-testid="menu-duvidas"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/duvidas")}
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#133903] text-white"
               >
                 <Mail className="w-5 h-5" />
                 Dúvidas
@@ -282,27 +248,18 @@ export default function LooseItems() {
               variant="outline"
               className="w-full"
               onClick={() => logoutMutation.mutate()}
-              disabled={logoutMutation.isPending}
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              Sair
             </Button>
           </div>
         </div>
       </aside>
 
-      {/* Overlay for mobile */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="px-4 sm:px-6 lg:px-8 py-4">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
                 data-testid="button-open-sidebar"
@@ -313,156 +270,117 @@ export default function LooseItems() {
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Itens Avulsos</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dúvidas</h1>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-6xl mx-auto space-y-6">
-            {/* Add Item Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Plus className="w-5 h-5" />
-                  Adicionar Item
-                </CardTitle>
-                <CardDescription>
-                  Adicione um novo item avulso com nome e categoria
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome do Item</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ex: Tomate" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Categoria</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma categoria" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {categories.map((category) => (
-                                <SelectItem key={category} value={category}>
-                                  {category}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button
-                      type="submit"
-                      disabled={createItemMutation.isPending}
-                      className="w-full sm:w-auto bg-[#133903] hover:bg-[#6a9e24]"
+        <main className="flex-1 overflow-y-auto p-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Mensagens de Contato</CardTitle>
+              <CardDescription>
+                Mensagens enviadas através do formulário de contato
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {messagesLoading ? (
+                <div className="text-center py-8">Carregando...</div>
+              ) : messagesData?.messages && messagesData.messages.length > 0 ? (
+                <div className="space-y-4">
+                  {messagesData.messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`border rounded-lg p-4 ${
+                        message.isRead ? "bg-gray-50" : "bg-white border-blue-200"
+                      }`}
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {createItemMutation.isPending ? "Adicionando..." : "Adicionar Item"}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-
-            {/* Items List by Category */}
-            {itemsLoading ? (
-              <Card>
-                <CardContent className="py-8">
-                  <div className="text-center text-gray-500">Carregando...</div>
-                </CardContent>
-              </Card>
-            ) : groupedItems && Object.keys(groupedItems).length > 0 ? (
-              categories.map((category) => {
-                const items = groupedItems[category] || [];
-                if (items.length === 0) return null;
-
-                return (
-                  <Card key={category}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Package className="w-5 h-5" />
-                        {category}
-                      </CardTitle>
-                      <CardDescription>
-                        {items.length} {items.length === 1 ? "item" : "itens"}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {items.map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
-                          >
-                            <span className="text-sm font-medium">{item.name}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeletingItemId(item.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-gray-900">{message.name}</h3>
+                            {!message.isRead && (
+                              <Badge variant="default" className="bg-blue-500">Nova</Badge>
+                            )}
                           </div>
-                        ))}
+                          <div className="space-y-1 text-sm text-gray-600">
+                            <p><strong>Email:</strong> {message.email}</p>
+                            <p><strong>WhatsApp:</strong> {message.whatsapp}</p>
+                            <p className="text-xs text-gray-400">
+                              {new Date(message.createdAt).toLocaleString('pt-BR')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewMessage(message)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDeletingMessageId(message.id)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
-            ) : (
-              <Card>
-                <CardContent className="py-8">
-                  <div className="text-center text-gray-500">
-                    Nenhum item cadastrado ainda
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  Nenhuma mensagem recebida ainda.
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </main>
       </div>
 
+      {/* View Message Dialog */}
+      <Dialog open={viewingMessage !== null} onOpenChange={() => setViewingMessage(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Mensagem de {viewingMessage?.name}</DialogTitle>
+            <DialogDescription>
+              Recebida em {viewingMessage && new Date(viewingMessage.createdAt).toLocaleString('pt-BR')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-700">Email:</p>
+              <p className="text-sm text-gray-600">{viewingMessage?.email}</p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-700">WhatsApp:</p>
+              <p className="text-sm text-gray-600">{viewingMessage?.whatsapp}</p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-700">Mensagem:</p>
+              <p className="text-sm text-gray-600 whitespace-pre-wrap">{viewingMessage?.message}</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deletingItemId !== null} onOpenChange={() => setDeletingItemId(null)}>
+      <AlertDialog open={deletingMessageId !== null} onOpenChange={() => setDeletingMessageId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                if (deletingItemId) {
-                  deleteItemMutation.mutate(deletingItemId);
-                }
-              }}
-              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deletingMessageId && deleteMessageMutation.mutate(deletingMessageId)}
+              className="bg-red-500 hover:bg-red-600"
             >
               Excluir
             </AlertDialogAction>

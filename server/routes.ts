@@ -206,25 +206,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = contactMessageSchema.parse(req.body);
 
-      const messageId = await storage.saveContactMessage(validatedData);
+      const message = await storage.saveContactMessage(validatedData);
 
       console.log("Contact message received:", {
-        id: messageId,
+        id: message.id,
         name: validatedData.name,
         email: validatedData.email,
-        subject: validatedData.subject,
+        whatsapp: validatedData.whatsapp,
       });
 
       res.json({
         success: true,
         message: "Your message has been received. We'll get back to you soon!",
-        id: messageId
+        id: message.id
       });
     } catch (error) {
       console.error("Contact form error:", error);
       res.status(400).json({
         success: false,
         message: "Failed to send message. Please try again."
+      });
+    }
+  });
+
+  // Contact Messages routes (for dashboard)
+  app.get("/api/contact-messages", requireAuth, requireAdmin, async (_req, res) => {
+    try {
+      const messages = await storage.getAllContactMessages();
+      res.json({ success: true, messages });
+    } catch (error) {
+      console.error("Get contact messages error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch contact messages"
+      });
+    }
+  });
+
+  app.patch("/api/contact-messages/:id/read", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const message = await storage.markContactMessageAsRead(id);
+
+      res.json({
+        success: true,
+        message: "Message marked as read",
+        data: message
+      });
+    } catch (error) {
+      console.error("Mark message as read error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to mark message as read"
+      });
+    }
+  });
+
+  app.delete("/api/contact-messages/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteContactMessage(id);
+
+      res.json({
+        success: true,
+        message: "Message deleted successfully"
+      });
+    } catch (error) {
+      console.error("Delete contact message error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to delete message"
       });
     }
   });
@@ -1109,6 +1160,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: error.message || "Failed to remove item from basket"
+      });
+    }
+  });
+
+  // Tracking Scripts routes
+  app.get("/api/tracking-scripts", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const scripts = await storage.getTrackingScripts();
+      res.json(scripts || {});
+    } catch (error: any) {
+      console.error("Get tracking scripts error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get tracking scripts"
+      });
+    }
+  });
+
+  app.put("/api/tracking-scripts", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const scripts = await storage.updateTrackingScripts(req.body);
+      res.json(scripts);
+    } catch (error: any) {
+      console.error("Update tracking scripts error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update tracking scripts"
       });
     }
   });

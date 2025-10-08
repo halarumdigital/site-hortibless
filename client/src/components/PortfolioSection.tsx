@@ -79,7 +79,7 @@ export default function PortfolioSection() {
     <section className="bg-[#EFF6EF] py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <p className="text-[#79B42A] font-semibold mb-2" data-testid="text-portfolio-subtitle">OUR PROJECTS</p>
+          <p className="text-[#133903] font-semibold mb-2" data-testid="text-portfolio-subtitle">OUR PROJECTS</p>
           <h2 className="text-4xl font-bold text-[#2E593F] mb-4" data-testid="heading-portfolio-title">Portfolio & Gallery</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Explore our successful hydroponic installations and projects across various sectors
@@ -94,7 +94,7 @@ export default function PortfolioSection() {
               onClick={() => setSelectedCategory(category)}
               className={`px-6 py-2 rounded-full font-medium transition-colors ${
                 selectedCategory === category
-                  ? 'bg-[#79B42A] text-white' 
+                  ? 'bg-[#133903] text-white' 
                   : 'bg-white text-gray-700 hover:bg-white hover:text-[#2E593F]'
               }`}
               data-testid={`portfolio-filter-${category.toLowerCase()}`}
@@ -119,7 +119,7 @@ export default function PortfolioSection() {
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute top-4 right-4">
-                  <span className="bg-[#79B42A] text-white text-xs font-semibold px-3 py-1 rounded-full" data-testid={`portfolio-category-${project.id}`}>
+                  <span className="bg-[#133903] text-white text-xs font-semibold px-3 py-1 rounded-full" data-testid={`portfolio-category-${project.id}`}>
                     {project.category}
                   </span>
                 </div>
@@ -127,7 +127,7 @@ export default function PortfolioSection() {
                   <div className="p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                     <h3 className="text-xl font-bold mb-2" data-testid={`portfolio-title-${project.id}`}>{project.title}</h3>
                     <p className="text-sm text-gray-200">{project.description}</p>
-                    <button className="mt-4 inline-flex items-center text-white hover:text-[#79B42A] transition-colors" data-testid={`button-view-project-${project.id}`}>
+                    <button className="mt-4 inline-flex items-center text-white hover:text-[#133903] transition-colors" data-testid={`button-view-project-${project.id}`}>
                       <span>View Project</span>
                       <span className="iconify ml-2" data-icon="mdi:arrow-right" data-width="16"></span>
                     </button>
@@ -142,7 +142,7 @@ export default function PortfolioSection() {
         {filteredProjects.length > 6 && (
           <div className="text-center mt-12">
             <button 
-              className="bg-[#79B42A] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors inline-flex items-center"
+              className="bg-[#133903] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors inline-flex items-center"
               data-testid="button-view-more-projects"
             >
               <span>View More Projects</span>

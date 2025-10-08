@@ -96,7 +96,7 @@ export default function ArticlesPage() {
         {/* Hero Section */}
         <section className="hero-bg py-32">
           <div className="container mx-auto px-4 text-center">
-            <p className="text-[#79B42A] font-semibold mb-4 text-lg" data-testid="text-articles-subtitle">KNOWLEDGE BASE</p>
+            <p className="text-[#133903] font-semibold mb-4 text-lg" data-testid="text-articles-subtitle">KNOWLEDGE BASE</p>
             <h1 className="text-5xl md:text-6xl font-bold text-white mb-6" data-testid="heading-articles-title">
               Articles & Resources
             </h1>
@@ -115,7 +115,7 @@ export default function ArticlesPage() {
                   key={index}
                   className={`px-6 py-2 rounded-full font-medium transition-colors ${
                     index === 0 
-                      ? 'bg-[#79B42A] text-white' 
+                      ? 'bg-[#133903] text-white' 
                       : 'bg-gray-100 text-gray-700 hover:bg-[#EFF6EF] hover:text-[#2E593F]'
                   }`}
                   data-testid={`category-filter-${category.toLowerCase().replace(/\s+/g, '-')}`}
@@ -144,7 +144,7 @@ export default function ArticlesPage() {
                   />
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-semibold text-[#79B42A] bg-[#EFF6EF] px-3 py-1 rounded-full" data-testid={`article-category-${article.id}`}>
+                      <span className="text-xs font-semibold text-[#133903] bg-[#EFF6EF] px-3 py-1 rounded-full" data-testid={`article-category-${article.id}`}>
                         {article.category}
                       </span>
                       <span className="text-sm text-gray-500">{article.readTime}</span>
@@ -153,7 +153,7 @@ export default function ArticlesPage() {
                       <span className="iconify mr-2" data-icon="mdi:calendar" data-width="16"></span>
                       <span>{article.date}</span>
                     </div>
-                    <h3 className="text-xl font-bold text-[#2E593F] mb-3 hover:text-[#79B42A] cursor-pointer" data-testid={`article-title-${article.id}`}>
+                    <h3 className="text-xl font-bold text-[#2E593F] mb-3 hover:text-[#133903] cursor-pointer" data-testid={`article-title-${article.id}`}>
                       {article.title}
                     </h3>
                     <p className="text-gray-600 mb-4">
@@ -161,7 +161,7 @@ export default function ArticlesPage() {
                     </p>
                     <a 
                       href="#" 
-                      className="text-[#79B42A] font-semibold hover:underline inline-flex items-center" 
+                      className="text-[#133903] font-semibold hover:underline inline-flex items-center" 
                       data-testid={`link-read-article-${article.id}`}
                     >
                       Read More
@@ -177,7 +177,7 @@ export default function ArticlesPage() {
               <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors" data-testid="button-pagination-prev">
                 <span className="iconify" data-icon="mdi:chevron-left" data-width="20"></span>
               </button>
-              <button className="px-4 py-2 bg-[#79B42A] text-white rounded-lg" data-testid="button-pagination-1">1</button>
+              <button className="px-4 py-2 bg-[#133903] text-white rounded-lg" data-testid="button-pagination-1">1</button>
               <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors" data-testid="button-pagination-2">2</button>
               <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors" data-testid="button-pagination-3">3</button>
               <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors" data-testid="button-pagination-next">
@@ -200,10 +200,10 @@ export default function ArticlesPage() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#79B42A]"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#133903]"
                 data-testid="input-newsletter-articles"
               />
-              <button className="bg-[#79B42A] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors" data-testid="button-subscribe-articles">
+              <button className="bg-[#133903] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors" data-testid="button-subscribe-articles">
                 Subscribe
               </button>
             </div>

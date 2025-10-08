@@ -32,14 +32,26 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type User = typeof users.$inferSelect;
 
+export const contactMessages = mysqlTable("contact_messages", {
+  id: int("id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  whatsapp: varchar("whatsapp", { length: 50 }).notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
 export const contactMessageSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
-  subject: z.string().min(1, "Subject is required"),
+  whatsapp: z.string().min(1, "WhatsApp is required"),
   message: z.string().min(1, "Message is required"),
 });
 
-export type ContactMessage = z.infer<typeof contactMessageSchema>;
+export type ContactMessage = typeof contactMessages.$inferSelect;
+export type InsertContactMessage = z.infer<typeof contactMessageSchema>;
 
 export const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -290,3 +302,21 @@ export type Basket = typeof baskets.$inferSelect;
 export type InsertBasket = z.infer<typeof basketSchema>;
 export type BasketItem = typeof basketItems.$inferSelect;
 export type InsertBasketItem = z.infer<typeof basketItemSchema>;
+
+export const trackingScripts = mysqlTable("tracking_scripts", {
+  id: int("id").primaryKey().autoincrement(),
+  facebookPixel: text("facebook_pixel"),
+  googleAnalytics: text("google_analytics"),
+  googleTagManager: text("google_tag_manager"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
+export const trackingScriptsSchema = z.object({
+  facebookPixel: z.string().optional(),
+  googleAnalytics: z.string().optional(),
+  googleTagManager: z.string().optional(),
+});
+
+export type TrackingScripts = typeof trackingScripts.$inferSelect;
+export type UpdateTrackingScripts = z.infer<typeof trackingScriptsSchema>;

@@ -1,4 +1,10 @@
+import { useContactInfo } from "@/hooks/useContactInfo";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+
 export default function Footer() {
+  const { contactInfo } = useContactInfo();
+  const { settings } = useSiteSettings();
+
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle newsletter subscription
@@ -12,50 +18,67 @@ export default function Footer() {
           {/* Company Info */}
           <div>
             <div className="flex items-center mb-4" data-testid="footer-logo">
-              <span className="iconify text-[#79B42A] mr-2" data-icon="mdi:leaf" data-width="32"></span>
-              <span className="text-2xl font-bold">ZATPLANT</span>
+              {settings?.footerLogoPath ? (
+                <img
+                  key={settings.footerLogoPath}
+                  src={settings.footerLogoPath}
+                  alt={settings.siteName || "Logo"}
+                  className="h-20 w-auto object-contain"
+                />
+              ) : settings?.logoPath ? (
+                <img
+                  key={settings.logoPath}
+                  src={settings.logoPath}
+                  alt={settings.siteName || "Logo"}
+                  className="h-20 w-auto object-contain"
+                />
+              ) : (
+                <div className="flex items-center">
+                  <span className="iconify text-[#133903] mr-2" data-icon="mdi:leaf" data-width="32"></span>
+                  <span className="text-2xl font-bold">{settings?.siteName || "ZATPLANT"}</span>
+                </div>
+              )}
             </div>
             <p className="text-gray-300 mb-4">
-              Leading the future of sustainable agriculture with innovative hydroponic solutions.
+              A HortiBless nasceu com a missão de levar saúde à mesa da família, diretamente da horta, unindo praticidade, sabor e sofisticação.
             </p>
-            <div className="flex space-x-3">
-              <a href="#" className="w-10 h-10 bg-[#2E593F] rounded-full flex items-center justify-center hover:bg-[#79B42A] transition-colors" data-testid="footer-facebook">
-                <span className="iconify" data-icon="mdi:facebook" data-width="20"></span>
-              </a>
-              <a href="#" className="w-10 h-10 bg-[#2E593F] rounded-full flex items-center justify-center hover:bg-[#79B42A] transition-colors" data-testid="footer-twitter">
-                <span className="iconify" data-icon="mdi:twitter" data-width="20"></span>
-              </a>
-              <a href="#" className="w-10 h-10 bg-[#2E593F] rounded-full flex items-center justify-center hover:bg-[#79B42A] transition-colors" data-testid="footer-instagram">
-                <span className="iconify" data-icon="mdi:instagram" data-width="20"></span>
-              </a>
-              <a href="#" className="w-10 h-10 bg-[#2E593F] rounded-full flex items-center justify-center hover:bg-[#79B42A] transition-colors" data-testid="footer-linkedin">
-                <span className="iconify" data-icon="mdi:linkedin" data-width="20"></span>
-              </a>
-            </div>
           </div>
 
           {/* Quick Links */}
           <div>
             <h4 className="text-lg font-bold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-about">About Us</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-services">Our Services</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-projects">Projects</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-team">Team</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-contact">Contact</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-about">About Us</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-services">Our Services</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-projects">Projects</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-team">Team</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-contact">Contact</a></li>
             </ul>
           </div>
 
-          {/* Services */}
+          {/* Social Media */}
           <div>
-            <h4 className="text-lg font-bold mb-4">Our Services</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-hydroponic-systems">Hydroponic Systems</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-consultation">Consultation</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-training">Training Programs</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-equipment">Equipment Supply</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#79B42A] transition-colors" data-testid="footer-maintenance">Maintenance</a></li>
-            </ul>
+            <h4 className="text-lg font-bold mb-4">Redes Sociais</h4>
+            <div className="flex flex-col space-y-3">
+              {contactInfo?.facebook && (
+                <a href={contactInfo.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-social-facebook">
+                  <span className="iconify" data-icon="mdi:facebook" data-width="24"></span>
+                  <span>Facebook</span>
+                </a>
+              )}
+              {contactInfo?.instagram && (
+                <a href={contactInfo.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-social-instagram">
+                  <span className="iconify" data-icon="mdi:instagram" data-width="24"></span>
+                  <span>Instagram</span>
+                </a>
+              )}
+              {contactInfo?.tiktok && (
+                <a href={contactInfo.tiktok} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-social-tiktok">
+                  <span className="iconify" data-icon="ic:baseline-tiktok" data-width="24"></span>
+                  <span>TikTok</span>
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Newsletter */}
@@ -71,7 +94,7 @@ export default function Footer() {
               />
               <button 
                 type="submit" 
-                className="bg-[#79B42A] px-4 py-2 rounded-r-lg hover:bg-[#6a9f24] transition-colors"
+                className="bg-[#133903] px-4 py-2 rounded-r-lg hover:bg-[#6a9f24] transition-colors"
                 data-testid="button-newsletter-submit"
               >
                 <span className="iconify" data-icon="mdi:send" data-width="20"></span>
@@ -83,11 +106,12 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-[#2E593F] pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-gray-300 text-sm">
-            <p data-testid="copyright">&copy; 2024 ZATPLANT. All rights reserved.</p>
+            <p data-testid="copyright">&copy; 2025 HortiBless. Todos os direitos reservados.</p>
+            <p className="mt-4 md:mt-0">
+              Feito pela <a href="https://halarum.dev" target="_blank" rel="noopener noreferrer" className="hover:text-[#133903] transition-colors font-semibold">Halarum.dev</a>
+            </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="hover:text-[#79B42A] transition-colors" data-testid="footer-privacy">Privacy Policy</a>
-              <a href="#" className="hover:text-[#79B42A] transition-colors" data-testid="footer-terms">Terms of Service</a>
-              <a href="#" className="hover:text-[#79B42A] transition-colors" data-testid="footer-cookies">Cookie Policy</a>
+              <a href="#" className="hover:text-[#133903] transition-colors" data-testid="footer-privacy">Política de Privacidade</a>
             </div>
           </div>
         </div>

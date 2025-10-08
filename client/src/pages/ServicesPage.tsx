@@ -73,7 +73,7 @@ export default function ServicesPage() {
         {/* Hero Section */}
         <section className="hero-bg py-32">
           <div className="container mx-auto px-4 text-center">
-            <p className="text-[#79B42A] font-semibold mb-4 text-lg" data-testid="text-services-subtitle">OUR SERVICES</p>
+            <p className="text-[#133903] font-semibold mb-4 text-lg" data-testid="text-services-subtitle">OUR SERVICES</p>
             <h1 className="text-5xl md:text-6xl font-bold text-white mb-6" data-testid="heading-services-title">
               Professional Hydroponic Solutions
             </h1>
@@ -94,7 +94,7 @@ export default function ServicesPage() {
               >
                 <div className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
                   <div className={index % 2 === 1 ? 'lg:order-2' : ''}>
-                    <div className="w-20 h-20 bg-[#79B42A] rounded-full flex items-center justify-center mb-6">
+                    <div className="w-20 h-20 bg-[#133903] rounded-full flex items-center justify-center mb-6">
                       <span className="iconify text-white" data-icon={service.icon} data-width="40"></span>
                     </div>
                     <h2 className="text-4xl font-bold text-[#2E593F] mb-4" data-testid={`heading-service-${service.id}`}>
@@ -106,7 +106,7 @@ export default function ServicesPage() {
                     <ul className="space-y-3 mb-6">
                       {service.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start" data-testid={`feature-${service.id}-${idx}`}>
-                          <span className="iconify text-[#79B42A] mr-3 mt-1" data-icon="mdi:check-circle" data-width="20"></span>
+                          <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:check-circle" data-width="20"></span>
                           <span className="text-gray-700">{feature}</span>
                         </li>
                       ))}
@@ -119,7 +119,7 @@ export default function ServicesPage() {
                       <ul className="space-y-4">
                         {service.benefits.map((benefit, idx) => (
                           <li key={idx} className="flex items-start" data-testid={`benefit-${service.id}-${idx}`}>
-                            <span className="iconify text-[#79B42A] mr-3 mt-1" data-icon="mdi:star" data-width="20"></span>
+                            <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:star" data-width="20"></span>
                             <span className="text-gray-700">{benefit}</span>
                           </li>
                         ))}

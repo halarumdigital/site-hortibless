@@ -7,6 +7,9 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import Home from "@/pages/Home";
 import ServicesPage from "@/pages/ServicesPage";
 import ArticlesPage from "@/pages/ArticlesPage";
+import Contato from "@/pages/Contato";
+import Sobre from "@/pages/Sobre";
+import Cestas from "@/pages/Cestas";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import SiteSettings from "@/pages/SiteSettings";
@@ -20,6 +23,8 @@ import SeasonalCalendar from "@/pages/SeasonalCalendar";
 import ComparativeTable from "@/pages/ComparativeTable";
 import LooseItems from "@/pages/LooseItems";
 import Baskets from "@/pages/Baskets";
+import Duvidas from "@/pages/Duvidas";
+import Scripts from "@/pages/Scripts";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -30,6 +35,9 @@ function Router() {
       <Route path="/" component={Home}/>
       <Route path="/services" component={ServicesPage}/>
       <Route path="/articles" component={ArticlesPage}/>
+      <Route path="/contato" component={Contato}/>
+      <Route path="/sobre" component={Sobre}/>
+      <Route path="/cestas" component={Cestas}/>
       <Route path="/login" component={Login}/>
       <Route path="/dashboard" component={Dashboard}/>
       <Route path="/dashboard/site-settings" component={SiteSettings}/>
@@ -43,6 +51,8 @@ function Router() {
       <Route path="/dashboard/comparative-table" component={ComparativeTable}/>
       <Route path="/dashboard/loose-items" component={LooseItems}/>
       <Route path="/dashboard/baskets" component={Baskets}/>
+      <Route path="/dashboard/duvidas" component={Duvidas}/>
+      <Route path="/dashboard/scripts" component={Scripts}/>
       <Route component={NotFound} />
     </Switch>
   );

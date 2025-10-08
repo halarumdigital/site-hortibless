@@ -1,13 +1,8 @@
-import { type User, type InsertUser, type UpdateUser, type ContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts } from "@shared/schema";
 import { db } from "./db";
-import { users, siteSettings, contactInfo, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, looseItems, baskets, basketItems } from "@shared/schema";
+import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, looseItems, baskets, basketItems, trackingScripts } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-
-interface StoredContactMessage extends ContactMessage {
-  id: string;
-  timestamp: Date;
-}
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -18,8 +13,10 @@ export interface IStorage {
   deleteUser(id: number): Promise<boolean>;
   getAllUsers(): Promise<User[]>;
   verifyPassword(username: string, password: string): Promise<User | null>;
-  saveContactMessage(message: ContactMessage): Promise<string>;
-  getContactMessages(): Promise<StoredContactMessage[]>;
+  saveContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
+  getAllContactMessages(): Promise<ContactMessage[]>;
+  markContactMessageAsRead(id: number): Promise<ContactMessage | undefined>;
+  deleteContactMessage(id: number): Promise<boolean>;
   getSiteSettings(): Promise<SiteSettings | undefined>;
   updateSiteSettings(settings: UpdateSiteSettings): Promise<SiteSettings>;
   getContactInfo(): Promise<ContactInfo | undefined>;
@@ -67,14 +64,12 @@ export interface IStorage {
   getBasketItems(basketId: number): Promise<BasketItem[]>;
   addBasketItem(item: InsertBasketItem): Promise<BasketItem>;
   removeBasketItem(id: number): Promise<boolean>;
+  getTrackingScripts(): Promise<TrackingScripts | undefined>;
+  updateTrackingScripts(scripts: UpdateTrackingScripts): Promise<TrackingScripts | undefined>;
 }
 
 export class MySQLStorage implements IStorage {
-  private contactMessages: Map<string, StoredContactMessage>;
-
-  constructor() {
-    this.contactMessages = new Map();
-  }
+  constructor() {}
 
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
@@ -133,19 +128,25 @@ export class MySQLStorage implements IStorage {
     return isValid ? user : null;
   }
 
-  async saveContactMessage(message: ContactMessage): Promise<string> {
-    const id = crypto.randomUUID();
-    const storedMessage: StoredContactMessage = {
-      ...message,
-      id,
-      timestamp: new Date(),
-    };
-    this.contactMessages.set(id, storedMessage);
-    return id;
+  async saveContactMessage(message: InsertContactMessage): Promise<ContactMessage> {
+    const [result] = await db.insert(contactMessages).values(message).$returningId();
+    const [createdMessage] = await db.select().from(contactMessages).where(eq(contactMessages.id, result.id)).limit(1);
+    return createdMessage;
   }
 
-  async getContactMessages(): Promise<StoredContactMessage[]> {
-    return Array.from(this.contactMessages.values());
+  async getAllContactMessages(): Promise<ContactMessage[]> {
+    return await db.select().from(contactMessages).orderBy(desc(contactMessages.createdAt));
+  }
+
+  async markContactMessageAsRead(id: number): Promise<ContactMessage | undefined> {
+    await db.update(contactMessages).set({ isRead: true }).where(eq(contactMessages.id, id));
+    const [message] = await db.select().from(contactMessages).where(eq(contactMessages.id, id)).limit(1);
+    return message;
+  }
+
+  async deleteContactMessage(id: number): Promise<boolean> {
+    await db.delete(contactMessages).where(eq(contactMessages.id, id));
+    return true;
   }
 
   async getSiteSettings(): Promise<SiteSettings | undefined> {
@@ -480,6 +481,37 @@ export class MySQLStorage implements IStorage {
   async removeBasketItem(id: number): Promise<boolean> {
     await db.delete(basketItems).where(eq(basketItems.id, id));
     return true;
+  }
+
+  async getTrackingScripts(): Promise<TrackingScripts | undefined> {
+    const [scripts] = await db.select().from(trackingScripts).limit(1);
+    return scripts;
+  }
+
+  async updateTrackingScripts(scriptsData: UpdateTrackingScripts): Promise<TrackingScripts | undefined> {
+    const existing = await this.getTrackingScripts();
+
+    if (existing) {
+      await db.update(trackingScripts)
+        .set({
+          facebookPixel: scriptsData.facebookPixel,
+          googleAnalytics: scriptsData.googleAnalytics,
+          googleTagManager: scriptsData.googleTagManager,
+        })
+        .where(eq(trackingScripts.id, existing.id));
+
+      const [updated] = await db.select().from(trackingScripts).where(eq(trackingScripts.id, existing.id)).limit(1);
+      return updated;
+    } else {
+      const [inserted] = await db.insert(trackingScripts).values({
+        facebookPixel: scriptsData.facebookPixel,
+        googleAnalytics: scriptsData.googleAnalytics,
+        googleTagManager: scriptsData.googleTagManager,
+      }).$returningId();
+
+      const [created] = await db.select().from(trackingScripts).where(eq(trackingScripts.id, inserted.id)).limit(1);
+      return created;
+    }
   }
 }
 

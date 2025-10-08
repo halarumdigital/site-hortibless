@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { basketSchema, type InsertBasket } from "@shared/schema";
-import { LogOut, Menu, X, Users, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Trash2, Plus, Package, ShoppingBasket, Edit, Save } from "lucide-react";
+import { LogOut, Menu, X, Users, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Trash2, Plus, Package, ShoppingBasket, Edit, Save, Mail } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Basket {
@@ -377,17 +377,25 @@ export default function Baskets() {
                 Itens Avulsos
               </button>
               <button
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#79B42A] text-white"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#133903] text-white"
               >
                 <ShoppingBasket className="w-5 h-5" />
                 Cestas
+              </button>
+              <button
+                data-testid="menu-duvidas"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/duvidas")}
+              >
+                <Mail className="w-5 h-5" />
+                Dúvidas
               </button>
             </div>
           </nav>
 
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#79B42A] flex items-center justify-center text-white font-semibold">
+              <div className="w-10 h-10 rounded-full bg-[#133903] flex items-center justify-center text-white font-semibold">
                 {user?.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -557,7 +565,7 @@ export default function Baskets() {
                     <Button
                       type="submit"
                       disabled={createBasketMutation.isPending}
-                      className="w-full sm:w-auto bg-[#79B42A] hover:bg-[#6a9e24]"
+                      className="w-full sm:w-auto bg-[#133903] hover:bg-[#6a9e24]"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       {createBasketMutation.isPending ? "Criando..." : "Criar Cesta"}
@@ -950,7 +958,7 @@ function EditBasketForm({
 
         <Button
           type="submit"
-          className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
+          className="w-full bg-[#133903] hover:bg-[#6a9e24]"
           disabled={isLoading}
         >
           <Save className="w-4 h-4 mr-2" />

@@ -1,52 +1,74 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { serviceRegionSchema, type InsertServiceRegion } from "@shared/schema";
-import { LogOut, MapPin, Menu, X, Users, Settings, Phone, Image, Images, MessageSquare, Trash2, Plus, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { LogOut, Menu, X, Users, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code } from "lucide-react";
 
-interface ServiceRegion {
-  id: number;
-  name: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export default function Regions() {
+export default function Scripts() {
   const { user, isLoading: authLoading } = useAuth(true);
   const { settings } = useSiteSettings();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [deletingRegionId, setDeletingRegionId] = useState<number | null>(null);
+  const [facebookPixel, setFacebookPixel] = useState("");
+  const [googleAnalytics, setGoogleAnalytics] = useState("");
+  const [googleTagManager, setGoogleTagManager] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const { data: regionsData, isLoading: regionsLoading } = useQuery<{ success: boolean; regions: ServiceRegion[] }>({
-    queryKey: ["/api/service-regions/all"],
-    enabled: !!user,
-  });
+  useEffect(() => {
+    const fetchScripts = async () => {
+      try {
+        const response = await fetch("/api/tracking-scripts");
+        if (response.ok) {
+          const data = await response.json();
+          setFacebookPixel(data.facebookPixel || "");
+          setGoogleAnalytics(data.googleAnalytics || "");
+          setGoogleTagManager(data.googleTagManager || "");
+        }
+      } catch (error) {
+        console.error("Failed to fetch scripts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const form = useForm<InsertServiceRegion>({
-    resolver: zodResolver(serviceRegionSchema),
-    defaultValues: {
-      name: "",
-      isActive: true,
+    if (user) {
+      fetchScripts();
+    }
+  }, [user]);
+
+  const updateScriptsMutation = useMutation({
+    mutationFn: async (data: { facebookPixel: string; googleAnalytics: string; googleTagManager: string }) => {
+      const response = await fetch("/api/tracking-scripts", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to update scripts");
+      return response.json();
     },
+    onSuccess: () => {
+      toast({ title: "Scripts atualizados com sucesso" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao atualizar scripts",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("POST", "/api/logout");
+      const response = await fetch("/api/logout", { method: "POST" });
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: "Logged out successfully" });
@@ -54,43 +76,13 @@ export default function Regions() {
     },
   });
 
-  const createRegionMutation = useMutation({
-    mutationFn: async (data: InsertServiceRegion) => {
-      return await apiRequest("POST", "/api/service-regions", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/service-regions/all"] });
-      toast({ title: "Region created successfully" });
-      form.reset();
-    },
-    onError: (error: Error) => {
-      console.error("Create error:", error);
-      toast({
-        title: "Failed to create region",
-        description: error.message,
-        variant: "destructive"
-      });
-    },
-  });
-
-  const deleteRegionMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return await apiRequest("DELETE", `/api/service-regions/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/service-regions/all"] });
-      setDeletingRegionId(null);
-      toast({ title: "Region deleted successfully" });
-    },
-    onError: (error: Error) => {
-      console.error("Delete error:", error);
-      toast({
-        title: "Failed to delete region",
-        description: error.message,
-        variant: "destructive"
-      });
-    },
-  });
+  const handleSave = () => {
+    updateScriptsMutation.mutate({
+      facebookPixel,
+      googleAnalytics,
+      googleTagManager
+    });
+  };
 
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -116,7 +108,6 @@ export default function Regions() {
               </div>
             )}
             <Button
-              data-testid="button-close-sidebar"
               variant="ghost"
               size="sm"
               className="lg:hidden absolute right-2"
@@ -129,7 +120,6 @@ export default function Regions() {
           <nav className="flex-1 p-4">
             <div className="space-y-1">
               <button
-                data-testid="menu-users"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard")}
               >
@@ -137,7 +127,6 @@ export default function Regions() {
                 Usuários
               </button>
               <button
-                data-testid="menu-site-settings"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/site-settings")}
               >
@@ -145,7 +134,6 @@ export default function Regions() {
                 Configurações do Site
               </button>
               <button
-                data-testid="menu-contact-info"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/contact-info")}
               >
@@ -153,7 +141,6 @@ export default function Regions() {
                 Contatos
               </button>
               <button
-                data-testid="menu-banners"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/banners")}
               >
@@ -161,7 +148,6 @@ export default function Regions() {
                 Banners
               </button>
               <button
-                data-testid="menu-gallery"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/gallery")}
               >
@@ -169,7 +155,6 @@ export default function Regions() {
                 Galeria
               </button>
               <button
-                data-testid="menu-testimonials"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/testimonials")}
               >
@@ -177,14 +162,13 @@ export default function Regions() {
                 Depoimentos
               </button>
               <button
-                data-testid="menu-regions"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#133903] text-white"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/regions")}
               >
                 <MapPin className="w-5 h-5" />
                 Regiões de Atendimento
               </button>
               <button
-                data-testid="menu-faq"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/faq")}
               >
@@ -192,7 +176,6 @@ export default function Regions() {
                 FAQ
               </button>
               <button
-                data-testid="menu-seasonal-calendar"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/seasonal-calendar")}
               >
@@ -200,7 +183,6 @@ export default function Regions() {
                 Calendário Sazonal
               </button>
               <button
-                data-testid="menu-comparative-table"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/comparative-table")}
               >
@@ -208,7 +190,6 @@ export default function Regions() {
                 Tabela Comparativa
               </button>
               <button
-                data-testid="menu-loose-items"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/loose-items")}
               >
@@ -216,7 +197,6 @@ export default function Regions() {
                 Itens Avulsos
               </button>
               <button
-                data-testid="menu-baskets"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/baskets")}
               >
@@ -224,12 +204,17 @@ export default function Regions() {
                 Cestas
               </button>
               <button
-                data-testid="menu-duvidas"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={() => setLocation("/dashboard/duvidas")}
               >
                 <Mail className="w-5 h-5" />
                 Dúvidas
+              </button>
+              <button
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#133903] text-white"
+              >
+                <Code className="w-5 h-5" />
+                Scripts
               </button>
             </div>
           </nav>
@@ -245,7 +230,6 @@ export default function Regions() {
               </div>
             </div>
             <Button
-              data-testid="button-logout"
               variant="outline"
               className="w-full"
               onClick={() => logoutMutation.mutate()}
@@ -272,7 +256,6 @@ export default function Regions() {
           <div className="px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center gap-4">
               <Button
-                data-testid="button-open-sidebar"
                 variant="ghost"
                 size="sm"
                 className="lg:hidden"
@@ -280,129 +263,91 @@ export default function Regions() {
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Regiões de Atendimento</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Scripts de Rastreamento</h1>
             </div>
           </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-4xl mx-auto space-y-6">
-            {/* Add Region Form */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Plus className="w-5 h-5" />
-                  Adicionar Nova Região
-                </CardTitle>
+                <CardTitle>Facebook Pixel</CardTitle>
                 <CardDescription>
-                  Adicione uma região de atendimento
+                  Cole o código completo do Facebook Pixel (incluindo as tags &lt;script&gt;)
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit((data) => createRegionMutation.mutate(data))} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome da Região</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Ex: São Paulo - SP"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button
-                      type="submit"
-                      disabled={createRegionMutation.isPending}
-                      className="w-full sm:w-auto bg-[#133903] hover:bg-[#6a9e24]"
-                    >
-                      {createRegionMutation.isPending ? "Salvando..." : "Adicionar Região"}
-                    </Button>
-                  </form>
-                </Form>
+                <div className="space-y-2">
+                  <Label htmlFor="facebook-pixel">Código do Facebook Pixel</Label>
+                  <Textarea
+                    id="facebook-pixel"
+                    placeholder="<!-- Facebook Pixel Code -->&#10;<script>&#10;!function(f,b,e,v,n,t,s)...&#10;</script>"
+                    value={facebookPixel}
+                    onChange={(e) => setFacebookPixel(e.target.value)}
+                    rows={10}
+                    className="font-mono text-sm"
+                  />
+                </div>
               </CardContent>
             </Card>
 
-            {/* Regions List */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Regiões Cadastradas
-                </CardTitle>
+                <CardTitle>Google Analytics</CardTitle>
                 <CardDescription>
-                  Lista de todas as regiões de atendimento
+                  Cole o código completo do Google Analytics (incluindo as tags &lt;script&gt;)
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {regionsLoading ? (
-                  <div className="text-center py-8 text-gray-500">Carregando...</div>
-                ) : regionsData?.regions && regionsData.regions.length > 0 ? (
-                  <div className="space-y-2">
-                    {regionsData.regions.map((region) => (
-                      <div
-                        key={region.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
-                      >
-                        <div className="flex items-center gap-3">
-                          <MapPin className="w-5 h-5 text-[#133903]" />
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {region.name}
-                          </span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDeletingRegionId(region.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    Nenhuma região cadastrada ainda
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Label htmlFor="google-analytics">Código do Google Analytics</Label>
+                  <Textarea
+                    id="google-analytics"
+                    placeholder="<!-- Google Analytics -->&#10;<script async src='https://www.googletagmanager.com/gtag/js?id=...'></script>"
+                    value={googleAnalytics}
+                    onChange={(e) => setGoogleAnalytics(e.target.value)}
+                    rows={10}
+                    className="font-mono text-sm"
+                  />
+                </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Google Tag Manager</CardTitle>
+                <CardDescription>
+                  Cole o código completo do Google Tag Manager (incluindo as tags &lt;script&gt;)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="google-tag-manager">Código do Google Tag Manager</Label>
+                  <Textarea
+                    id="google-tag-manager"
+                    placeholder="<!-- Google Tag Manager -->&#10;<script>(function(w,d,s,l,i){...})(window,document,'script','dataLayer','GTM-...');</script>"
+                    value={googleTagManager}
+                    onChange={(e) => setGoogleTagManager(e.target.value)}
+                    rows={10}
+                    className="font-mono text-sm"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSave}
+                disabled={updateScriptsMutation.isPending || loading}
+                className="bg-[#133903] hover:bg-[#6a9e24]"
+              >
+                {updateScriptsMutation.isPending ? "Salvando..." : "Salvar Scripts"}
+              </Button>
+            </div>
           </div>
         </main>
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deletingRegionId !== null} onOpenChange={() => setDeletingRegionId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir esta região? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (deletingRegionId) {
-                  deleteRegionMutation.mutate(deletingRegionId);
-                }
-              }}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

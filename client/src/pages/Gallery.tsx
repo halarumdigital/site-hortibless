@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { youtubeVideoSchema, type YoutubeVideo } from "@shared/schema";
-import { LogOut, Image as ImageIcon, Menu, X, Users, Settings, Phone, Upload, Trash2, Video, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket } from "lucide-react";
+import { LogOut, Image as ImageIcon, Menu, X, Users, Settings, Phone, Upload, Trash2, Video, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface GalleryItem {
@@ -252,7 +252,7 @@ export default function Gallery() {
               </button>
               <button
                 data-testid="menu-gallery"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#79B42A] text-white"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#133903] text-white"
               >
                 <Images className="w-5 h-5" />
                 Galeria
@@ -313,12 +313,20 @@ export default function Gallery() {
                 <ShoppingBasket className="w-5 h-5" />
                 Cestas
               </button>
+              <button
+                data-testid="menu-duvidas"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/duvidas")}
+              >
+                <Mail className="w-5 h-5" />
+                Dúvidas
+              </button>
             </div>
           </nav>
 
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#79B42A] flex items-center justify-center text-white font-semibold">
+              <div className="w-10 h-10 rounded-full bg-[#133903] flex items-center justify-center text-white font-semibold">
                 {user?.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -411,7 +419,7 @@ export default function Gallery() {
                     <Button
                       data-testid="button-upload-images"
                       onClick={handleUploadImages}
-                      className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
+                      className="w-full bg-[#133903] hover:bg-[#6a9e24]"
                       disabled={uploadImagesMutation.isPending || !selectedFiles}
                     >
                       <Upload className="w-4 h-4 mr-2" />
@@ -536,7 +544,7 @@ export default function Gallery() {
                       <Button
                         data-testid="button-add-video"
                         type="submit"
-                        className="w-full bg-[#79B42A] hover:bg-[#6a9e24]"
+                        className="w-full bg-[#133903] hover:bg-[#6a9e24]"
                         disabled={addVideoMutation.isPending}
                       >
                         <Video className="w-4 h-4 mr-2" />
