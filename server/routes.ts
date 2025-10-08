@@ -87,6 +87,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
+        console.log("POST /api/login - Session saved successfully");
+        console.log("POST /api/login - Session ID:", req.sessionID);
+        console.log("POST /api/login - User ID:", req.session.userId);
+
         res.json({
           success: true,
           message: "Login successful",
@@ -117,10 +121,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get("/api/me", requireAuth, async (req, res) => {
-    res.json({ 
-      success: true, 
-      user: req.session.user 
+  app.get("/api/me", async (req, res) => {
+    console.log("GET /api/me - Session ID:", req.sessionID);
+    console.log("GET /api/me - User ID:", req.session.userId);
+    console.log("GET /api/me - Session:", req.session);
+
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    res.json({
+      success: true,
+      user: req.session.user
     });
   });
 
