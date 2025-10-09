@@ -90,7 +90,7 @@ export default function BasketsSection() {
                   </div>
                 </div>
                 <a
-                  href="/#contact"
+                  href={`/carrinho?basketId=${basket.id}`}
                   className="bg-[#133903] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#0f2b02] transition-colors w-full block text-center"
                 >
                   Assinar

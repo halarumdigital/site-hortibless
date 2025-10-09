@@ -149,7 +149,7 @@ export default function Cestas() {
                       <div className="space-y-3">
                         {basket.priceSubscription !== null && (
                           <a
-                            href="/contato"
+                            href={`/carrinho?basketId=${basket.id}`}
                             className="bg-[#133903] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#0f2b02] transition-colors w-full block text-center"
                           >
                             Assinar Plano
@@ -157,7 +157,7 @@ export default function Cestas() {
                         )}
                         {basket.priceLoose !== null && (
                           <a
-                            href="/contato"
+                            href={`/compra-avulsa?basketId=${basket.id}`}
                             className="bg-white text-[#133903] border-2 border-[#133903] px-6 py-3 rounded-lg font-semibold hover:bg-[#133903] hover:text-white transition-colors w-full block text-center"
                           >
                             Comprar Avulso

@@ -25,6 +25,8 @@ import LooseItems from "@/pages/LooseItems";
 import Baskets from "@/pages/Baskets";
 import Duvidas from "@/pages/Duvidas";
 import Scripts from "@/pages/Scripts";
+import Carrinho from "@/pages/Carrinho";
+import CompraAvulsa from "@/pages/CompraAvulsa";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -38,6 +40,8 @@ function Router() {
       <Route path="/contato" component={Contato}/>
       <Route path="/sobre" component={Sobre}/>
       <Route path="/cestas" component={Cestas}/>
+      <Route path="/carrinho" component={Carrinho}/>
+      <Route path="/compra-avulsa" component={CompraAvulsa}/>
       <Route path="/login" component={Login}/>
       <Route path="/dashboard" component={Dashboard}/>
       <Route path="/dashboard/site-settings" component={SiteSettings}/>

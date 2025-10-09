@@ -320,3 +320,90 @@ export const trackingScriptsSchema = z.object({
 
 export type TrackingScripts = typeof trackingScripts.$inferSelect;
 export type UpdateTrackingScripts = z.infer<typeof trackingScriptsSchema>;
+
+// Orders table for cart/subscription orders
+export const orders = mysqlTable("orders", {
+  id: int("id").primaryKey().autoincrement(),
+  basketId: int("basket_id").notNull(),
+  customerName: varchar("customer_name", { length: 255 }).notNull(),
+  customerEmail: varchar("customer_email", { length: 255 }).notNull(),
+  customerCpf: varchar("customer_cpf", { length: 14 }).notNull(),
+  customerWhatsapp: varchar("customer_whatsapp", { length: 50 }).notNull(),
+  customerAddress: text("customer_address").notNull(),
+  deliveryAddress: text("delivery_address").notNull(),
+  frequency: varchar("frequency", { length: 20 }).notNull(), // 'semanal', 'quinzenal', 'mensal'
+  totalAmount: varchar("total_amount", { length: 50 }).notNull(),
+  cardNumber: varchar("card_number", { length: 19 }),
+  cardName: varchar("card_name", { length: 255 }),
+  cardExpiry: varchar("card_expiry", { length: 7 }),
+  cardCvv: varchar("card_cvv", { length: 4 }),
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // 'pending', 'confirmed', 'cancelled'
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
+export const orderSchema = z.object({
+  basketId: z.number(),
+  customerName: z.string().min(1, "Nome é obrigatório"),
+  customerEmail: z.string().email("Email inválido"),
+  customerCpf: z.string().min(11, "CPF inválido").max(14, "CPF inválido"),
+  customerWhatsapp: z.string().min(10, "WhatsApp inválido"),
+  customerAddress: z.string().min(1, "Endereço é obrigatório"),
+  deliveryAddress: z.string().min(1, "Endereço de entrega é obrigatório"),
+  frequency: z.enum(["semanal", "quinzenal", "mensal"], {
+    required_error: "Periodicidade é obrigatória",
+  }),
+  totalAmount: z.string(),
+  cardNumber: z.string().optional(),
+  cardName: z.string().optional(),
+  cardExpiry: z.string().optional(),
+  cardCvv: z.string().optional(),
+  status: z.string().optional(),
+});
+
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = z.infer<typeof orderSchema>;
+
+// One-time purchases table
+export const oneTimePurchases = mysqlTable("one_time_purchases", {
+  id: int("id").primaryKey().autoincrement(),
+  basketId: int("basket_id").notNull(),
+  customerName: varchar("customer_name", { length: 255 }).notNull(),
+  customerEmail: varchar("customer_email", { length: 255 }).notNull(),
+  customerCpf: varchar("customer_cpf", { length: 14 }).notNull(),
+  customerWhatsapp: varchar("customer_whatsapp", { length: 50 }).notNull(),
+  customerAddress: text("customer_address").notNull(),
+  deliveryAddress: text("delivery_address").notNull(),
+  totalAmount: varchar("total_amount", { length: 50 }).notNull(),
+  paymentMethod: varchar("payment_method", { length: 20 }).notNull(), // 'cartao', 'boleto', 'pix'
+  // Card payment fields
+  cardNumber: varchar("card_number", { length: 19 }),
+  cardName: varchar("card_name", { length: 255 }),
+  cardExpiry: varchar("card_expiry", { length: 7 }),
+  cardCvv: varchar("card_cvv", { length: 4 }),
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // 'pending', 'confirmed', 'cancelled'
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
+export const oneTimePurchaseSchema = z.object({
+  basketId: z.number(),
+  customerName: z.string().min(1, "Nome é obrigatório"),
+  customerEmail: z.string().email("Email inválido"),
+  customerCpf: z.string().min(11, "CPF inválido").max(14, "CPF inválido"),
+  customerWhatsapp: z.string().min(10, "WhatsApp inválido"),
+  customerAddress: z.string().min(1, "Endereço é obrigatório"),
+  deliveryAddress: z.string().min(1, "Endereço de entrega é obrigatório"),
+  totalAmount: z.string(),
+  paymentMethod: z.enum(["cartao", "boleto", "pix"], {
+    required_error: "Método de pagamento é obrigatório",
+  }),
+  cardNumber: z.string().optional(),
+  cardName: z.string().optional(),
+  cardExpiry: z.string().optional(),
+  cardCvv: z.string().optional(),
+  status: z.string().optional(),
+});
+
+export type OneTimePurchase = typeof oneTimePurchases.$inferSelect;
+export type InsertOneTimePurchase = z.infer<typeof oneTimePurchaseSchema>;

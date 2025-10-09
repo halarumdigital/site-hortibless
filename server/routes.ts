@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, looseItemSchema, basketSchema, basketItemSchema } from "@shared/schema";
+import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -1209,6 +1209,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: error.message || "Failed to update tracking scripts"
+      });
+    }
+  });
+
+  // Orders routes
+  app.post("/api/orders", async (req, res) => {
+    try {
+      const validatedData = orderSchema.parse(req.body);
+      const order = await storage.createOrder(validatedData);
+
+      res.json({
+        success: true,
+        message: "Pedido criado com sucesso",
+        order
+      });
+    } catch (error: any) {
+      console.error("Create order error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Falha ao criar pedido"
+      });
+    }
+  });
+
+  app.get("/api/orders", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const allOrders = await storage.getAllOrders();
+      res.json({ success: true, orders: allOrders });
+    } catch (error: any) {
+      console.error("Get orders error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get orders"
+      });
+    }
+  });
+
+  app.get("/api/orders/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const order = await storage.getOrder(id);
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found"
+        });
+      }
+
+      res.json({ success: true, order });
+    } catch (error: any) {
+      console.error("Get order error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get order"
+      });
+    }
+  });
+
+  // One-time purchases routes
+  app.post("/api/one-time-purchases", async (req, res) => {
+    try {
+      const validatedData = oneTimePurchaseSchema.parse(req.body);
+      const purchase = await storage.createOneTimePurchase(validatedData);
+
+      res.json({
+        success: true,
+        message: "Compra realizada com sucesso",
+        purchase
+      });
+    } catch (error: any) {
+      console.error("Create purchase error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Falha ao realizar compra"
+      });
+    }
+  });
+
+  app.get("/api/one-time-purchases", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const purchases = await storage.getAllOneTimePurchases();
+      res.json({ success: true, purchases });
+    } catch (error: any) {
+      console.error("Get purchases error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get purchases"
+      });
+    }
+  });
+
+  app.get("/api/one-time-purchases/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const purchase = await storage.getOneTimePurchase(id);
+
+      if (!purchase) {
+        return res.status(404).json({
+          success: false,
+          message: "Purchase not found"
+        });
+      }
+
+      res.json({ success: true, purchase });
+    } catch (error: any) {
+      console.error("Get purchase error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get purchase"
       });
     }
   });

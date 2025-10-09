@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase } from "@shared/schema";
 import { db } from "./db";
-import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, looseItems, baskets, basketItems, trackingScripts } from "@shared/schema";
+import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -66,6 +66,12 @@ export interface IStorage {
   removeBasketItem(id: number): Promise<boolean>;
   getTrackingScripts(): Promise<TrackingScripts | undefined>;
   updateTrackingScripts(scripts: UpdateTrackingScripts): Promise<TrackingScripts | undefined>;
+  createOrder(order: InsertOrder): Promise<Order>;
+  getAllOrders(): Promise<Order[]>;
+  getOrder(id: number): Promise<Order | undefined>;
+  createOneTimePurchase(purchase: InsertOneTimePurchase): Promise<OneTimePurchase>;
+  getAllOneTimePurchases(): Promise<OneTimePurchase[]>;
+  getOneTimePurchase(id: number): Promise<OneTimePurchase | undefined>;
 }
 
 export class MySQLStorage implements IStorage {
@@ -512,6 +518,46 @@ export class MySQLStorage implements IStorage {
       const [created] = await db.select().from(trackingScripts).where(eq(trackingScripts.id, inserted.id)).limit(1);
       return created;
     }
+  }
+
+  async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    const [order] = await db.insert(orders).values({
+      ...insertOrder,
+      status: insertOrder.status || "pending",
+    }).$returningId();
+
+    const createdOrder = await this.getOrder(order.id);
+    if (!createdOrder) throw new Error("Order creation failed");
+    return createdOrder;
+  }
+
+  async getAllOrders(): Promise<Order[]> {
+    return await db.select().from(orders).orderBy(desc(orders.createdAt));
+  }
+
+  async getOrder(id: number): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+    return order;
+  }
+
+  async createOneTimePurchase(insertPurchase: InsertOneTimePurchase): Promise<OneTimePurchase> {
+    const [purchase] = await db.insert(oneTimePurchases).values({
+      ...insertPurchase,
+      status: insertPurchase.status || "pending",
+    }).$returningId();
+
+    const createdPurchase = await this.getOneTimePurchase(purchase.id);
+    if (!createdPurchase) throw new Error("Purchase creation failed");
+    return createdPurchase;
+  }
+
+  async getAllOneTimePurchases(): Promise<OneTimePurchase[]> {
+    return await db.select().from(oneTimePurchases).orderBy(desc(oneTimePurchases.createdAt));
+  }
+
+  async getOneTimePurchase(id: number): Promise<OneTimePurchase | undefined> {
+    const [purchase] = await db.select().from(oneTimePurchases).where(eq(oneTimePurchases.id, id)).limit(1);
+    return purchase;
   }
 }
 
