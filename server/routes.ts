@@ -5,6 +5,7 @@ import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, 
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
+import { asaasService } from "./services/asaas.service";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1272,15 +1273,202 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/one-time-purchases", async (req, res) => {
     try {
       const validatedData = oneTimePurchaseSchema.parse(req.body);
-      const purchase = await storage.createOneTimePurchase(validatedData);
 
-      res.json({
+      // Verificar se o Asaas está configurado
+      if (!asaasService.isConfigured()) {
+        console.warn("⚠️  Asaas não configurado. Salvando compra sem processar pagamento.");
+        const purchase = await storage.createOneTimePurchase(validatedData);
+        return res.json({
+          success: true,
+          message: "Compra registrada (Asaas não configurado)",
+          purchase
+        });
+      }
+
+      // 1. Buscar informações da cesta
+      const basket = await storage.getBasket(validatedData.basketId);
+      if (!basket) {
+        return res.status(404).json({
+          success: false,
+          message: "Cesta não encontrada"
+        });
+      }
+
+      // 2. Extrair informações do endereço
+      const addressParts = validatedData.customerAddress.split(" - ");
+      const streetAndNumber = addressParts[0]?.split(", ");
+      const street = streetAndNumber[0] || "";
+      const number = streetAndNumber[1] || "";
+      const neighborhood = addressParts[1] || "";
+      const postalCode = validatedData.customerAddress.match(/CEP:\s*(\d{5}-?\d{3})/)?.[1]?.replace("-", "") || "";
+
+      // 2. Criar ou buscar cliente no Asaas
+      console.log("🔍 Verificando cliente no Asaas...");
+      let asaasCustomer = await asaasService.getCustomerByCpfCnpj(validatedData.customerCpf);
+
+      if (!asaasCustomer) {
+        console.log("👤 Cliente não encontrado. Criando novo cliente...");
+        asaasCustomer = await asaasService.createCustomer({
+          name: validatedData.customerName,
+          cpfCnpj: validatedData.customerCpf,
+          email: validatedData.customerEmail,
+          mobilePhone: validatedData.customerWhatsapp,
+          address: street,
+          addressNumber: number,
+          province: neighborhood,
+          postalCode,
+          notificationDisabled: false,
+        });
+      } else {
+        console.log("✅ Cliente já existe no Asaas:", asaasCustomer.id);
+      }
+
+      // 3. Criar cobrança no Asaas
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 3); // Vencimento em 3 dias
+      const dueDateStr = dueDate.toISOString().split('T')[0];
+
+      let asaasPayment;
+      const paymentValue = parseFloat(validatedData.totalAmount);
+      const description = `${validatedData.customerName} - ${basket.name}`;
+
+      if (validatedData.paymentMethod === "cartao") {
+        // Pagamento com cartão de crédito
+        console.log("💳 Processando pagamento com cartão...");
+
+        // Extrair mês e ano do cartão
+        const [expiryMonth, expiryYear] = validatedData.cardExpiry?.split("/") || ["", ""];
+
+        asaasPayment = await asaasService.createPayment({
+          customer: asaasCustomer.id,
+          billingType: "CREDIT_CARD",
+          value: paymentValue,
+          dueDate: dueDateStr,
+          description: description,
+          creditCard: {
+            holderName: validatedData.cardName || "",
+            number: validatedData.cardNumber?.replace(/\s/g, "") || "",
+            expiryMonth: expiryMonth,
+            expiryYear: expiryYear,
+            ccv: validatedData.cardCvv || "",
+          },
+          creditCardHolderInfo: {
+            name: validatedData.customerName,
+            email: validatedData.customerEmail,
+            cpfCnpj: validatedData.customerCpf,
+            postalCode: postalCode,
+            addressNumber: number,
+            phone: validatedData.customerWhatsapp,
+          },
+        });
+      } else if (validatedData.paymentMethod === "boleto") {
+        // Pagamento com boleto
+        console.log("📄 Gerando boleto...");
+        asaasPayment = await asaasService.createPayment({
+          customer: asaasCustomer.id,
+          billingType: "BOLETO",
+          value: paymentValue,
+          dueDate: dueDateStr,
+          description: description,
+        });
+      } else {
+        // Pagamento com PIX
+        console.log("📱 Gerando PIX...");
+        asaasPayment = await asaasService.createPayment({
+          customer: asaasCustomer.id,
+          billingType: "PIX",
+          value: paymentValue,
+          dueDate: dueDateStr,
+          description: description,
+        });
+      }
+
+      console.log("✅ Pagamento criado no Asaas:", asaasPayment.id);
+
+      // 4. Salvar compra no banco com dados do Asaas
+      const purchaseData: any = {
+        ...validatedData,
+        asaasCustomerId: asaasCustomer.id,
+        asaasPaymentId: asaasPayment.id,
+        status: asaasPayment.status === "CONFIRMED" ? "confirmed" : "pending",
+      };
+
+      // Adicionar URLs específicas por método de pagamento
+      if (validatedData.paymentMethod === "boleto" && asaasPayment.bankSlipUrl) {
+        purchaseData.asaasBankSlipUrl = asaasPayment.bankSlipUrl;
+      } else if (validatedData.paymentMethod === "pix") {
+        // Buscar QR Code PIX usando endpoint específico
+        console.log("🔍 Buscando QR Code PIX...");
+        try {
+          const pixQrCode = await asaasService.getPixQrCode(asaasPayment.id);
+          purchaseData.asaasPixQrCode = pixQrCode.encodedImage;
+          purchaseData.asaasPixPayload = pixQrCode.payload;
+          console.log("✅ QR Code e Payload recebidos com sucesso!");
+          console.log("📷 QR Code tamanho:", pixQrCode.encodedImage?.length || 0);
+          console.log("📋 Payload tamanho:", pixQrCode.payload?.length || 0);
+        } catch (error) {
+          console.error("❌ Erro ao buscar QR Code PIX:", error);
+          // Continua mesmo se o QR Code não estiver disponível ainda
+        }
+      }
+
+      const purchase = await storage.createOneTimePurchase(purchaseData);
+
+      // 5. Retornar resposta com informações de pagamento
+      const response: any = {
         success: true,
         message: "Compra realizada com sucesso",
-        purchase
-      });
+        purchase: {
+          id: purchase.id,
+          status: purchase.status,
+          paymentMethod: purchase.paymentMethod,
+        },
+      };
+
+      // Adicionar informações específicas por método de pagamento
+      if (validatedData.paymentMethod === "boleto") {
+        response.bankSlipUrl = asaasPayment.bankSlipUrl || purchase.asaasBankSlipUrl;
+        response.message = "Boleto gerado com sucesso! Acesse o link para pagar.";
+        console.log("🧾 Boleto URL:", response.bankSlipUrl);
+      } else if (validatedData.paymentMethod === "pix") {
+        // Usar dados salvos no banco primeiro, depois da API
+        const pixQrCode = purchase.asaasPixQrCode || asaasPayment.pixTransaction?.qrCode?.encodedImage;
+        const pixPayload = purchase.asaasPixPayload || asaasPayment.pixTransaction?.qrCode?.payload;
+
+        console.log("🔍 Dados PIX do banco:");
+        console.log("  - QR Code no banco:", !!purchase.asaasPixQrCode);
+        console.log("  - Payload no banco:", !!purchase.asaasPixPayload);
+        console.log("🔍 Dados PIX da API:");
+        console.log("  - QR Code na API:", !!asaasPayment.pixTransaction?.qrCode?.encodedImage);
+        console.log("  - Payload na API:", !!asaasPayment.pixTransaction?.qrCode?.payload);
+
+        if (pixQrCode) {
+          // Formatar QR Code com prefixo data:image
+          response.pixQrCode = pixQrCode.startsWith('data:')
+            ? pixQrCode
+            : `data:image/png;base64,${pixQrCode}`;
+          console.log("✅ QR Code formatado:", response.pixQrCode.substring(0, 80) + "...");
+        } else {
+          console.error("❌ QR Code não encontrado!");
+        }
+
+        if (pixPayload) {
+          response.pixPayload = pixPayload;
+          console.log("✅ Payload encontrado:", pixPayload.substring(0, 50) + "...");
+        } else {
+          console.error("❌ Payload não encontrado!");
+        }
+
+        response.message = "PIX gerado com sucesso! Use o QR Code para pagar.";
+      } else if (validatedData.paymentMethod === "cartao") {
+        response.message = asaasPayment.status === "CONFIRMED"
+          ? "Pagamento aprovado com sucesso!"
+          : "Pagamento em processamento.";
+      }
+
+      res.json(response);
     } catch (error: any) {
-      console.error("Create purchase error:", error);
+      console.error("❌ Create purchase error:", error);
       res.status(400).json({
         success: false,
         message: error.message || "Falha ao realizar compra"

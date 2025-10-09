@@ -58,6 +58,13 @@ export default function CompraAvulsa() {
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
 
+  // Payment result state
+  const [paymentResult, setPaymentResult] = useState<{
+    pixQrCode?: string;
+    pixPayload?: string;
+    bankSlipUrl?: string;
+  } | null>(null);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const basketId = params.get("basketId");
@@ -204,24 +211,48 @@ export default function CompraAvulsa() {
 
       const data = await response.json();
 
+      console.log("📦 Resposta da API:", data);
+
       if (response.ok) {
-        let message = "Você receberá um e-mail de confirmação em breve.";
+        // Se for PIX ou Boleto, exibir dados de pagamento
+        if (paymentMethod === "pix" && data.pixQrCode) {
+          console.log("✅ PIX recebido!");
+          console.log("🖼️ QR Code:", data.pixQrCode?.substring(0, 100));
+          console.log("📋 Payload:", data.pixPayload?.substring(0, 100));
 
-        if (paymentMethod === "boleto") {
-          message = "Você receberá o boleto por e-mail.";
-        } else if (paymentMethod === "pix") {
-          message = "Você receberá o QR Code do PIX por e-mail.";
+          setPaymentResult({
+            pixQrCode: data.pixQrCode,
+            pixPayload: data.pixPayload,
+          });
+          toast({
+            title: "PIX gerado com sucesso!",
+            description: "Use o QR Code ou código abaixo para pagar.",
+          });
+        } else if (paymentMethod === "pix" && !data.pixQrCode) {
+          console.error("❌ PIX selecionado mas QR Code não retornado:", data);
+          toast({
+            title: "Erro",
+            description: "QR Code não foi gerado. Tente novamente.",
+            variant: "destructive"
+          });
+        } else if (paymentMethod === "boleto" && data.bankSlipUrl) {
+          setPaymentResult({
+            bankSlipUrl: data.bankSlipUrl,
+          });
+          toast({
+            title: "Boleto gerado com sucesso!",
+            description: "Acesse o link para imprimir seu boleto.",
+          });
+        } else {
+          // Cartão - redireciona
+          toast({
+            title: "Compra realizada com sucesso!",
+            description: "Pagamento processado.",
+          });
+          setTimeout(() => {
+            setLocation("/");
+          }, 2000);
         }
-
-        toast({
-          title: "Compra realizada com sucesso!",
-          description: message,
-        });
-
-        // Redirect to success page or home
-        setTimeout(() => {
-          setLocation("/");
-        }, 2000);
       } else {
         toast({
           title: "Erro ao processar compra",
@@ -255,6 +286,176 @@ export default function CompraAvulsa() {
 
   if (!basket) {
     return null;
+  }
+
+  // Se tem resultado de pagamento (PIX ou Boleto), exibir tela de pagamento
+  if (paymentResult) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <WhatsAppButton />
+
+        <main className="flex-grow bg-[#EFF6EF] py-12">
+          <div className="container mx-auto px-4">
+            <div className="max-w-2xl mx-auto">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-center text-2xl text-[#2E593F]">
+                    {paymentResult.pixQrCode ? "Pagamento via PIX" : "Pagamento via Boleto"}
+                  </CardTitle>
+                  <CardDescription className="text-center">
+                    Complete o pagamento para finalizar sua compra
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* PIX */}
+                  {paymentResult.pixQrCode && (
+                    <>
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="bg-white p-4 rounded-lg border-2 border-[#133903]">
+                          <img
+                            src={paymentResult.pixQrCode}
+                            alt="QR Code PIX"
+                            className="w-64 h-64 object-contain"
+                            onError={(e) => {
+                              console.error("❌ Erro ao carregar QR Code:", paymentResult.pixQrCode?.substring(0, 100));
+                              e.currentTarget.style.display = 'none';
+                              const parent = e.currentTarget.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `
+                                  <div class="w-64 h-64 flex items-center justify-center bg-gray-100 rounded text-gray-500 text-center p-4">
+                                    <div>
+                                      <p class="font-semibold mb-2">⚠️ QR Code não disponível</p>
+                                      <p class="text-sm">Use o código PIX abaixo para pagar</p>
+                                    </div>
+                                  </div>
+                                `;
+                              }
+                            }}
+                          />
+                        </div>
+                        <p className="text-center text-sm text-gray-600">
+                          Escaneie o QR Code com o app do seu banco
+                        </p>
+                      </div>
+
+                      {paymentResult.pixPayload && (
+                        <div className="border-t pt-4">
+                          <Label className="text-sm font-semibold text-gray-700">
+                            Ou copie o código PIX:
+                          </Label>
+                          <div className="mt-2 flex gap-2">
+                            <Input
+                              value={paymentResult.pixPayload}
+                              readOnly
+                              className="font-mono text-sm"
+                            />
+                            <Button
+                              onClick={() => {
+                                navigator.clipboard.writeText(paymentResult.pixPayload || "");
+                                toast({
+                                  title: "Código copiado!",
+                                  description: "Cole no app do seu banco para pagar.",
+                                });
+                              }}
+                              className="bg-[#133903] hover:bg-[#0f2b02]"
+                            >
+                              Copiar
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {!paymentResult.pixPayload && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+                          <p className="font-semibold mb-1">⚠️ Atenção</p>
+                          <p>O código PIX ainda está sendo gerado. Aguarde alguns instantes e recarregue a página.</p>
+                        </div>
+                      )}
+
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                        <p className="font-semibold mb-2">💡 Como pagar:</p>
+                        <ol className="list-decimal list-inside space-y-1">
+                          <li>Abra o app do seu banco</li>
+                          <li>Escolha pagar com PIX</li>
+                          <li>Escaneie o QR Code ou cole o código</li>
+                          <li>Confirme o pagamento</li>
+                        </ol>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Boleto */}
+                  {paymentResult.bankSlipUrl && (
+                    <>
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="text-center">
+                          <Receipt className="w-24 h-24 text-[#133903] mx-auto mb-4" />
+                          <p className="text-lg font-semibold text-gray-700">
+                            Seu boleto foi gerado com sucesso!
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Button
+                          onClick={() => window.open(paymentResult.bankSlipUrl, '_blank')}
+                          className="w-full bg-[#133903] hover:bg-[#0f2b02] text-white py-6 text-lg"
+                        >
+                          Abrir Boleto
+                        </Button>
+
+                        <Button
+                          onClick={() => {
+                            navigator.clipboard.writeText(paymentResult.bankSlipUrl || "");
+                            toast({
+                              title: "Link copiado!",
+                              description: "Você pode acessar o boleto depois.",
+                            });
+                          }}
+                          variant="outline"
+                          className="w-full border-[#133903] text-[#133903] hover:bg-[#133903] hover:text-white py-6 text-lg"
+                        >
+                          Copiar Link do Boleto
+                        </Button>
+                      </div>
+
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+                        <p className="font-semibold mb-2">⚠️ Importante:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li>Prazo de vencimento: 3 dias</li>
+                          <li>Você também receberá o boleto por e-mail</li>
+                          <li>Após o pagamento, pode levar até 2 dias úteis para confirmar</li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="border-t pt-4 flex gap-4">
+                    <Button
+                      onClick={() => setLocation("/")}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Voltar para Home
+                    </Button>
+                    <Button
+                      onClick={() => setPaymentResult(null)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Nova Compra
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
   }
 
   return (

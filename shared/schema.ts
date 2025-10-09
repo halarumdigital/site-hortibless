@@ -381,6 +381,12 @@ export const oneTimePurchases = mysqlTable("one_time_purchases", {
   cardName: varchar("card_name", { length: 255 }),
   cardExpiry: varchar("card_expiry", { length: 7 }),
   cardCvv: varchar("card_cvv", { length: 4 }),
+  // Asaas integration fields
+  asaasCustomerId: varchar("asaas_customer_id", { length: 100 }),
+  asaasPaymentId: varchar("asaas_payment_id", { length: 100 }),
+  asaasBankSlipUrl: varchar("asaas_bank_slip_url", { length: 500 }),
+  asaasPixQrCode: text("asaas_pix_qr_code"),
+  asaasPixPayload: text("asaas_pix_payload"),
   status: varchar("status", { length: 50 }).notNull().default("pending"), // 'pending', 'confirmed', 'cancelled'
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
@@ -402,6 +408,12 @@ export const oneTimePurchaseSchema = z.object({
   cardName: z.string().optional(),
   cardExpiry: z.string().optional(),
   cardCvv: z.string().optional(),
+  // Asaas integration fields (optional)
+  asaasCustomerId: z.string().optional(),
+  asaasPaymentId: z.string().optional(),
+  asaasBankSlipUrl: z.string().optional(),
+  asaasPixQrCode: z.string().optional(),
+  asaasPixPayload: z.string().optional(),
   status: z.string().optional(),
 });
 

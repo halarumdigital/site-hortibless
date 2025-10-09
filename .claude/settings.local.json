@@ -23,7 +23,8 @@
       "Bash(do)",
       "Bash(echo \"Updating $file\")",
       "Bash(curl:*)",
-      "Bash(timeout 5 bash -c 'while ! curl -s http://localhost:5000/api/seasonal-calendar > /dev/null; do sleep 1; done')"
+      "Bash(timeout 5 bash -c 'while ! curl -s http://localhost:5000/api/seasonal-calendar > /dev/null; do sleep 1; done')",
+      "Bash(del test-pix.ts)"
     ],
     "deny": [],
     "ask": []
