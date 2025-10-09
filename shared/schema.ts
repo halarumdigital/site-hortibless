@@ -337,7 +337,9 @@ export const orders = mysqlTable("orders", {
   cardName: varchar("card_name", { length: 255 }),
   cardExpiry: varchar("card_expiry", { length: 7 }),
   cardCvv: varchar("card_cvv", { length: 4 }),
-  status: varchar("status", { length: 50 }).notNull().default("pending"), // 'pending', 'confirmed', 'cancelled'
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // 'pending', 'confirmed', 'cancelled', 'active'
+  asaasCustomerId: varchar("asaas_customer_id", { length: 255 }),
+  asaasSubscriptionId: varchar("asaas_subscription_id", { length: 255 }),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });

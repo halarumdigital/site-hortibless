@@ -69,6 +69,7 @@ export interface IStorage {
   createOrder(order: InsertOrder): Promise<Order>;
   getAllOrders(): Promise<Order[]>;
   getOrder(id: number): Promise<Order | undefined>;
+  updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
   createOneTimePurchase(purchase: InsertOneTimePurchase): Promise<OneTimePurchase>;
   getAllOneTimePurchases(): Promise<OneTimePurchase[]>;
   getOneTimePurchase(id: number): Promise<OneTimePurchase | undefined>;
@@ -539,6 +540,11 @@ export class MySQLStorage implements IStorage {
   async getOrder(id: number): Promise<Order | undefined> {
     const [order] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
     return order;
+  }
+
+  async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
+    await db.update(orders).set({ status }).where(eq(orders.id, id));
+    return await this.getOrder(id);
   }
 
   async createOneTimePurchase(insertPurchase: InsertOneTimePurchase): Promise<OneTimePurchase> {

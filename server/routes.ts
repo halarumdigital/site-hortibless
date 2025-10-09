@@ -1218,15 +1218,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/orders", async (req, res) => {
     try {
       const validatedData = orderSchema.parse(req.body);
-      const order = await storage.createOrder(validatedData);
 
+      // Verificar se o Asaas está configurado
+      if (!asaasService.isConfigured()) {
+        console.warn("⚠️  Asaas não configurado. Salvando pedido sem processar pagamento.");
+        const order = await storage.createOrder(validatedData);
+        return res.json({
+          success: true,
+          message: "Pedido registrado (Asaas não configurado)",
+          order
+        });
+      }
+
+      // 1. Buscar informações da cesta
+      const basket = await storage.getBasket(validatedData.basketId);
+      if (!basket) {
+        return res.status(404).json({
+          success: false,
+          message: "Cesta não encontrada"
+        });
+      }
+
+      // 2. Extrair informações do endereço
+      const addressParts = validatedData.customerAddress.split(" - ");
+      const streetAndNumber = addressParts[0]?.split(", ");
+      const street = streetAndNumber[0] || "";
+      const number = streetAndNumber[1] || "";
+      const neighborhood = addressParts[1] || "";
+      const postalCode = validatedData.customerAddress.match(/CEP:\s*(\d{5}-?\d{3})/)?.[1]?.replace("-", "") || "";
+
+      // 3. Criar ou buscar cliente no Asaas
+      console.log("🔍 Verificando cliente no Asaas...");
+      let asaasCustomer = await asaasService.getCustomerByCpfCnpj(validatedData.customerCpf);
+
+      if (!asaasCustomer) {
+        console.log("👤 Cliente não encontrado. Criando novo cliente...");
+        asaasCustomer = await asaasService.createCustomer({
+          name: validatedData.customerName,
+          cpfCnpj: validatedData.customerCpf,
+          email: validatedData.customerEmail,
+          mobilePhone: validatedData.customerWhatsapp,
+          address: street,
+          addressNumber: number,
+          province: neighborhood,
+          postalCode,
+          notificationDisabled: false,
+        });
+      } else {
+        console.log("✅ Cliente já existe no Asaas:", asaasCustomer.id);
+      }
+
+      // 4. A cobrança é SEMPRE MENSAL, independente da frequência de entrega
+      const cycle = "MONTHLY";
+
+      // 5. Calcular próxima data de vencimento (hoje + 30 dias)
+      const nextDueDate = new Date();
+      nextDueDate.setDate(nextDueDate.getDate() + 30); // Primeira cobrança em 30 dias
+      const nextDueDateStr = nextDueDate.toISOString().split('T')[0];
+
+      // 6. Calcular valor TOTAL MENSAL baseado na frequência de entregas
+      const unitPrice = basket.priceSubscription ? parseFloat(basket.priceSubscription.toString()) : 0;
+
+      let subscriptionValue = unitPrice;
+      if (validatedData.frequency === "semanal") {
+        subscriptionValue = unitPrice * 4; // 4 entregas por mês
+      } else if (validatedData.frequency === "quinzenal") {
+        subscriptionValue = unitPrice * 2; // 2 entregas por mês
+      }
+      // Para mensal, mantém o valor unitário (1 entrega)
+
+      console.log("💳 Criando assinatura com cartão no Asaas...");
+      console.log("📊 Detalhes da assinatura:");
+      console.log("  - Valor por entrega:", unitPrice);
+      console.log("  - Frequência:", validatedData.frequency);
+      console.log("  - Entregas por mês:", validatedData.frequency === "semanal" ? 4 : validatedData.frequency === "quinzenal" ? 2 : 1);
+      console.log("  - Valor TOTAL MENSAL:", subscriptionValue);
+      console.log("  - Ciclo de cobrança:", cycle, "(SEMPRE MENSAL)");
+      console.log("  - Próximo vencimento:", nextDueDateStr);
+
+      const description = `Assinatura ${validatedData.frequency} - ${validatedData.customerName} - ${basket.name}`;
+
+      // Extrair mês e ano do cartão
+      const [expiryMonth, expiryYear] = validatedData.cardExpiry?.split("/") || ["", ""];
+
+      const asaasSubscription = await asaasService.createSubscription({
+        customer: asaasCustomer.id,
+        billingType: "CREDIT_CARD",
+        cycle: cycle,
+        value: subscriptionValue,
+        nextDueDate: nextDueDateStr,
+        description: description,
+        creditCard: {
+          holderName: validatedData.cardName || "",
+          number: validatedData.cardNumber?.replace(/\s/g, "") || "",
+          expiryMonth: expiryMonth,
+          expiryYear: expiryYear,
+          ccv: validatedData.cardCvv || "",
+        },
+        creditCardHolderInfo: {
+          name: validatedData.customerName,
+          email: validatedData.customerEmail,
+          cpfCnpj: validatedData.customerCpf,
+          postalCode: postalCode,
+          addressNumber: number,
+          phone: validatedData.customerWhatsapp,
+        },
+      });
+
+      console.log("✅ Assinatura criada no Asaas:", asaasSubscription.id);
+
+      // 7. Salvar pedido no banco com dados do Asaas
+      const orderData: any = {
+        ...validatedData,
+        asaasCustomerId: asaasCustomer.id,
+        asaasSubscriptionId: asaasSubscription.id,
+        status: asaasSubscription.status === "ACTIVE" ? "active" : "pending",
+      };
+
+      const order = await storage.createOrder(orderData);
+
+      // 8. Retornar resposta
       res.json({
         success: true,
-        message: "Pedido criado com sucesso",
-        order
+        message: "Assinatura criada com sucesso!",
+        order: {
+          id: order.id,
+          status: order.status,
+          frequency: order.frequency,
+        },
       });
+
     } catch (error: any) {
-      console.error("Create order error:", error);
+      console.error("❌ Create order error:", error);
       res.status(400).json({
         success: false,
         message: error.message || "Falha ao criar pedido"
@@ -1554,94 +1677,201 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Webhook do Asaas para receber notificações de pagamento
+  // Endpoint de teste para verificar se o webhook está acessível
+  app.get("/api/webhooks/asaas/test", async (req, res) => {
+    console.log("🔍 Teste de webhook recebido via GET");
+    res.json({
+      success: true,
+      message: "Webhook está acessível e funcionando!",
+      timestamp: new Date().toISOString(),
+      method: "GET"
+    });
+  });
+
+  app.post("/api/webhooks/asaas/test", async (req, res) => {
+    console.log("🔍 Teste de webhook recebido via POST");
+    console.log("📦 Body recebido:", JSON.stringify(req.body, null, 2));
+    res.json({
+      success: true,
+      message: "Webhook recebeu os dados com sucesso!",
+      receivedData: req.body,
+      timestamp: new Date().toISOString(),
+      method: "POST"
+    });
+  });
+
+  // Webhook do Asaas para receber notificações de pagamento e assinatura
   app.post("/api/webhooks/asaas", async (req, res) => {
     try {
+      console.log("📩 =================================");
+      console.log("📩 WEBHOOK ASAAS CHAMADO!");
+      console.log("📩 Timestamp:", new Date().toISOString());
+      console.log("📩 Headers:", JSON.stringify(req.headers, null, 2));
+      console.log("📩 Body completo:", JSON.stringify(req.body, null, 2));
+      console.log("📩 =================================");
+
       const event = req.body.event;
       const payment = req.body.payment;
+      const subscription = req.body.subscription;
 
-      console.log("📩 Webhook Asaas recebido:", {
+      console.log("📩 Webhook Asaas processando:", {
         event,
         paymentId: payment?.id,
-        status: payment?.status,
-        value: payment?.value,
+        subscriptionId: subscription?.id,
+        status: payment?.status || subscription?.status,
       });
 
-      // Validar se o evento é de pagamento
-      if (!event || !payment) {
-        console.warn("⚠️  Webhook inválido: evento ou pagamento ausente");
+      // Validar se o evento tem dados válidos
+      if (!event) {
+        console.warn("⚠️  Webhook inválido: evento ausente");
         return res.status(400).json({
           success: false,
-          message: "Invalid webhook data"
+          message: "Invalid webhook data: missing event"
         });
       }
 
-      // Buscar compra pelo ID do pagamento Asaas
-      const purchases = await storage.getAllOneTimePurchases();
-      const purchase = purchases.find(p => p.asaasPaymentId === payment.id);
+      // ===== PROCESSAR EVENTOS DE ASSINATURA =====
+      if (subscription) {
+        console.log("🔄 Processando evento de assinatura:", subscription.id);
 
-      if (!purchase) {
-        console.warn("⚠️  Compra não encontrada para o pagamento:", payment.id);
-        return res.status(404).json({
-          success: false,
-          message: "Purchase not found for this payment"
+        // Buscar pedido pelo ID da assinatura Asaas
+        const allOrders = await storage.getAllOrders();
+        const order = allOrders.find(o => o.asaasSubscriptionId === subscription.id);
+
+        if (!order) {
+          console.warn("⚠️  Pedido não encontrado para a assinatura:", subscription.id);
+          // Retorna sucesso mesmo assim para não ficar reenviando
+          return res.json({
+            success: true,
+            message: "Subscription not found, but acknowledged"
+          });
+        }
+
+        console.log("📦 Pedido encontrado:", {
+          orderId: order.id,
+          currentStatus: order.status,
+          customer: order.customerName,
+        });
+
+        // Mapear eventos de assinatura para status internos
+        let newStatus = order.status;
+
+        switch (event) {
+          case "SUBSCRIPTION_CREATED":
+            newStatus = subscription.status === "ACTIVE" ? "active" : "pending";
+            console.log("✅ Assinatura criada! Status:", subscription.status);
+            break;
+
+          case "SUBSCRIPTION_UPDATED":
+            if (subscription.status === "ACTIVE") {
+              newStatus = "active";
+            } else if (subscription.status === "INACTIVE" || subscription.status === "EXPIRED") {
+              newStatus = "cancelled";
+            }
+            console.log("🔄 Assinatura atualizada! Novo status:", subscription.status);
+            break;
+
+          case "SUBSCRIPTION_DELETED":
+            newStatus = "cancelled";
+            console.log("❌ Assinatura cancelada!");
+            break;
+
+          default:
+            console.log("ℹ️  Evento de assinatura não mapeado:", event);
+        }
+
+        // Atualizar status se houver mudança
+        if (newStatus !== order.status) {
+          await storage.updateOrderStatus(order.id, newStatus);
+          console.log("✅ Status do pedido atualizado:", {
+            orderId: order.id,
+            oldStatus: order.status,
+            newStatus: newStatus,
+          });
+        }
+
+        return res.json({
+          success: true,
+          message: "Subscription webhook processed successfully"
         });
       }
 
-      console.log("📦 Compra encontrada:", {
-        purchaseId: purchase.id,
-        currentStatus: purchase.status,
-        paymentMethod: purchase.paymentMethod,
-      });
+      // ===== PROCESSAR EVENTOS DE PAGAMENTO (COMPRAS AVULSAS) =====
+      if (payment) {
+        console.log("💳 Processando evento de pagamento:", payment.id);
 
-      // Mapear eventos do Asaas para status internos
-      let newStatus = purchase.status;
+        // Buscar compra pelo ID do pagamento Asaas
+        const purchases = await storage.getAllOneTimePurchases();
+        const purchase = purchases.find(p => p.asaasPaymentId === payment.id);
 
-      switch (event) {
-        case "PAYMENT_RECEIVED":
-        case "PAYMENT_CONFIRMED":
-          newStatus = "paid";
-          console.log("✅ Pagamento confirmado! Atualizando status para 'paid'");
-          break;
+        if (!purchase) {
+          console.warn("⚠️  Compra não encontrada para o pagamento:", payment.id);
+          // Retorna sucesso mesmo assim para não ficar reenviando
+          return res.json({
+            success: true,
+            message: "Payment not found, but acknowledged"
+          });
+        }
 
-        case "PAYMENT_UPDATED":
-          if (payment.status === "CONFIRMED" || payment.status === "RECEIVED") {
-            newStatus = "paid";
-            console.log("✅ Pagamento atualizado para confirmado! Atualizando status para 'paid'");
-          }
-          break;
-
-        case "PAYMENT_OVERDUE":
-          console.log("⚠️  Pagamento vencido");
-          // Mantém o status atual para pagamentos vencidos
-          break;
-
-        case "PAYMENT_DELETED":
-        case "PAYMENT_REFUNDED":
-          newStatus = "cancelled";
-          console.log("❌ Pagamento cancelado/reembolsado! Atualizando status para 'cancelled'");
-          break;
-
-        default:
-          console.log("ℹ️  Evento não mapeado:", event);
-      }
-
-      // Atualizar status se houver mudança
-      if (newStatus !== purchase.status) {
-        await storage.updateOneTimePurchaseStatus(purchase.id, newStatus);
-        console.log("✅ Status atualizado com sucesso:", {
+        console.log("📦 Compra encontrada:", {
           purchaseId: purchase.id,
-          oldStatus: purchase.status,
-          newStatus: newStatus,
+          currentStatus: purchase.status,
+          paymentMethod: purchase.paymentMethod,
         });
-      } else {
-        console.log("ℹ️  Status não alterado:", purchase.status);
+
+        // Mapear eventos do Asaas para status internos
+        let newStatus = purchase.status;
+
+        switch (event) {
+          case "PAYMENT_RECEIVED":
+          case "PAYMENT_CONFIRMED":
+            newStatus = "paid";
+            console.log("✅ Pagamento confirmado! Atualizando status para 'paid'");
+            break;
+
+          case "PAYMENT_UPDATED":
+            if (payment.status === "CONFIRMED" || payment.status === "RECEIVED") {
+              newStatus = "paid";
+              console.log("✅ Pagamento atualizado para confirmado! Atualizando status para 'paid'");
+            }
+            break;
+
+          case "PAYMENT_OVERDUE":
+            console.log("⚠️  Pagamento vencido");
+            // Mantém o status atual para pagamentos vencidos
+            break;
+
+          case "PAYMENT_DELETED":
+          case "PAYMENT_REFUNDED":
+            newStatus = "cancelled";
+            console.log("❌ Pagamento cancelado/reembolsado! Atualizando status para 'cancelled'");
+            break;
+
+          default:
+            console.log("ℹ️  Evento de pagamento não mapeado:", event);
+        }
+
+        // Atualizar status se houver mudança
+        if (newStatus !== purchase.status) {
+          await storage.updateOneTimePurchaseStatus(purchase.id, newStatus);
+          console.log("✅ Status da compra atualizado:", {
+            purchaseId: purchase.id,
+            oldStatus: purchase.status,
+            newStatus: newStatus,
+          });
+        }
+
+        return res.json({
+          success: true,
+          message: "Payment webhook processed successfully"
+        });
       }
 
-      // Responder com sucesso (importante para o Asaas não reenviar)
-      res.json({
-        success: true,
-        message: "Webhook processed successfully"
+      // Se não tem payment nem subscription
+      console.warn("⚠️  Webhook sem dados de pagamento ou assinatura");
+      return res.status(400).json({
+        success: false,
+        message: "Invalid webhook data: missing payment or subscription"
       });
 
     } catch (error: any) {

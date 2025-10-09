@@ -114,6 +114,16 @@ export default function Carrinho() {
 
     const basePrice = parseFloat(basket.priceSubscription.toString().replace(/[^\d,]/g, '').replace(',', '.'));
 
+    // Retorna o valor unitário da cesta
+    return basePrice.toFixed(2);
+  };
+
+  const calculateMonthlyTotal = () => {
+    if (!basket?.priceSubscription) return "0.00";
+
+    const basePrice = parseFloat(basket.priceSubscription.toString().replace(/[^\d,]/g, '').replace(',', '.'));
+
+    // Calcula total mensal baseado na frequência
     if (frequency === "semanal") {
       return (basePrice * 4).toFixed(2);
     } else if (frequency === "quinzenal") {
@@ -613,7 +623,7 @@ export default function Carrinho() {
 
                     <div className="border-t pt-4 space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Valor da assinatura:</span>
+                        <span>Valor por entrega:</span>
                         <span className="font-semibold">
                           R$ {basket.priceSubscription ? Number(basket.priceSubscription).toFixed(2) : "0.00"}
                         </span>
@@ -634,15 +644,24 @@ export default function Carrinho() {
                       <div className="border-t pt-2 mt-2">
                         <div className="flex justify-between text-lg font-bold">
                           <span>Total Mensal:</span>
-                          <span className="text-[#133903]">R$ {calculateTotal()}</span>
+                          <span className="text-[#133903]">R$ {calculateMonthlyTotal()}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3 text-sm text-blue-800">
+                        <p className="font-semibold mb-2">ℹ️ Como funciona:</p>
+                        <div className="space-y-1 text-xs">
+                          <p>✅ Você recebe <strong>{frequency === "semanal" ? "4 cestas por mês" : frequency === "quinzenal" ? "2 cestas por mês" : "1 cesta por mês"}</strong></p>
+                          <p>💳 <strong>Cobrança MENSAL</strong> de <strong>R$ {calculateMonthlyTotal()}</strong></p>
+                          <p>📅 Cobrado sempre no mesmo dia do mês</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-                      <p className="font-semibold mb-1">💳 Pagamento Recorrente</p>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
+                      <p className="font-semibold mb-1">🔄 Pagamento Recorrente</p>
                       <p className="text-xs">
-                        O valor será cobrado mensalmente no cartão cadastrado de acordo com a periodicidade escolhida.
+                        O valor total mensal de <strong>R$ {calculateMonthlyTotal()}</strong> será cobrado uma vez por mês no cartão cadastrado.
                       </p>
                     </div>
                   </CardContent>

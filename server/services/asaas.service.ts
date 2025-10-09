@@ -115,6 +115,49 @@ interface AsaasPixQrCodeResponse {
   description?: string;
 }
 
+interface AsaasSubscription {
+  customer: string;
+  billingType: 'BOLETO' | 'CREDIT_CARD' | 'PIX';
+  cycle: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'SEMIANNUALLY' | 'YEARLY';
+  value: number;
+  nextDueDate: string;
+  description?: string;
+  externalReference?: string;
+}
+
+interface AsaasSubscriptionWithCreditCard extends AsaasSubscription {
+  billingType: 'CREDIT_CARD';
+  creditCard: {
+    holderName: string;
+    number: string;
+    expiryMonth: string;
+    expiryYear: string;
+    ccv: string;
+  };
+  creditCardHolderInfo: {
+    name: string;
+    email: string;
+    cpfCnpj: string;
+    postalCode: string;
+    addressNumber: string;
+    phone: string;
+  };
+}
+
+interface AsaasSubscriptionResponse {
+  id: string;
+  dateCreated: string;
+  customer: string;
+  value: number;
+  netValue: number;
+  billingType: string;
+  cycle: string;
+  nextDueDate: string;
+  status: string;
+  description?: string;
+  externalReference?: string;
+}
+
 class AsaasService {
   private apiUrl: string;
   private apiToken: string;
@@ -259,6 +302,41 @@ class AsaasService {
   }
 
   /**
+   * Cria uma assinatura (recorrência) no Asaas
+   */
+  async createSubscription(subscriptionData: AsaasSubscription | AsaasSubscriptionWithCreditCard): Promise<AsaasSubscriptionResponse> {
+    try {
+      console.log('🔄 Criando assinatura no Asaas:', subscriptionData.billingType, subscriptionData.cycle);
+      const response = await this.makeRequest<AsaasSubscriptionResponse>(
+        '/subscriptions',
+        'POST',
+        subscriptionData
+      );
+      console.log('✅ Assinatura criada no Asaas:', response.id);
+      return response;
+    } catch (error: any) {
+      console.error('❌ Erro ao criar assinatura no Asaas:', error.message);
+      throw new Error(`Falha ao criar assinatura: ${error.message}`);
+    }
+  }
+
+  /**
+   * Busca uma assinatura por ID
+   */
+  async getSubscription(subscriptionId: string): Promise<AsaasSubscriptionResponse> {
+    try {
+      const response = await this.makeRequest<AsaasSubscriptionResponse>(
+        `/subscriptions/${subscriptionId}`,
+        'GET'
+      );
+      return response;
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar assinatura:', error.message);
+      throw new Error(`Falha ao buscar assinatura: ${error.message}`);
+    }
+  }
+
+  /**
    * Verifica se a API está configurada corretamente
    */
   isConfigured(): boolean {
@@ -273,5 +351,8 @@ export type {
   AsaasPayment,
   AsaasCreditCardPayment,
   AsaasPaymentResponse,
-  AsaasPixQrCodeResponse
+  AsaasPixQrCodeResponse,
+  AsaasSubscription,
+  AsaasSubscriptionWithCreditCard,
+  AsaasSubscriptionResponse
 };

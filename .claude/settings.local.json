@@ -24,7 +24,9 @@
       "Bash(echo \"Updating $file\")",
       "Bash(curl:*)",
       "Bash(timeout 5 bash -c 'while ! curl -s http://localhost:5000/api/seasonal-calendar > /dev/null; do sleep 1; done')",
-      "Bash(del test-pix.ts)"
+      "Bash(del test-pix.ts)",
+      "Bash(BASE_URL=https://horti.gilliard.dev.br node test-webhook.js)",
+      "Bash(npx drizzle-kit:*)"
     ],
     "deny": [],
     "ask": []
