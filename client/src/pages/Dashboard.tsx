@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserSchema, updateUserSchema, type InsertUser, type UpdateUser } from "@shared/schema";
-import { LogOut, UserPlus, Pencil, Trash2, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code } from "lucide-react";
+import { LogOut, UserPlus, Pencil, Trash2, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
@@ -242,6 +242,14 @@ export default function Dashboard() {
               >
                 <Code className="w-5 h-5" />
                 Scripts
+              </button>
+              <button
+                data-testid="menu-pedidos"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setLocation("/dashboard/pedidos")}
+              >
+                <ShoppingCart className="w-5 h-5" />
+                Pedidos
               </button>
             </div>
           </nav>

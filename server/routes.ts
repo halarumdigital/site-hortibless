@@ -1511,6 +1511,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/one-time-purchases/:id/status", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({
+          success: false,
+          message: "Status is required"
+        });
+      }
+
+      const validStatuses = ["pending", "confirmed", "paid", "processing", "completed", "cancelled"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status"
+        });
+      }
+
+      const purchase = await storage.updateOneTimePurchaseStatus(id, status);
+
+      if (!purchase) {
+        return res.status(404).json({
+          success: false,
+          message: "Purchase not found"
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Status updated successfully",
+        purchase
+      });
+    } catch (error: any) {
+      console.error("Update purchase status error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update status"
+      });
+    }
+  });
+
+  // Webhook do Asaas para receber notificações de pagamento
+  app.post("/api/webhooks/asaas", async (req, res) => {
+    try {
+      const event = req.body.event;
+      const payment = req.body.payment;
+
+      console.log("📩 Webhook Asaas recebido:", {
+        event,
+        paymentId: payment?.id,
+        status: payment?.status,
+        value: payment?.value,
+      });
+
+      // Validar se o evento é de pagamento
+      if (!event || !payment) {
+        console.warn("⚠️  Webhook inválido: evento ou pagamento ausente");
+        return res.status(400).json({
+          success: false,
+          message: "Invalid webhook data"
+        });
+      }
+
+      // Buscar compra pelo ID do pagamento Asaas
+      const purchases = await storage.getAllOneTimePurchases();
+      const purchase = purchases.find(p => p.asaasPaymentId === payment.id);
+
+      if (!purchase) {
+        console.warn("⚠️  Compra não encontrada para o pagamento:", payment.id);
+        return res.status(404).json({
+          success: false,
+          message: "Purchase not found for this payment"
+        });
+      }
+
+      console.log("📦 Compra encontrada:", {
+        purchaseId: purchase.id,
+        currentStatus: purchase.status,
+        paymentMethod: purchase.paymentMethod,
+      });
+
+      // Mapear eventos do Asaas para status internos
+      let newStatus = purchase.status;
+
+      switch (event) {
+        case "PAYMENT_RECEIVED":
+        case "PAYMENT_CONFIRMED":
+          newStatus = "paid";
+          console.log("✅ Pagamento confirmado! Atualizando status para 'paid'");
+          break;
+
+        case "PAYMENT_UPDATED":
+          if (payment.status === "CONFIRMED" || payment.status === "RECEIVED") {
+            newStatus = "paid";
+            console.log("✅ Pagamento atualizado para confirmado! Atualizando status para 'paid'");
+          }
+          break;
+
+        case "PAYMENT_OVERDUE":
+          console.log("⚠️  Pagamento vencido");
+          // Mantém o status atual para pagamentos vencidos
+          break;
+
+        case "PAYMENT_DELETED":
+        case "PAYMENT_REFUNDED":
+          newStatus = "cancelled";
+          console.log("❌ Pagamento cancelado/reembolsado! Atualizando status para 'cancelled'");
+          break;
+
+        default:
+          console.log("ℹ️  Evento não mapeado:", event);
+      }
+
+      // Atualizar status se houver mudança
+      if (newStatus !== purchase.status) {
+        await storage.updateOneTimePurchaseStatus(purchase.id, newStatus);
+        console.log("✅ Status atualizado com sucesso:", {
+          purchaseId: purchase.id,
+          oldStatus: purchase.status,
+          newStatus: newStatus,
+        });
+      } else {
+        console.log("ℹ️  Status não alterado:", purchase.status);
+      }
+
+      // Responder com sucesso (importante para o Asaas não reenviar)
+      res.json({
+        success: true,
+        message: "Webhook processed successfully"
+      });
+
+    } catch (error: any) {
+      console.error("❌ Erro ao processar webhook Asaas:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to process webhook"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

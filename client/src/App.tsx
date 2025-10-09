@@ -25,6 +25,7 @@ import LooseItems from "@/pages/LooseItems";
 import Baskets from "@/pages/Baskets";
 import Duvidas from "@/pages/Duvidas";
 import Scripts from "@/pages/Scripts";
+import Pedidos from "@/pages/Pedidos";
 import Carrinho from "@/pages/Carrinho";
 import CompraAvulsa from "@/pages/CompraAvulsa";
 import NotFound from "@/pages/not-found";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/dashboard/baskets" component={Baskets}/>
       <Route path="/dashboard/duvidas" component={Duvidas}/>
       <Route path="/dashboard/scripts" component={Scripts}/>
+      <Route path="/dashboard/pedidos" component={Pedidos}/>
       <Route component={NotFound} />
     </Switch>
   );
