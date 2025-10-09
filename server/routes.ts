@@ -1556,7 +1556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...validatedData,
         asaasCustomerId: asaasCustomer.id,
         asaasPaymentId: asaasPayment.id,
-        status: asaasPayment.status === "CONFIRMED" ? "confirmed" : "pending",
+        status: asaasPayment.status === "CONFIRMED" ? "paid" : "pending",
       };
 
       // Adicionar URLs específicas por método de pagamento
@@ -1717,6 +1717,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         message: error.message || "Failed to update status"
       });
+    }
+  });
+
+  // Endpoint de DEBUG para listar compras com asaasPaymentId
+  app.get("/api/debug/purchases", async (req, res) => {
+    try {
+      console.log("🔍 DEBUG: Buscando compras no banco de dados...");
+      const purchases = await storage.getAllOneTimePurchases();
+      console.log("📊 Total de compras encontradas:", purchases.length);
+
+      const debug = purchases.map(p => ({
+        id: p.id,
+        customerName: p.customerName,
+        paymentMethod: p.paymentMethod,
+        status: p.status,
+        asaasCustomerId: p.asaasCustomerId,
+        asaasPaymentId: p.asaasPaymentId,
+        createdAt: p.createdAt
+      }));
+
+      console.log("📋 Compras processadas:", JSON.stringify(debug, null, 2));
+
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ success: true, total: purchases.length, purchases: debug });
+    } catch (error: any) {
+      console.error("❌ Erro ao buscar compras:", error);
+      res.status(500).json({ success: false, message: error.message });
     }
   });
 
