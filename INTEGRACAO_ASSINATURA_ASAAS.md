@@ -33,8 +33,13 @@
 
 ### 2. Data da Primeira Cobrança
 
-- ✅ **nextDueDate**: Data atual + 30 dias
-- Exemplo: Se a compra for dia 09/10/2025, a primeira cobrança será em 08/11/2025
+- ✅ **nextDueDate**: **Data atual (hoje)** - cobrança imediata
+- ✅ **Cobranças seguintes**: Automaticamente todo mês na mesma data
+- Exemplo:
+  - Compra em 09/10/2025 → 1ª cobrança: 09/10/2025
+  - 2ª cobrança: 09/11/2025
+  - 3ª cobrança: 09/12/2025
+  - E assim sucessivamente...
 
 ### 3. Estrutura da Requisição ao Asaas
 

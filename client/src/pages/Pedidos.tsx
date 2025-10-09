@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useState } from "react";
+import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -41,11 +42,31 @@ interface OneTimePurchase {
   createdAt: Date;
 }
 
+interface Order {
+  id: number;
+  basketId: number;
+  customerName: string;
+  customerEmail: string;
+  customerCpf: string;
+  customerWhatsapp: string;
+  customerAddress: string;
+  deliveryAddress: string;
+  frequency: string;
+  totalAmount: string;
+  status: string;
+  asaasCustomerId?: string;
+  asaasSubscriptionId?: string;
+  createdAt: Date;
+}
+
+type CombinedOrder = (OneTimePurchase | Order) & { orderType: 'avulsa' | 'assinatura' };
+
 interface Basket {
   id: number;
   name: string;
   description?: string;
   priceLoose?: string;
+  priceSubscription?: string;
 }
 
 export default function Pedidos() {
@@ -54,14 +75,46 @@ export default function Pedidos() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [viewingPurchase, setViewingPurchase] = useState<OneTimePurchase | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<CombinedOrder | null>(null);
   const [viewingBasket, setViewingBasket] = useState<Basket | null>(null);
-  const [editingStatus, setEditingStatus] = useState<number | null>(null);
+  const [editingStatus, setEditingStatus] = useState<{ id: number; type: 'avulsa' | 'assinatura' } | null>(null);
+  const [combinedOrders, setCombinedOrders] = useState<CombinedOrder[]>([]);
 
-  const { data: purchasesData, isLoading: purchasesLoading, refetch } = useQuery<{ success: boolean; purchases: OneTimePurchase[] }>({
+  const { data: purchasesData, isLoading: purchasesLoading, refetch: refetchPurchases } = useQuery<{ success: boolean; purchases: OneTimePurchase[] }>({
     queryKey: ["/api/one-time-purchases"],
     enabled: !!user,
   });
+
+  const { data: ordersData, isLoading: ordersLoading, refetch: refetchOrders } = useQuery<{ success: boolean; orders: Order[] }>({
+    queryKey: ["/api/orders"],
+    enabled: !!user,
+  });
+
+  // Combinar compras avulsas e assinaturas
+  const isLoading = purchasesLoading || ordersLoading;
+
+  React.useEffect(() => {
+    const purchases: CombinedOrder[] = (purchasesData?.purchases || []).map(p => ({
+      ...p,
+      orderType: 'avulsa' as const
+    }));
+
+    const orders: CombinedOrder[] = (ordersData?.orders || []).map(o => ({
+      ...o,
+      orderType: 'assinatura' as const
+    }));
+
+    const combined = [...purchases, ...orders].sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    setCombinedOrders(combined);
+  }, [purchasesData, ordersData]);
+
+  const refetch = () => {
+    refetchPurchases();
+    refetchOrders();
+  };
 
   const logoutMutation = async () => {
     const response = await fetch("/api/logout", { method: "POST" });
@@ -98,19 +151,29 @@ export default function Pedidos() {
       processing: { label: "Processando", variant: "default" },
       completed: { label: "Entregue", variant: "default" },
       cancelled: { label: "Cancelado", variant: "destructive" },
+      active: { label: "Ativa", variant: "default" },
     };
     const statusInfo = statusMap[status] || { label: status, variant: "outline" as const };
     return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
 
-  const getStatusOptions = () => [
-    { value: "pending", label: "Pendente" },
-    { value: "confirmed", label: "Confirmado" },
-    { value: "paid", label: "Pago" },
-    { value: "processing", label: "Processando" },
-    { value: "completed", label: "Entregue" },
-    { value: "cancelled", label: "Cancelado" },
-  ];
+  const getStatusOptions = (orderType: 'avulsa' | 'assinatura') => {
+    if (orderType === 'assinatura') {
+      return [
+        { value: "pending", label: "Pendente" },
+        { value: "active", label: "Ativa" },
+        { value: "cancelled", label: "Cancelada" },
+      ];
+    }
+    return [
+      { value: "pending", label: "Pendente" },
+      { value: "confirmed", label: "Confirmado" },
+      { value: "paid", label: "Pago" },
+      { value: "processing", label: "Processando" },
+      { value: "completed", label: "Entregue" },
+      { value: "cancelled", label: "Cancelado" },
+    ];
+  };
 
   const getPaymentMethodLabel = (method: string) => {
     const methods: Record<string, string> = {
@@ -121,12 +184,12 @@ export default function Pedidos() {
     return methods[method] || method;
   };
 
-  const handleViewPurchase = async (purchase: OneTimePurchase) => {
-    setViewingPurchase(purchase);
+  const handleViewOrder = async (order: CombinedOrder) => {
+    setViewingOrder(order);
 
     // Buscar dados da cesta
     try {
-      const response = await fetch(`/api/baskets/${purchase.basketId}`);
+      const response = await fetch(`/api/baskets/${order.basketId}`);
       const data = await response.json();
       if (data.success) {
         setViewingBasket(data.basket);
@@ -136,9 +199,13 @@ export default function Pedidos() {
     }
   };
 
-  const handleStatusChange = async (purchaseId: number, newStatus: string) => {
+  const handleStatusChange = async (orderId: number, orderType: 'avulsa' | 'assinatura', newStatus: string) => {
     try {
-      const response = await fetch(`/api/one-time-purchases/${purchaseId}/status`, {
+      const endpoint = orderType === 'assinatura'
+        ? `/api/orders/${orderId}/status`
+        : `/api/one-time-purchases/${orderId}/status`;
+
+      const response = await fetch(endpoint, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -457,7 +524,7 @@ export default function Pedidos() {
             <div className="mb-6">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Pedidos</h1>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Gerencie todos os pedidos de compra avulsa
+                Gerencie todos os pedidos (compras avulsas e assinaturas)
               </p>
             </div>
 
@@ -465,48 +532,60 @@ export default function Pedidos() {
               <CardHeader>
                 <CardTitle>Lista de Pedidos</CardTitle>
                 <CardDescription>
-                  {purchasesData?.purchases?.length || 0} pedido(s) registrado(s)
+                  {combinedOrders.length} pedido(s) registrado(s)
+                  {' '}({(purchasesData?.purchases?.length || 0)} avulsa(s), {(ordersData?.orders?.length || 0)} assinatura(s))
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {purchasesLoading ? (
+                {isLoading ? (
                   <div className="text-center py-8">Carregando...</div>
-                ) : purchasesData?.purchases && purchasesData.purchases.length > 0 ? (
+                ) : combinedOrders.length > 0 ? (
                   <div className="overflow-x-auto">
                     <TableUI>
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-[80px]">ID</TableHead>
+                          <TableHead className="w-[100px]">Tipo</TableHead>
                           <TableHead>Cliente</TableHead>
                           <TableHead>Data</TableHead>
-                          <TableHead>Pagamento</TableHead>
+                          <TableHead>Pagamento/Frequência</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {purchasesData.purchases.map((purchase) => (
-                          <TableRow key={purchase.id}>
-                            <TableCell className="font-medium">#{purchase.id}</TableCell>
+                        {combinedOrders.map((order) => (
+                          <TableRow key={`${order.orderType}-${order.id}`}>
+                            <TableCell className="font-medium">#{order.id}</TableCell>
+                            <TableCell>
+                              <Badge variant={order.orderType === 'assinatura' ? 'default' : 'outline'}>
+                                {order.orderType === 'assinatura' ? 'Assinatura' : 'Avulsa'}
+                              </Badge>
+                            </TableCell>
                             <TableCell>
                               <div>
-                                <div className="font-medium">{purchase.customerName}</div>
-                                <div className="text-sm text-gray-500">{purchase.customerEmail}</div>
+                                <div className="font-medium">{order.customerName}</div>
+                                <div className="text-sm text-gray-500">{order.customerEmail}</div>
                               </div>
                             </TableCell>
-                            <TableCell>{formatDate(purchase.createdAt)}</TableCell>
-                            <TableCell>{getPaymentMethodLabel(purchase.paymentMethod)}</TableCell>
+                            <TableCell>{formatDate(order.createdAt)}</TableCell>
                             <TableCell>
-                              {editingStatus === purchase.id ? (
+                              {order.orderType === 'assinatura'
+                                ? `${(order as Order).frequency.charAt(0).toUpperCase() + (order as Order).frequency.slice(1)} - R$ ${(order as Order).totalAmount}`
+                                : getPaymentMethodLabel((order as OneTimePurchase).paymentMethod)
+                              }
+                            </TableCell>
+                            <TableCell>
+                              {editingStatus && editingStatus.id === order.id && editingStatus.type === order.orderType ? (
                                 <Select
-                                  defaultValue={purchase.status}
-                                  onValueChange={(value) => handleStatusChange(purchase.id, value)}
+                                  defaultValue={order.status}
+                                  onValueChange={(value) => handleStatusChange(order.id, order.orderType, value)}
                                 >
                                   <SelectTrigger className="w-[140px]">
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {getStatusOptions().map((option) => (
+                                    {getStatusOptions(order.orderType).map((option) => (
                                       <SelectItem key={option.value} value={option.value}>
                                         {option.label}
                                       </SelectItem>
@@ -515,11 +594,11 @@ export default function Pedidos() {
                                 </Select>
                               ) : (
                                 <div className="flex items-center gap-2">
-                                  {getStatusBadge(purchase.status)}
+                                  {getStatusBadge(order.status)}
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setEditingStatus(purchase.id)}
+                                    onClick={() => setEditingStatus({ id: order.id, type: order.orderType })}
                                   >
                                     <EditIcon className="w-3 h-3" />
                                   </Button>
@@ -531,19 +610,21 @@ export default function Pedidos() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handleViewPurchase(purchase)}
+                                  onClick={() => handleViewOrder(order)}
                                 >
                                   <Eye className="w-4 h-4 mr-1" />
                                   Ver
                                 </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDownloadPDF(purchase)}
-                                >
-                                  <Download className="w-4 h-4 mr-1" />
-                                  PDF
-                                </Button>
+                                {order.orderType === 'avulsa' && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDownloadPDF(order as OneTimePurchase)}
+                                  >
+                                    <Download className="w-4 h-4 mr-1" />
+                                    PDF
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -563,29 +644,53 @@ export default function Pedidos() {
         </main>
       </div>
 
-      {/* View Purchase Dialog */}
-      <Dialog open={!!viewingPurchase} onOpenChange={(open) => !open && setViewingPurchase(null)}>
+      {/* View Order Dialog */}
+      <Dialog open={!!viewingOrder} onOpenChange={(open) => !open && setViewingOrder(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Detalhes do Pedido #{viewingPurchase?.id}</DialogTitle>
+            <DialogTitle>
+              Detalhes do Pedido #{viewingOrder?.id}
+              {viewingOrder && (
+                <Badge className="ml-2" variant={viewingOrder.orderType === 'assinatura' ? 'default' : 'outline'}>
+                  {viewingOrder.orderType === 'assinatura' ? 'Assinatura' : 'Avulsa'}
+                </Badge>
+              )}
+            </DialogTitle>
             <DialogDescription>
-              Pedido realizado em {viewingPurchase && formatDate(viewingPurchase.createdAt)}
+              Pedido realizado em {viewingOrder && formatDate(viewingOrder.createdAt)}
             </DialogDescription>
           </DialogHeader>
 
-          {viewingPurchase && (
+          {viewingOrder && (
             <div className="space-y-6">
-              {/* Status e Pagamento */}
+              {/* Status e Pagamento/Frequência */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Status</p>
-                  <div className="mt-1">{getStatusBadge(viewingPurchase.status)}</div>
+                  <div className="mt-1">{getStatusBadge(viewingOrder.status)}</div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Método de Pagamento</p>
-                  <p className="mt-1">{getPaymentMethodLabel(viewingPurchase.paymentMethod)}</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    {viewingOrder.orderType === 'assinatura' ? 'Frequência' : 'Método de Pagamento'}
+                  </p>
+                  <p className="mt-1">
+                    {viewingOrder.orderType === 'assinatura'
+                      ? `${(viewingOrder as Order).frequency.charAt(0).toUpperCase() + (viewingOrder as Order).frequency.slice(1)}`
+                      : getPaymentMethodLabel((viewingOrder as OneTimePurchase).paymentMethod)
+                    }
+                  </p>
                 </div>
               </div>
+
+              {/* Valor Total para Assinaturas */}
+              {viewingOrder.orderType === 'assinatura' && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Valor Mensal</p>
+                  <p className="text-2xl font-bold text-[#133903] mt-1">
+                    R$ {(viewingOrder as Order).totalAmount}
+                  </p>
+                </div>
+              )}
 
               {/* Informações do Cliente */}
               <div>
@@ -593,27 +698,30 @@ export default function Pedidos() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-500">Nome</p>
-                    <p className="mt-1">{viewingPurchase.customerName}</p>
+                    <p className="mt-1">{viewingOrder.customerName}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">CPF</p>
-                    <p className="mt-1">{viewingPurchase.customerCpf}</p>
+                    <p className="mt-1">{viewingOrder.customerCpf}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Email</p>
-                    <p className="mt-1">{viewingPurchase.customerEmail}</p>
+                    <p className="mt-1">{viewingOrder.customerEmail}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">WhatsApp</p>
-                    <p className="mt-1">{viewingPurchase.customerWhatsapp}</p>
+                    <p className="mt-1">{viewingOrder.customerWhatsapp}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-sm font-medium text-gray-500">Endereço</p>
+                    <p className="text-sm font-medium text-gray-500">Endereço de Cadastro</p>
                     <p className="mt-1">
-                      {viewingPurchase.customerStreet}, {viewingPurchase.customerNumber} - {viewingPurchase.customerNeighborhood}
-                      <br />
-                      {viewingPurchase.customerCity} - CEP: {viewingPurchase.customerCep}
-                      {viewingPurchase.customerReference && <><br />Ref: {viewingPurchase.customerReference}</>}
+                      {viewingOrder.orderType === 'assinatura'
+                        ? (viewingOrder as Order).customerAddress
+                        : `${(viewingOrder as OneTimePurchase).customerStreet}, ${(viewingOrder as OneTimePurchase).customerNumber} - ${(viewingOrder as OneTimePurchase).customerNeighborhood}, ${(viewingOrder as OneTimePurchase).customerCity} - CEP: ${(viewingOrder as OneTimePurchase).customerCep}`
+                      }
+                      {viewingOrder.orderType === 'avulsa' && (viewingOrder as OneTimePurchase).customerReference && (
+                        <><br />Ref: {(viewingOrder as OneTimePurchase).customerReference}</>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -623,10 +731,13 @@ export default function Pedidos() {
               <div>
                 <h3 className="text-lg font-semibold mb-3 text-[#133903]">Endereço de Entrega</h3>
                 <p>
-                  {viewingPurchase.deliveryStreet}, {viewingPurchase.deliveryNumber} - {viewingPurchase.deliveryNeighborhood}
-                  <br />
-                  {viewingPurchase.deliveryCity} - CEP: {viewingPurchase.deliveryCep}
-                  {viewingPurchase.deliveryReference && <><br />Ref: {viewingPurchase.deliveryReference}</>}
+                  {viewingOrder.orderType === 'assinatura'
+                    ? (viewingOrder as Order).deliveryAddress
+                    : `${(viewingOrder as OneTimePurchase).deliveryStreet}, ${(viewingOrder as OneTimePurchase).deliveryNumber} - ${(viewingOrder as OneTimePurchase).deliveryNeighborhood}, ${(viewingOrder as OneTimePurchase).deliveryCity} - CEP: ${(viewingOrder as OneTimePurchase).deliveryCep}`
+                  }
+                  {viewingOrder.orderType === 'avulsa' && (viewingOrder as OneTimePurchase).deliveryReference && (
+                    <><br />Ref: {(viewingOrder as OneTimePurchase).deliveryReference}</>
+                  )}
                 </p>
               </div>
 
@@ -647,39 +758,49 @@ export default function Pedidos() {
               )}
 
               {/* Informações Asaas */}
-              {viewingPurchase.asaasPaymentId && (
+              {(viewingOrder.orderType === 'avulsa' && (viewingOrder as OneTimePurchase).asaasPaymentId) ||
+               (viewingOrder.orderType === 'assinatura' && (viewingOrder as Order).asaasSubscriptionId) ? (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 text-[#133903]">Informações Asaas</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium text-gray-500">ID do Cliente</p>
-                      <p className="mt-1 text-sm font-mono">{viewingPurchase.asaasCustomerId}</p>
+                      <p className="mt-1 text-sm font-mono">{viewingOrder.asaasCustomerId}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-500">ID do Pagamento</p>
-                      <p className="mt-1 text-sm font-mono">{viewingPurchase.asaasPaymentId}</p>
+                      <p className="text-sm font-medium text-gray-500">
+                        {viewingOrder.orderType === 'assinatura' ? 'ID da Assinatura' : 'ID do Pagamento'}
+                      </p>
+                      <p className="mt-1 text-sm font-mono">
+                        {viewingOrder.orderType === 'assinatura'
+                          ? (viewingOrder as Order).asaasSubscriptionId
+                          : (viewingOrder as OneTimePurchase).asaasPaymentId
+                        }
+                      </p>
                     </div>
                   </div>
-                  {viewingPurchase.asaasBankSlipUrl && (
+                  {viewingOrder.orderType === 'avulsa' && (viewingOrder as OneTimePurchase).asaasBankSlipUrl && (
                     <div className="mt-4">
                       <Button
                         variant="outline"
-                        onClick={() => window.open(viewingPurchase.asaasBankSlipUrl, '_blank')}
+                        onClick={() => window.open((viewingOrder as OneTimePurchase).asaasBankSlipUrl, '_blank')}
                       >
                         Ver Boleto
                       </Button>
                     </div>
                   )}
                 </div>
-              )}
+              ) : null}
 
-              {/* Botão Download PDF */}
-              <div className="flex justify-end pt-4 border-t">
-                <Button onClick={() => handleDownloadPDF(viewingPurchase)}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Baixar PDF
-                </Button>
-              </div>
+              {/* Botão Download PDF - Apenas para compras avulsas */}
+              {viewingOrder.orderType === 'avulsa' && (
+                <div className="flex justify-end pt-4 border-t">
+                  <Button onClick={() => handleDownloadPDF(viewingOrder as OneTimePurchase)}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Baixar PDF
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

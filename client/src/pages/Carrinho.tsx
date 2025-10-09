@@ -198,7 +198,7 @@ export default function Carrinho() {
         customerAddress: buildAddress(),
         deliveryAddress: buildDeliveryAddress(),
         frequency,
-        totalAmount: calculateTotal(),
+        totalAmount: calculateMonthlyTotal(),
         cardNumber: cardNumber.replace(/\D/g, ''),
         cardName,
         cardExpiry,

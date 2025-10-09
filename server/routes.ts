@@ -1271,9 +1271,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 4. A cobrança é SEMPRE MENSAL, independente da frequência de entrega
       const cycle = "MONTHLY";
 
-      // 5. Calcular próxima data de vencimento (hoje + 30 dias)
+      // 5. Calcular próxima data de vencimento (HOJE - primeira cobrança imediata)
       const nextDueDate = new Date();
-      nextDueDate.setDate(nextDueDate.getDate() + 30); // Primeira cobrança em 30 dias
+      // Primeira cobrança é hoje, depois será mensal automaticamente
       const nextDueDateStr = nextDueDate.toISOString().split('T')[0];
 
       // 6. Calcular valor TOTAL MENSAL baseado na frequência de entregas
@@ -1388,6 +1388,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: error.message || "Failed to get order"
+      });
+    }
+  });
+
+  app.patch("/api/orders/:id/status", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({
+          success: false,
+          message: "Status is required"
+        });
+      }
+
+      const validStatuses = ["pending", "active", "cancelled"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status"
+        });
+      }
+
+      const order = await storage.updateOrderStatus(id, status);
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found"
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Status updated successfully",
+        order
+      });
+    } catch (error: any) {
+      console.error("Update order status error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update status"
       });
     }
   });
