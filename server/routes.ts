@@ -1839,9 +1839,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // ===== PROCESSAR EVENTOS DE PAGAMENTO (COMPRAS AVULSAS) =====
+      // ===== PROCESSAR EVENTOS DE PAGAMENTO =====
       if (payment) {
         console.log("💳 Processando evento de pagamento:", payment.id);
+
+        // Verificar se o pagamento está vinculado a uma assinatura
+        if (payment.subscription) {
+          console.log("🔄 Pagamento vinculado à assinatura:", payment.subscription);
+
+          // Buscar pedido (assinatura) pelo ID da assinatura Asaas
+          const allOrders = await storage.getAllOrders();
+          const order = allOrders.find(o => o.asaasSubscriptionId === payment.subscription);
+
+          if (!order) {
+            console.warn("⚠️  Pedido (assinatura) não encontrado:", payment.subscription);
+            return res.json({
+              success: true,
+              message: "Subscription order not found, but acknowledged"
+            });
+          }
+
+          console.log("📦 Pedido (assinatura) encontrado:", {
+            orderId: order.id,
+            currentStatus: order.status,
+            customer: order.customerName,
+          });
+
+          // Mapear eventos de pagamento de assinatura para status internos
+          let newStatus = order.status;
+
+          switch (event) {
+            case "PAYMENT_RECEIVED":
+            case "PAYMENT_CONFIRMED":
+              newStatus = "active";
+              console.log("✅ Pagamento de assinatura confirmado! Atualizando status para 'active'");
+              break;
+
+            case "PAYMENT_UPDATED":
+              if (payment.status === "CONFIRMED" || payment.status === "RECEIVED") {
+                newStatus = "active";
+                console.log("✅ Pagamento de assinatura atualizado para confirmado! Status: 'active'");
+              }
+              break;
+
+            case "PAYMENT_OVERDUE":
+              console.log("⚠️  Pagamento de assinatura vencido");
+              // Mantém o status atual
+              break;
+
+            case "PAYMENT_DELETED":
+            case "PAYMENT_REFUNDED":
+              newStatus = "cancelled";
+              console.log("❌ Pagamento de assinatura cancelado/reembolsado! Status: 'cancelled'");
+              break;
+
+            default:
+              console.log("ℹ️  Evento de pagamento de assinatura não mapeado:", event);
+          }
+
+          // Atualizar status se houver mudança
+          if (newStatus !== order.status) {
+            await storage.updateOrderStatus(order.id, newStatus);
+            console.log("✅ Status do pedido (assinatura) atualizado:", {
+              orderId: order.id,
+              oldStatus: order.status,
+              newStatus: newStatus,
+            });
+          }
+
+          return res.json({
+            success: true,
+            message: "Subscription payment webhook processed successfully"
+          });
+        }
+
+        // Se não tem subscription, é uma compra avulsa
+        console.log("💳 Pagamento de compra avulsa:", payment.id);
 
         // Buscar compra pelo ID do pagamento Asaas
         const purchases = await storage.getAllOneTimePurchases();
