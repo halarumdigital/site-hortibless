@@ -20,19 +20,14 @@ interface OneTimePurchase {
   customerCpf: string;
   customerEmail: string;
   customerWhatsapp: string;
-  customerStreet: string;
-  customerNumber: string;
-  customerCep: string;
-  customerNeighborhood: string;
-  customerCity: string;
-  customerReference?: string;
-  deliveryStreet: string;
-  deliveryNumber: string;
-  deliveryCep: string;
-  deliveryNeighborhood: string;
-  deliveryCity: string;
-  deliveryReference?: string;
+  customerAddress: string;
+  deliveryAddress: string;
+  totalAmount: string;
   paymentMethod: string;
+  cardNumber?: string;
+  cardName?: string;
+  cardExpiry?: string;
+  cardCvv?: string;
   asaasCustomerId?: string;
   asaasPaymentId?: string;
   asaasBankSlipUrl?: string;
@@ -280,20 +275,12 @@ export default function Pedidos() {
             <div class="info-row"><span class="label">CPF:</span><span class="value">${purchase.customerCpf}</span></div>
             <div class="info-row"><span class="label">Email:</span><span class="value">${purchase.customerEmail}</span></div>
             <div class="info-row"><span class="label">WhatsApp:</span><span class="value">${purchase.customerWhatsapp}</span></div>
-            <div class="info-row"><span class="label">Endereço:</span><span class="value">${purchase.customerStreet}, ${purchase.customerNumber}</span></div>
-            <div class="info-row"><span class="label">Bairro:</span><span class="value">${purchase.customerNeighborhood}</span></div>
-            <div class="info-row"><span class="label">Cidade:</span><span class="value">${purchase.customerCity}</span></div>
-            <div class="info-row"><span class="label">CEP:</span><span class="value">${purchase.customerCep}</span></div>
-            ${purchase.customerReference ? `<div class="info-row"><span class="label">Referência:</span><span class="value">${purchase.customerReference}</span></div>` : ''}
+            <div class="info-row"><span class="label">Endereço de Cadastro:</span><span class="value">${purchase.customerAddress}</span></div>
           </div>
 
           <div class="section">
             <h2>Endereço de Entrega</h2>
-            <div class="info-row"><span class="label">Rua:</span><span class="value">${purchase.deliveryStreet}, ${purchase.deliveryNumber}</span></div>
-            <div class="info-row"><span class="label">Bairro:</span><span class="value">${purchase.deliveryNeighborhood}</span></div>
-            <div class="info-row"><span class="label">Cidade:</span><span class="value">${purchase.deliveryCity}</span></div>
-            <div class="info-row"><span class="label">CEP:</span><span class="value">${purchase.deliveryCep}</span></div>
-            ${purchase.deliveryReference ? `<div class="info-row"><span class="label">Referência:</span><span class="value">${purchase.deliveryReference}</span></div>` : ''}
+            <div class="info-row"><span class="value">${purchase.deliveryAddress}</span></div>
           </div>
 
           <div class="section">
@@ -323,6 +310,160 @@ export default function Pedidos() {
       const a = document.createElement('a');
       a.href = url;
       a.download = `pedido-${purchase.id}.html`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Download iniciado",
+        description: "Abra o arquivo HTML e imprima como PDF através do navegador."
+      });
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDownloadSubscriptionPDF = async (order: Order) => {
+    try {
+      // Buscar dados da cesta primeiro
+      const basketResponse = await fetch(`/api/baskets/${order.basketId}`);
+      const basketData = await basketResponse.json();
+      const basket = basketData.success ? basketData.basket : null;
+
+      // Criar conteúdo HTML para o PDF
+      const content = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Assinatura #${order.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            .header { border-bottom: 2px solid #133903; padding-bottom: 20px; margin-bottom: 30px; }
+            .header h1 { color: #133903; margin: 0; }
+            .badge {
+              display: inline-block;
+              background: #133903;
+              color: white;
+              padding: 4px 12px;
+              border-radius: 4px;
+              font-size: 14px;
+              margin-left: 10px;
+            }
+            .section { margin-bottom: 25px; }
+            .section h2 { color: #133903; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+            .info-row { margin: 8px 0; }
+            .label { font-weight: bold; display: inline-block; width: 180px; }
+            .value { display: inline-block; }
+            .status {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 4px;
+              background: #f0f0f0;
+              font-weight: bold;
+            }
+            .highlight {
+              background: #EFF6EF;
+              padding: 15px;
+              border-radius: 8px;
+              margin: 15px 0;
+              border-left: 4px solid #133903;
+            }
+            .highlight .big-value {
+              font-size: 24px;
+              font-weight: bold;
+              color: #133903;
+              margin: 5px 0;
+            }
+            .footer { margin-top: 40px; text-align: center; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Assinatura #${order.id}<span class="badge">ASSINATURA</span></h1>
+            <p>Data da Contratação: ${formatDate(order.createdAt)}</p>
+          </div>
+
+          <div class="highlight">
+            <div class="info-row">
+              <span class="label">Frequência:</span>
+              <span class="value" style="text-transform: capitalize; font-size: 18px; font-weight: bold;">${order.frequency}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Valor Mensal:</span>
+              <div class="big-value">R$ ${order.totalAmount}</div>
+            </div>
+            <div class="info-row">
+              <span class="label">Cobranças:</span>
+              <span class="value">Mensalmente no dia ${new Date(order.createdAt).getDate()}</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Informações do Cliente</h2>
+            <div class="info-row"><span class="label">Nome:</span><span class="value">${order.customerName}</span></div>
+            <div class="info-row"><span class="label">CPF:</span><span class="value">${order.customerCpf}</span></div>
+            <div class="info-row"><span class="label">Email:</span><span class="value">${order.customerEmail}</span></div>
+            <div class="info-row"><span class="label">WhatsApp:</span><span class="value">${order.customerWhatsapp}</span></div>
+            <div class="info-row"><span class="label">Endereço de Cadastro:</span><span class="value">${order.customerAddress}</span></div>
+          </div>
+
+          <div class="section">
+            <h2>Endereço de Entrega</h2>
+            <div class="info-row"><span class="value">${order.deliveryAddress}</span></div>
+          </div>
+
+          <div class="section">
+            <h2>Informações do Produto</h2>
+            <div class="info-row"><span class="label">Cesta:</span><span class="value">${basket?.name || 'N/A'}</span></div>
+            ${basket?.description ? `<div class="info-row"><span class="label">Descrição:</span><span class="value">${basket.description}</span></div>` : ''}
+            <div class="info-row"><span class="label">Valor por Entrega:</span><span class="value">${formatCurrency(basket?.priceSubscription)}</span></div>
+            <div class="info-row"><span class="label">Entregas por Mês:</span><span class="value">${
+              order.frequency === 'semanal' ? '4 entregas (toda semana)' :
+              order.frequency === 'quinzenal' ? '2 entregas (a cada 15 dias)' :
+              '1 entrega (mensal)'
+            }</span></div>
+          </div>
+
+          <div class="section">
+            <h2>Informações da Assinatura</h2>
+            <div class="info-row"><span class="label">Status:</span><span class="value status">${order.status.toUpperCase()}</span></div>
+            <div class="info-row"><span class="label">Tipo de Cobrança:</span><span class="value">Cartão de Crédito (Recorrente)</span></div>
+            ${order.asaasCustomerId ? `<div class="info-row"><span class="label">ID Cliente Asaas:</span><span class="value">${order.asaasCustomerId}</span></div>` : ''}
+            ${order.asaasSubscriptionId ? `<div class="info-row"><span class="label">ID Assinatura Asaas:</span><span class="value">${order.asaasSubscriptionId}</span></div>` : ''}
+          </div>
+
+          <div class="highlight">
+            <h3 style="margin-top: 0; color: #133903;">Como Funciona:</h3>
+            <p style="margin: 8px 0;">✅ Você recebe ${
+              order.frequency === 'semanal' ? '4 cestas por mês' :
+              order.frequency === 'quinzenal' ? '2 cestas por mês' :
+              '1 cesta por mês'
+            }</p>
+            <p style="margin: 8px 0;">💳 Cobrança MENSAL de R$ ${order.totalAmount}</p>
+            <p style="margin: 8px 0;">📅 Cobrado sempre no dia ${new Date(order.createdAt).getDate()} de cada mês</p>
+          </div>
+
+          <div class="footer">
+            <p>Documento gerado em ${new Date().toLocaleString('pt-BR')}</p>
+            <p style="margin-top: 10px; font-size: 10px;">Este é um documento de assinatura recorrente. As cobranças são realizadas automaticamente.</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Criar um blob e fazer download
+      const blob = new Blob([content], { type: 'text/html' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `assinatura-${order.id}.html`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -615,16 +756,17 @@ export default function Pedidos() {
                                   <Eye className="w-4 h-4 mr-1" />
                                   Ver
                                 </Button>
-                                {order.orderType === 'avulsa' && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDownloadPDF(order as OneTimePurchase)}
-                                  >
-                                    <Download className="w-4 h-4 mr-1" />
-                                    PDF
-                                  </Button>
-                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => order.orderType === 'assinatura'
+                                    ? handleDownloadSubscriptionPDF(order as Order)
+                                    : handleDownloadPDF(order as OneTimePurchase)
+                                  }
+                                >
+                                  <Download className="w-4 h-4 mr-1" />
+                                  PDF
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -717,11 +859,8 @@ export default function Pedidos() {
                     <p className="mt-1">
                       {viewingOrder.orderType === 'assinatura'
                         ? (viewingOrder as Order).customerAddress
-                        : `${(viewingOrder as OneTimePurchase).customerStreet}, ${(viewingOrder as OneTimePurchase).customerNumber} - ${(viewingOrder as OneTimePurchase).customerNeighborhood}, ${(viewingOrder as OneTimePurchase).customerCity} - CEP: ${(viewingOrder as OneTimePurchase).customerCep}`
+                        : (viewingOrder as OneTimePurchase).customerAddress
                       }
-                      {viewingOrder.orderType === 'avulsa' && (viewingOrder as OneTimePurchase).customerReference && (
-                        <><br />Ref: {(viewingOrder as OneTimePurchase).customerReference}</>
-                      )}
                     </p>
                   </div>
                 </div>
@@ -733,11 +872,8 @@ export default function Pedidos() {
                 <p>
                   {viewingOrder.orderType === 'assinatura'
                     ? (viewingOrder as Order).deliveryAddress
-                    : `${(viewingOrder as OneTimePurchase).deliveryStreet}, ${(viewingOrder as OneTimePurchase).deliveryNumber} - ${(viewingOrder as OneTimePurchase).deliveryNeighborhood}, ${(viewingOrder as OneTimePurchase).deliveryCity} - CEP: ${(viewingOrder as OneTimePurchase).deliveryCep}`
+                    : (viewingOrder as OneTimePurchase).deliveryAddress
                   }
-                  {viewingOrder.orderType === 'avulsa' && (viewingOrder as OneTimePurchase).deliveryReference && (
-                    <><br />Ref: {(viewingOrder as OneTimePurchase).deliveryReference}</>
-                  )}
                 </p>
               </div>
 
@@ -792,15 +928,16 @@ export default function Pedidos() {
                 </div>
               ) : null}
 
-              {/* Botão Download PDF - Apenas para compras avulsas */}
-              {viewingOrder.orderType === 'avulsa' && (
-                <div className="flex justify-end pt-4 border-t">
-                  <Button onClick={() => handleDownloadPDF(viewingOrder as OneTimePurchase)}>
-                    <Download className="w-4 h-4 mr-2" />
-                    Baixar PDF
-                  </Button>
-                </div>
-              )}
+              {/* Botão Download PDF */}
+              <div className="flex justify-end pt-4 border-t">
+                <Button onClick={() => viewingOrder.orderType === 'assinatura'
+                  ? handleDownloadSubscriptionPDF(viewingOrder as Order)
+                  : handleDownloadPDF(viewingOrder as OneTimePurchase)
+                }>
+                  <Download className="w-4 h-4 mr-2" />
+                  Baixar PDF
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
