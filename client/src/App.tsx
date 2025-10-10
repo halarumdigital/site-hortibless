@@ -27,6 +27,7 @@ import Baskets from "@/pages/Baskets";
 import Duvidas from "@/pages/Duvidas";
 import Scripts from "@/pages/Scripts";
 import Pedidos from "@/pages/Pedidos";
+import WhatsAppIA from "@/pages/WhatsAppIA";
 import Carrinho from "@/pages/Carrinho";
 import CompraAvulsa from "@/pages/CompraAvulsa";
 import NotFound from "@/pages/not-found";
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/dashboard/duvidas" component={Duvidas}/>
       <Route path="/dashboard/scripts" component={Scripts}/>
       <Route path="/dashboard/pedidos" component={Pedidos}/>
+      <Route path="/dashboard/whatsapp-ia" component={WhatsAppIA}/>
       <Route component={NotFound} />
     </Switch>
   );

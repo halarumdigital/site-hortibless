@@ -1,11 +1,12 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema } from "@shared/schema";
+import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import { asaasService } from "./services/asaas.service";
+import { evolutionService } from "./services/evolution.service";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -2145,6 +2146,394 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: error.message || "Failed to process webhook"
+      });
+    }
+  });
+
+  // WhatsApp Connections routes
+  app.get("/api/whatsapp-connections", requireAuth, requireAdmin, async (_req, res) => {
+    try {
+      const connections = await storage.getAllWhatsappConnections();
+      res.json(connections);
+    } catch (error: any) {
+      res.status(500).json({
+        message: error.message || "Failed to fetch WhatsApp connections"
+      });
+    }
+  });
+
+  app.post("/api/whatsapp-connections", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const data = whatsappConnectionSchema.parse(req.body);
+
+      // Usar o nome fornecido como instanceName (limpar caracteres especiais)
+      const instanceName = data.name.toLowerCase()
+        .replace(/[^a-z0-9]/g, '_')
+        .replace(/^_+|_+$/g, '') // Remove underscores no início e fim
+        .substring(0, 100); // Limita tamanho
+
+      console.log(`🔌 Criando instância na Evolution API: ${instanceName}`);
+
+      // Criar instância na Evolution API
+      let evolutionResponse;
+      try {
+        evolutionResponse = await evolutionService.createInstance(
+          instanceName,
+          data.phoneNumber
+        );
+        console.log('✅ Instância criada na Evolution API:', evolutionResponse);
+      } catch (evolutionError: any) {
+        console.error('❌ Erro ao criar instância na Evolution API:', evolutionError);
+        return res.status(500).json({
+          message: `Erro ao criar instância no WhatsApp: ${evolutionError.message}`,
+          error: evolutionError.message
+        });
+      }
+
+      // Salvar conexão no banco de dados
+      const connection = await storage.createWhatsappConnection({
+        ...data,
+        instanceName,
+        status: 'pending', // Status inicial é pending, aguardando QR Code
+      });
+
+      // Tentar obter QR Code para conexão
+      try {
+        const connectResponse = await evolutionService.connectInstance(instanceName);
+        console.log('🔗 QR Code gerado:', connectResponse);
+
+        // Atualizar conexão com QR Code se disponível
+        if (connectResponse?.qrcode?.base64) {
+          await storage.updateWhatsappConnectionQrCode(
+            connection.id,
+            connectResponse.qrcode.base64
+          );
+          connection.qrCode = connectResponse.qrcode.base64;
+        }
+      } catch (qrError: any) {
+        console.warn('⚠️  Não foi possível gerar QR Code imediatamente:', qrError.message);
+        // Não bloqueia a criação se o QR Code falhar
+      }
+
+      res.status(201).json(connection);
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error('❌ Erro ao criar conexão WhatsApp:', error);
+      res.status(500).json({
+        message: error.message || "Failed to create WhatsApp connection"
+      });
+    }
+  });
+
+  app.get("/api/whatsapp-connections/:id/qrcode", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const connections = await storage.getAllWhatsappConnections();
+      const connection = connections.find(c => c.id === id);
+
+      if (!connection) {
+        return res.status(404).json({ message: "Connection not found" });
+      }
+
+      if (!connection.instanceName) {
+        return res.status(400).json({ message: "Connection does not have an instance" });
+      }
+
+      try {
+        const connectResponse = await evolutionService.connectInstance(connection.instanceName);
+        console.log('🔗 QR Code gerado:', connectResponse);
+
+        // A Evolution API pode retornar o base64 em diferentes formatos
+        const qrCodeBase64 = connectResponse?.base64 || connectResponse?.qrcode?.base64;
+
+        if (qrCodeBase64) {
+          await storage.updateWhatsappConnectionQrCode(
+            connection.id,
+            qrCodeBase64
+          );
+          res.json({ qrCode: qrCodeBase64 });
+        } else {
+          console.error('❌ Resposta sem QR Code:', connectResponse);
+          res.status(500).json({
+            message: "Failed to generate QR Code",
+            debug: connectResponse
+          });
+        }
+      } catch (error: any) {
+        console.error('❌ Erro ao gerar QR Code:', error);
+        res.status(500).json({
+          message: error.message || "Failed to generate QR Code"
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({
+        message: error.message || "Failed to get QR Code"
+      });
+    }
+  });
+
+  app.get("/api/whatsapp-connections/:id/status", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const connections = await storage.getAllWhatsappConnections();
+      const connection = connections.find(c => c.id === id);
+
+      if (!connection) {
+        return res.status(404).json({ message: "Conexão não encontrada" });
+      }
+
+      if (!connection.instanceName) {
+        return res.status(400).json({ message: "Conexão não possui uma instância" });
+      }
+
+      try {
+        const statusResponse = await evolutionService.connectionState(connection.instanceName);
+        console.log(`📊 Status da conexão ${connection.instanceName}:`, statusResponse);
+
+        // Mapear o status da Evolution API para nosso sistema
+        let newStatus = "disconnected";
+        if (statusResponse?.instance?.state === "open" || statusResponse?.state === "open") {
+          newStatus = "connected";
+        } else if (statusResponse?.instance?.state === "connecting" || statusResponse?.state === "connecting") {
+          newStatus = "pending";
+        }
+
+        // Atualizar status no banco se mudou
+        if (connection.status !== newStatus) {
+          await storage.updateWhatsappConnectionStatus(id, newStatus);
+        }
+
+        res.json({
+          status: newStatus,
+          details: statusResponse
+        });
+      } catch (error: any) {
+        console.error(`❌ Erro ao verificar status:`, error);
+        res.status(500).json({
+          message: error.message || "Erro ao verificar status"
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({
+        message: error.message || "Erro ao buscar status"
+      });
+    }
+  });
+
+  app.post("/api/whatsapp-connections/:id/configure", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const connections = await storage.getAllWhatsappConnections();
+      const connection = connections.find(c => c.id === id);
+
+      if (!connection) {
+        return res.status(404).json({ message: "Conexão não encontrada" });
+      }
+
+      if (!connection.instanceName) {
+        return res.status(400).json({ message: "Conexão não possui uma instância" });
+      }
+
+      // Configurações padrão do WhatsApp
+      const settings = {
+        rejectCall: true,
+        msgCall: "Não aceito chamadas",
+        groupsIgnore: true,
+        alwaysOnline: true,
+        readMessages: true,
+        syncFullHistory: false,
+        readStatus: true
+      };
+
+      try {
+        console.log(`⚙️  Configurando WhatsApp para: ${connection.instanceName}`);
+        const result = await evolutionService.setSettings(connection.instanceName, settings);
+        console.log('✅ Configurações aplicadas:', result);
+
+        res.json({
+          success: true,
+          message: "Configurações aplicadas com sucesso!",
+          settings: settings
+        });
+      } catch (error: any) {
+        console.error('❌ Erro ao configurar WhatsApp:', error);
+        res.status(500).json({
+          message: error.message || "Erro ao aplicar configurações"
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ Erro geral:', error);
+      res.status(500).json({
+        message: error.message || "Erro ao configurar WhatsApp"
+      });
+    }
+  });
+
+  app.post("/api/whatsapp-connections/:id/configure-ia", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const connections = await storage.getAllWhatsappConnections();
+      const connection = connections.find(c => c.id === id);
+
+      if (!connection) {
+        return res.status(404).json({ message: "Conexão não encontrada" });
+      }
+
+      if (!connection.instanceName) {
+        return res.status(400).json({ message: "Conexão não possui uma instância" });
+      }
+
+      if (connection.status !== "connected") {
+        return res.status(400).json({ message: "A conexão precisa estar conectada antes de configurar a IA" });
+      }
+
+      // Obter a URL do webhook da variável de ambiente ou usar uma padrão
+      const webhookUrl = process.env.WEBHOOK_URL || "https://webhook.site";
+      const webhookToken = process.env.WEBHOOK_TOKEN || "Bearer TOKEN";
+
+      // Configurações do webhook para IA
+      const webhookConfig = {
+        enabled: true,
+        url: webhookUrl,
+        headers: {
+          "authorization": webhookToken,
+          "Content-Type": "application/json"
+        },
+        byEvents: true,
+        base64: true,
+        events: [
+          "MESSAGES_SET",
+          "MESSAGES_UPSERT",
+          "MESSAGES_UPDATE",
+          "MESSAGES_DELETE"
+        ]
+      };
+
+      try {
+        console.log(`🤖 Configurando IA (webhook) para: ${connection.instanceName}`);
+        console.log(`📡 Webhook URL: ${webhookUrl}`);
+        const result = await evolutionService.setWebhook(connection.instanceName, webhookConfig);
+        console.log('✅ Webhook configurado:', result);
+
+        res.json({
+          success: true,
+          message: "IA configurada com sucesso! O webhook está ativo.",
+          webhookUrl: webhookUrl,
+          events: webhookConfig.events
+        });
+      } catch (error: any) {
+        console.error('❌ Erro ao configurar webhook:', error);
+        res.status(500).json({
+          message: error.message || "Erro ao configurar IA"
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ Erro geral:', error);
+      res.status(500).json({
+        message: error.message || "Erro ao configurar IA"
+      });
+    }
+  });
+
+  app.delete("/api/whatsapp-connections/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+
+      // Buscar conexão para obter instanceName
+      const connections = await storage.getAllWhatsappConnections();
+      const connection = connections.find(c => c.id === id);
+
+      if (connection && connection.instanceName) {
+        // Tentar excluir instância na Evolution API
+        try {
+          console.log(`🗑️  Excluindo instância ${connection.instanceName} na Evolution API`);
+          await evolutionService.deleteInstance(connection.instanceName);
+          console.log('✅ Instância excluída da Evolution API');
+        } catch (evolutionError: any) {
+          console.warn('⚠️  Não foi possível excluir a instância na Evolution API:', evolutionError.message);
+          // Continua com a exclusão do banco mesmo se falhar na Evolution API
+        }
+      }
+
+      await storage.deleteWhatsappConnection(id);
+      res.json({ success: true, message: "Connection deleted successfully" });
+    } catch (error: any) {
+      console.error('❌ Erro ao excluir conexão:', error);
+      res.status(500).json({
+        message: error.message || "Failed to delete WhatsApp connection"
+      });
+    }
+  });
+
+  // Atualizar configurações de IA
+  app.patch("/api/whatsapp-connections/:id/ai-config", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { aiEnabled, aiModel, aiTemperature, aiMaxTokens, aiPrompt } = req.body;
+
+      await storage.updateWhatsappAiConfig(id, {
+        aiEnabled,
+        aiModel,
+        aiTemperature,
+        aiMaxTokens,
+        aiPrompt,
+      });
+
+      res.json({ success: true, message: "AI configuration saved successfully" });
+    } catch (error: any) {
+      console.error('❌ Erro ao salvar configurações de IA:', error);
+      res.status(500).json({
+        message: error.message || "Failed to save AI configuration"
+      });
+    }
+  });
+
+  // Testar IA
+  app.post("/api/whatsapp-connections/:id/test-ai", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { message, config } = req.body;
+
+      if (!message || !config) {
+        return res.status(400).json({
+          message: "Message and config are required"
+        });
+      }
+
+      // Importar OpenAI dinamicamente
+      const { OpenAI } = await import("openai");
+
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      const completion = await openai.chat.completions.create({
+        model: config.aiModel || "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: config.aiPrompt || "Você é um assistente virtual útil e amigável.",
+          },
+          {
+            role: "user",
+            content: message,
+          },
+        ],
+        temperature: parseFloat(config.aiTemperature || "0.7"),
+        max_tokens: config.aiMaxTokens || 1000,
+      });
+
+      const response = completion.choices[0]?.message?.content || "Sem resposta";
+
+      res.json({ success: true, response });
+    } catch (error: any) {
+      console.error('❌ Erro ao testar IA:', error);
+      res.status(500).json({
+        message: error.message || "Failed to test AI"
       });
     }
   });

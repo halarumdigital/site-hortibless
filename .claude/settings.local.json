@@ -41,7 +41,9 @@
       "Bash(bash e:site-hortiblessupdate-pages.sh)",
       "Bash(for page in Regions Faq SeasonalCalendar ComparativeTable LooseItems Baskets Duvidas Scripts Pedidos Testimonials)",
       "Bash(do echo \"=== Processando $page ===\")",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(for file in Faq.tsx SeasonalCalendar.tsx Pedidos.tsx Scripts.tsx)",
+      "Bash(del:*)"
     ],
     "deny": [],
     "ask": []

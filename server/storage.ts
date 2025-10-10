@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig } from "@shared/schema";
 import { db } from "./db";
-import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases } from "@shared/schema";
+import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -74,6 +74,12 @@ export interface IStorage {
   getAllOneTimePurchases(): Promise<OneTimePurchase[]>;
   getOneTimePurchase(id: number): Promise<OneTimePurchase | undefined>;
   updateOneTimePurchaseStatus(id: number, status: string): Promise<OneTimePurchase | undefined>;
+  getAllWhatsappConnections(): Promise<WhatsappConnection[]>;
+  createWhatsappConnection(connection: InsertWhatsappConnection & { instanceName?: string; status?: string }): Promise<WhatsappConnection>;
+  updateWhatsappConnectionQrCode(id: number, qrCode: string): Promise<WhatsappConnection | undefined>;
+  updateWhatsappConnectionStatus(id: number, status: string): Promise<WhatsappConnection | undefined>;
+  updateWhatsappAiConfig(id: number, config: UpdateWhatsappAiConfig): Promise<WhatsappConnection | undefined>;
+  deleteWhatsappConnection(id: number): Promise<boolean>;
 }
 
 export class MySQLStorage implements IStorage {
@@ -570,6 +576,39 @@ export class MySQLStorage implements IStorage {
   async updateOneTimePurchaseStatus(id: number, status: string): Promise<OneTimePurchase | undefined> {
     await db.update(oneTimePurchases).set({ status }).where(eq(oneTimePurchases.id, id));
     return await this.getOneTimePurchase(id);
+  }
+
+  async getAllWhatsappConnections(): Promise<WhatsappConnection[]> {
+    return await db.select().from(whatsappConnections).orderBy(desc(whatsappConnections.createdAt));
+  }
+
+  async createWhatsappConnection(connection: InsertWhatsappConnection & { instanceName?: string; status?: string }): Promise<WhatsappConnection> {
+    const [newConnection] = await db.insert(whatsappConnections).values(connection).$returningId();
+    const [created] = await db.select().from(whatsappConnections).where(eq(whatsappConnections.id, newConnection.id)).limit(1);
+    return created;
+  }
+
+  async updateWhatsappConnectionQrCode(id: number, qrCode: string): Promise<WhatsappConnection | undefined> {
+    await db.update(whatsappConnections).set({ qrCode }).where(eq(whatsappConnections.id, id));
+    const [updated] = await db.select().from(whatsappConnections).where(eq(whatsappConnections.id, id)).limit(1);
+    return updated;
+  }
+
+  async updateWhatsappConnectionStatus(id: number, status: string): Promise<WhatsappConnection | undefined> {
+    await db.update(whatsappConnections).set({ status }).where(eq(whatsappConnections.id, id));
+    const [updated] = await db.select().from(whatsappConnections).where(eq(whatsappConnections.id, id)).limit(1);
+    return updated;
+  }
+
+  async updateWhatsappAiConfig(id: number, config: UpdateWhatsappAiConfig): Promise<WhatsappConnection | undefined> {
+    await db.update(whatsappConnections).set(config).where(eq(whatsappConnections.id, id));
+    const [updated] = await db.select().from(whatsappConnections).where(eq(whatsappConnections.id, id)).limit(1);
+    return updated;
+  }
+
+  async deleteWhatsappConnection(id: number): Promise<boolean> {
+    await db.delete(whatsappConnections).where(eq(whatsappConnections.id, id));
+    return true;
   }
 }
 

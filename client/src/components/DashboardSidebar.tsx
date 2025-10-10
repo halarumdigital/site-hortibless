@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp } from "lucide-react";
+import { LogOut, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp, MessageCircle } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface DashboardSidebarProps {
@@ -32,6 +32,7 @@ export function DashboardSidebar({ user, isSidebarOpen, setIsSidebarOpen, onLogo
     { path: "/dashboard/duvidas", icon: Mail, label: "Dúvidas", testId: "menu-duvidas" },
     { path: "/dashboard/scripts", icon: Code, label: "Scripts", testId: "menu-scripts" },
     { path: "/dashboard/pedidos", icon: ShoppingCart, label: "Pedidos", testId: "menu-pedidos" },
+    { path: "/dashboard/whatsapp-ia", icon: MessageCircle, label: "WhatsApp e IA", testId: "menu-whatsapp-ia" },
   ];
 
   return (
@@ -80,8 +81,8 @@ export function DashboardSidebar({ user, isSidebarOpen, setIsSidebarOpen, onLogo
                     }`}
                     onClick={() => setLocation(item.path)}
                   >
-                    <Icon className="w-5 h-5" />
-                    {item.label}
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
                   </button>
                 );
               })}

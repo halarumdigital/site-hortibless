@@ -1,3 +1,10 @@
+// Forçar reload do .env sobrescrevendo variáveis de ambiente do sistema
+import dotenv from "dotenv";
+import { resolve } from "path";
+
+// Carregar .env com override = true para sobrescrever variáveis do sistema
+dotenv.config({ path: resolve(process.cwd(), ".env"), override: true });
+
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { registerRoutes } from "./routes";

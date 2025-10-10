@@ -421,3 +421,39 @@ export const oneTimePurchaseSchema = z.object({
 
 export type OneTimePurchase = typeof oneTimePurchases.$inferSelect;
 export type InsertOneTimePurchase = z.infer<typeof oneTimePurchaseSchema>;
+
+// WhatsApp connections table
+export const whatsappConnections = mysqlTable("whatsapp_connections", {
+  id: int("id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
+  phoneNumber: varchar("phone_number", { length: 20 }).notNull().unique(),
+  instanceName: varchar("instance_name", { length: 255 }).unique(),
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, connected, disconnected, error
+  qrCode: text("qr_code"),
+  isActive: boolean("is_active").notNull().default(true),
+  // AI Configuration
+  aiEnabled: boolean("ai_enabled").notNull().default(false),
+  aiModel: varchar("ai_model", { length: 100 }).default("gpt-4o-mini"),
+  aiTemperature: varchar("ai_temperature", { length: 10 }).default("0.7"),
+  aiMaxTokens: int("ai_max_tokens").default(1000),
+  aiPrompt: text("ai_prompt"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
+export const whatsappConnectionSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório"),
+  phoneNumber: z.string().min(13, "Número deve estar no formato 5599999999999").max(13, "Número deve estar no formato 5599999999999").regex(/^55\d{11}$/, "Número deve estar no formato 5599999999999"),
+});
+
+export const whatsappAiConfigSchema = z.object({
+  aiEnabled: z.boolean().optional(),
+  aiModel: z.string().optional(),
+  aiTemperature: z.string().optional(),
+  aiMaxTokens: z.number().optional(),
+  aiPrompt: z.string().optional(),
+});
+
+export type WhatsappConnection = typeof whatsappConnections.$inferSelect;
+export type InsertWhatsappConnection = z.infer<typeof whatsappConnectionSchema>;
+export type UpdateWhatsappAiConfig = z.infer<typeof whatsappAiConfigSchema>;
