@@ -1,5 +1,4 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -12,7 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { serviceRegionSchema, type InsertServiceRegion } from "@shared/schema";
-import { LogOut, MapPin, Menu, X, Users, Settings, Phone, Image, Images, MessageSquare, Trash2, Plus, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail } from "lucide-react";
+import { MapPin, Menu, Trash2, Plus } from "lucide-react";
+import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface ServiceRegion {
@@ -25,8 +25,7 @@ interface ServiceRegion {
 
 export default function Regions() {
   const { user, isLoading: authLoading } = useAuth(true);
-  const { settings } = useSiteSettings();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [deletingRegionId, setDeletingRegionId] = useState<number | null>(null);
@@ -44,15 +43,15 @@ export default function Regions() {
     },
   });
 
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest("POST", "/api/logout");
-    },
-    onSuccess: () => {
+  const handleLogout = async () => {
+    try {
+      await apiRequest("POST", "/api/logout");
       toast({ title: "Logged out successfully" });
       setLocation("/login");
-    },
-  });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   const createRegionMutation = useMutation({
     mutationFn: async (data: InsertServiceRegion) => {
@@ -98,173 +97,13 @@ export default function Regions() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:z-0 ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-center p-4 border-b border-gray-200 dark:border-gray-700 relative">
-            {settings?.logoPath && (
-              <div className="flex justify-center">
-                <img
-                  src={settings.logoPath}
-                  alt="Logo"
-                  className="h-16 object-contain"
-                />
-              </div>
-            )}
-            <Button
-              data-testid="button-close-sidebar"
-              variant="ghost"
-              size="sm"
-              className="lg:hidden absolute right-2"
-              onClick={() => setIsSidebarOpen(false)}
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
-
-          <nav className="flex-1 p-4">
-            <div className="space-y-1">
-              <button
-                data-testid="menu-users"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard")}
-              >
-                <Users className="w-5 h-5" />
-                Usuários
-              </button>
-              <button
-                data-testid="menu-site-settings"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/site-settings")}
-              >
-                <Settings className="w-5 h-5" />
-                Configurações do Site
-              </button>
-              <button
-                data-testid="menu-contact-info"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/contact-info")}
-              >
-                <Phone className="w-5 h-5" />
-                Contatos
-              </button>
-              <button
-                data-testid="menu-banners"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/banners")}
-              >
-                <Image className="w-5 h-5" />
-                Banners
-              </button>
-              <button
-                data-testid="menu-gallery"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/gallery")}
-              >
-                <Images className="w-5 h-5" />
-                Galeria
-              </button>
-              <button
-                data-testid="menu-testimonials"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/testimonials")}
-              >
-                <MessageSquare className="w-5 h-5" />
-                Depoimentos
-              </button>
-              <button
-                data-testid="menu-regions"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md bg-[#133903] text-white"
-              >
-                <MapPin className="w-5 h-5" />
-                Regiões de Atendimento
-              </button>
-              <button
-                data-testid="menu-faq"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/faq")}
-              >
-                <HelpCircle className="w-5 h-5" />
-                FAQ
-              </button>
-              <button
-                data-testid="menu-seasonal-calendar"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/seasonal-calendar")}
-              >
-                <Calendar className="w-5 h-5" />
-                Calendário Sazonal
-              </button>
-              <button
-                data-testid="menu-comparative-table"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/comparative-table")}
-              >
-                <Table className="w-5 h-5" />
-                Tabela Comparativa
-              </button>
-              <button
-                data-testid="menu-loose-items"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/loose-items")}
-              >
-                <Package className="w-5 h-5" />
-                Itens Avulsos
-              </button>
-              <button
-                data-testid="menu-baskets"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/baskets")}
-              >
-                <ShoppingBasket className="w-5 h-5" />
-                Cestas
-              </button>
-              <button
-                data-testid="menu-duvidas"
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setLocation("/dashboard/duvidas")}
-              >
-                <Mail className="w-5 h-5" />
-                Dúvidas
-              </button>
-            </div>
-          </nav>
-
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#133903] flex items-center justify-center text-white font-semibold">
-                {user?.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user?.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
-              </div>
-            </div>
-            <Button
-              data-testid="button-logout"
-              variant="outline"
-              className="w-full"
-              onClick={() => logoutMutation.mutate()}
-              disabled={logoutMutation.isPending}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </aside>
-
-      {/* Overlay for mobile */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <DashboardSidebar
+        user={user}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+        onLogout={handleLogout}
+        currentPath={location}
+      />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">

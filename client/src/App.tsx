@@ -12,6 +12,7 @@ import Sobre from "@/pages/Sobre";
 import Cestas from "@/pages/Cestas";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
+import Users from "@/pages/Users";
 import SiteSettings from "@/pages/SiteSettings";
 import ContactInfo from "@/pages/ContactInfo";
 import Banners from "@/pages/Banners";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/compra-avulsa" component={CompraAvulsa}/>
       <Route path="/login" component={Login}/>
       <Route path="/dashboard" component={Dashboard}/>
+      <Route path="/dashboard/users" component={Users}/>
       <Route path="/dashboard/site-settings" component={SiteSettings}/>
       <Route path="/dashboard/contact-info" component={ContactInfo}/>
       <Route path="/dashboard/banners" component={Banners}/>

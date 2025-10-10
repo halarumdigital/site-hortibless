@@ -137,6 +137,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Dashboard stats endpoint
+  app.get("/api/dashboard/stats", requireAuth, requireAdmin, async (_req, res) => {
+    try {
+      // Calcular primeiro e último dia do mês atual
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+      // Buscar todos os dados
+      const allOrders = await storage.getAllOrders();
+      const allPurchases = await storage.getAllOneTimePurchases();
+
+      console.log("📊 Dashboard Stats Debug:");
+      console.log("  - Data atual do servidor:", now.toISOString());
+      console.log("  - Mês atual:", now.getMonth() + 1, "/", now.getFullYear());
+      console.log("  - Primeiro dia do mês:", firstDayOfMonth.toISOString());
+      console.log("  - Último dia do mês:", lastDayOfMonth.toISOString());
+      console.log("  - Total de purchases no banco:", allPurchases.length);
+
+      // Mostrar TODAS as datas dos purchases
+      allPurchases.forEach((p, i) => {
+        const pDate = new Date(p.createdAt);
+        const isInRange = pDate >= firstDayOfMonth && pDate <= lastDayOfMonth;
+        console.log(`  - Purchase ${i + 1}:`, {
+          id: p.id,
+          createdAt: p.createdAt,
+          parsed: pDate.toISOString(),
+          month: pDate.getMonth() + 1,
+          year: pDate.getFullYear(),
+          isInCurrentMonth: isInRange
+        });
+      });
+
+      // Buscar clientes únicos (CPFs) de pedidos e compras
+      const allCustomerCpfs = new Set<string>();
+      allOrders.forEach(order => allCustomerCpfs.add(order.customerCpf));
+      allPurchases.forEach(purchase => allCustomerCpfs.add(purchase.customerCpf));
+
+      // Clientes novos (mês atual)
+      const newCustomerCpfs = new Set<string>();
+      allOrders
+        .filter(order => {
+          const orderDate = new Date(order.createdAt);
+          return orderDate >= firstDayOfMonth && orderDate <= lastDayOfMonth;
+        })
+        .forEach(order => newCustomerCpfs.add(order.customerCpf));
+      allPurchases
+        .filter(purchase => {
+          const purchaseDate = new Date(purchase.createdAt);
+          return purchaseDate >= firstDayOfMonth && purchaseDate <= lastDayOfMonth;
+        })
+        .forEach(purchase => newCustomerCpfs.add(purchase.customerCpf));
+
+      // Pedidos novos (mês atual) - total de pedidos (assinaturas + avulsos)
+      const newOrders = allOrders.filter(order => {
+        const orderDate = new Date(order.createdAt);
+        return orderDate >= firstDayOfMonth && orderDate <= lastDayOfMonth;
+      });
+      const newPurchases = allPurchases.filter(purchase => {
+        const purchaseDate = new Date(purchase.createdAt);
+        return purchaseDate >= firstDayOfMonth && purchaseDate <= lastDayOfMonth;
+      });
+      const totalNewOrders = newOrders.length + newPurchases.length;
+
+      // Pedidos avulsos (mês atual)
+      const newOneTimePurchases = newPurchases.length;
+
+      console.log("  - Purchases filtrados do mês atual:", newOneTimePurchases);
+      console.log("  - Total de purchases (TODOS):", allPurchases.length);
+
+      // SEMPRE mostra o total de purchases (DEBUGGING)
+      const finalOneTimePurchases = allPurchases.length;
+
+      // Valor total dos pedidos avulsos (30 dias)
+      const totalOneTimePurchasesValue = newPurchases.reduce((total, purchase) => {
+        const amount = parseFloat(purchase.totalAmount) || 0;
+        return total + amount;
+      }, 0);
+
+      // Assinaturas novas (30 dias)
+      const newSubscriptions = newOrders.length;
+
+      const stats = {
+        totalCustomers: allCustomerCpfs.size,
+        newCustomers: newCustomerCpfs.size,
+        newOrders: totalNewOrders,
+        newOneTimePurchases: finalOneTimePurchases, // Usando o valor temporário
+        totalOneTimePurchasesValue: totalOneTimePurchasesValue,
+        newSubscriptions: newSubscriptions,
+      };
+
+      console.log("📤 STATS FINAIS RETORNADOS:", JSON.stringify(stats, null, 2));
+
+      res.json({ success: true, stats });
+    } catch (error) {
+      console.error("Get dashboard stats error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch dashboard stats"
+      });
+    }
+  });
+
   app.get("/api/users", requireAuth, requireAdmin, async (_req, res) => {
     try {
       const users = await storage.getAllUsers();
@@ -1717,6 +1820,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         message: error.message || "Failed to update status"
       });
+    }
+  });
+
+  // Endpoint de teste simplificado
+  app.get("/api/test/purchases-count", async (req, res) => {
+    try {
+      const allPurchases = await storage.getAllOneTimePurchases();
+      console.log("🔍 TEST: Total purchases:", allPurchases.length);
+      res.json({
+        success: true,
+        total: allPurchases.length,
+        purchases: allPurchases.map(p => ({
+          id: p.id,
+          customerName: p.customerName,
+          createdAt: p.createdAt
+        }))
+      });
+    } catch (error: any) {
+      console.error("❌ Test error:", error);
+      res.status(500).json({ success: false, message: error.message });
     }
   });
 
