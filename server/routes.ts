@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { asaasService } from "./services/asaas.service";
 import { evolutionService } from "./services/evolution.service";
+import { aiService } from "./services/ai.service";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -2147,6 +2148,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         message: error.message || "Failed to process webhook"
       });
+    }
+  });
+
+  // Webhook do WhatsApp (Evolution API)
+  app.post("/api/webhook/whatsapp", async (req, res) => {
+    try {
+      console.log("📱 =================================");
+      console.log("📱 WEBHOOK WHATSAPP CHAMADO!");
+      console.log("📱 Timestamp:", new Date().toISOString());
+      console.log("📱 Body:", JSON.stringify(req.body, null, 2));
+      console.log("📱 =================================");
+
+      const { event, instance, data } = req.body;
+
+      // Validar evento
+      if (!event || !instance || !data) {
+        console.warn("⚠️  Webhook inválido: dados ausentes");
+        return res.status(200).json({ success: true }); // Retorna 200 para não reenviar
+      }
+
+      // Processar apenas eventos de mensagens recebidas
+      if (event !== "messages.upsert") {
+        console.log("ℹ️  Evento ignorado:", event);
+        return res.status(200).json({ success: true });
+      }
+
+      // Pegar informações da mensagem
+      const message = data.messages?.[0];
+      if (!message) {
+        console.warn("⚠️  Mensagem não encontrada no webhook");
+        return res.status(200).json({ success: true });
+      }
+
+      // Ignorar mensagens do próprio bot
+      if (message.key.fromMe) {
+        console.log("ℹ️  Mensagem enviada pelo bot, ignorando");
+        return res.status(200).json({ success: true });
+      }
+
+      // Extrair dados da mensagem
+      const from = message.key.remoteJid; // Número do remetente
+      const messageText = message.message?.conversation ||
+                         message.message?.extendedTextMessage?.text ||
+                         "";
+
+      if (!messageText) {
+        console.log("ℹ️  Mensagem sem texto, ignorando");
+        return res.status(200).json({ success: true });
+      }
+
+      console.log("📩 Mensagem recebida:", {
+        from,
+        text: messageText,
+        instance: instance,
+      });
+
+      // Buscar a conexão pelo instanceName
+      const connections = await storage.getAllWhatsappConnections();
+      const connection = connections.find(c => c.instanceName === instance);
+
+      if (!connection) {
+        console.warn("⚠️  Conexão não encontrada para a instância:", instance);
+        return res.status(200).json({ success: true });
+      }
+
+      // Verificar se a IA está habilitada
+      if (!connection.aiEnabled) {
+        console.log("ℹ️  IA não está habilitada para esta conexão");
+        return res.status(200).json({ success: true });
+      }
+
+      console.log("🤖 Gerando resposta com IA...");
+
+      // Gerar resposta com IA
+      const aiResponse = await aiService.generateResponse(messageText, {
+        aiModel: connection.aiModel || "gpt-4o-mini",
+        aiTemperature: connection.aiTemperature || "0.7",
+        aiMaxTokens: connection.aiMaxTokens || 1000,
+        aiPrompt: connection.aiPrompt || "Você é um assistente virtual útil e amigável.",
+      });
+
+      console.log("✅ Resposta gerada:", aiResponse);
+
+      // Enviar resposta via Evolution API
+      await evolutionService.sendTextMessage(instance, from, aiResponse);
+
+      console.log("📤 Resposta enviada com sucesso!");
+
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      console.error("❌ Erro ao processar webhook WhatsApp:", error);
+      // Retorna 200 mesmo com erro para não reenviar
+      return res.status(200).json({ success: true, error: error.message });
     }
   });
 

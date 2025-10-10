@@ -221,6 +221,22 @@ class EvolutionService {
       { webhook: webhookConfig }
     );
   }
+
+  /**
+   * Envia uma mensagem de texto para um número do WhatsApp
+   */
+  async sendTextMessage(instanceName: string, number: string, text: string): Promise<any> {
+    const body = {
+      number: number,
+      text: text,
+    };
+
+    return await this.makeRequest<any>(
+      `/message/sendText/${instanceName}`,
+      'POST',
+      body
+    );
+  }
 }
 
 export const evolutionService = new EvolutionService();
