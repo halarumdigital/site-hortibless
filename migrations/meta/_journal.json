@@ -22,6 +22,20 @@
       "when": 1760101260912,
       "tag": "0002_sloppy_gamora",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1760190234740,
+      "tag": "0003_chunky_silvermane",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1760190585896,
+      "tag": "0004_spicy_sleeper",
+      "breakpoints": true
     }
   ]
 }

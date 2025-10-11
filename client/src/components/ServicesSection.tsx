@@ -6,7 +6,7 @@ export default function ServicesSection() {
           <p className="text-[#133903] font-semibold mb-2">COMO FUNCIONA</p>
           <h2 className="text-4xl font-bold text-[#2E593F] mb-4">Simples e Prático</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Em poucos passos você garante alimentos frescos e saudáveis na sua casa
+            Em poucos passos, garanta praticidade e frescor para a sua casa ou para o seu negócio.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function ServicesSection() {
             </div>
             <h3 className="text-xl font-bold text-[#2E593F] mb-4">Passo 3</h3>
             <p className="text-gray-600">
-              Receba em casa frutas, legumes e verduras frescos da estação
+              Receba em casa ou no seu negócio frutas, legumes, verduras e temperos frescos da estação
             </p>
           </div>
 

@@ -82,9 +82,9 @@ export default function Cestas() {
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-[#1A472A] to-[#2E593F] text-white py-20">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-5xl font-bold mb-4">Nossos Planos de Cestas</h1>
+            <h1 className="text-5xl font-bold mb-4">PLANOS HORTIBLESS</h1>
             <p className="text-xl text-gray-200 max-w-2xl mx-auto">
-              Escolha o plano ideal para você e sua família. Produtos frescos e selecionados direto da horta para sua mesa.
+              Escolha o plano ideal para sua casa ou seu negócio. Produtos frescos e selecionados direto da horta — prontos para nutrir famílias e impulsionar negócios.
             </p>
           </div>
         </section>
@@ -219,7 +219,7 @@ export default function Cestas() {
               <div className="max-w-6xl mx-auto">
                 <div className="bg-white rounded-xl border-2 border-gray-200 shadow-lg overflow-hidden">
                   <div className="bg-gradient-to-r from-[#1A472A] to-[#2E593F] text-white p-6">
-                    <h2 className="text-3xl font-bold text-center">Calendário Sazonal</h2>
+                    <h2 className="text-3xl font-bold text-center">CALENDÁRIO DA ESTAÇÃO</h2>
                   </div>
                   <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -255,22 +255,22 @@ export default function Cestas() {
                         <div className="flex items-center gap-3">
                           <div className="w-6 h-6 bg-green-500 rounded"></div>
                           <div>
-                            <p className="font-semibold text-gray-800">Alta oferta</p>
-                            <p className="text-sm text-gray-600">Boa disponibilidade, mas em menor volume</p>
+                            <p className="font-semibold text-gray-800">Safra Plena (alta disponibilidade e frescor máximo)</p>
+                            <p className="text-sm text-gray-600">Período em que os alimentos estão em plena safra — mais frescos, saborosos e nutritivos.</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="w-6 h-6 bg-yellow-500 rounded"></div>
                           <div>
-                            <p className="font-semibold text-gray-800">Média oferta</p>
-                            <p className="text-sm text-gray-600">Boa disponibilidade, mas em menor volume</p>
+                            <p className="font-semibold text-gray-800">Safra Moderada (disponibilidade intermediária)</p>
+                            <p className="text-sm text-gray-600">Os produtos ainda estão disponíveis, mas já fora do auge da colheita.</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="w-6 h-6 bg-red-500 rounded"></div>
                           <div>
-                            <p className="font-semibold text-gray-800">Baixa oferta</p>
-                            <p className="text-sm text-gray-600">Produtos fora de época, encontrados com menos frequência</p>
+                            <p className="font-semibold text-gray-800">Safra Limitada (baixa disponibilidade)</p>
+                            <p className="text-sm text-gray-600">Itens em final de safra ou de menor disponibilidade natural.</p>
                           </div>
                         </div>
                       </div>

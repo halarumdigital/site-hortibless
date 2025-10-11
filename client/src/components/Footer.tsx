@@ -40,19 +40,19 @@ export default function Footer() {
               )}
             </div>
             <p className="text-gray-300 mb-4">
-              A HortiBless nasceu com a missão de levar saúde à mesa da família, diretamente da horta, unindo praticidade, sabor e sofisticação.
+              Nossa missão é levar saúde, sabor e praticidade diretamente para a mesa — seja de famílias que valorizam alimentação equilibrada, seja de estabelecimentos que buscam qualidade e frescor em cada preparo.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-bold mb-4">Quick Links</h4>
+            <h4 className="text-lg font-bold mb-4">Acesso Rápido</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-about">About Us</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-services">Our Services</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-projects">Projects</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-team">Team</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-contact">Contact</a></li>
+              <li><a href="/" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-home">Início</a></li>
+              <li><a href="/cestas" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-baskets">Cestas</a></li>
+              <li><a href="/dicas" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-dicas">Dicas</a></li>
+              <li><a href="/sobre" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-about">Sobre</a></li>
+              <li><a href="/contato" className="text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-contact">Contato</a></li>
             </ul>
           </div>
 
@@ -70,6 +70,12 @@ export default function Footer() {
                 <a href={contactInfo.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-social-instagram">
                   <span className="iconify" data-icon="mdi:instagram" data-width="24"></span>
                   <span>Instagram</span>
+                </a>
+              )}
+              {contactInfo?.linkedin && (
+                <a href={contactInfo.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-300 hover:text-[#133903] transition-colors" data-testid="footer-social-linkedin">
+                  <span className="iconify" data-icon="mdi:linkedin" data-width="24"></span>
+                  <span>LinkedIn</span>
                 </a>
               )}
               {contactInfo?.tiktok && (

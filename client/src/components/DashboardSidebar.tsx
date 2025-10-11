@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp, MessageCircle } from "lucide-react";
+import { LogOut, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp, MessageCircle, Lightbulb } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface DashboardSidebarProps {
@@ -29,6 +29,7 @@ export function DashboardSidebar({ user, isSidebarOpen, setIsSidebarOpen, onLogo
     { path: "/dashboard/comparative-table", icon: Table, label: "Tabela Comparativa", testId: "menu-comparative-table" },
     { path: "/dashboard/loose-items", icon: Package, label: "Itens Avulsos", testId: "menu-loose-items" },
     { path: "/dashboard/baskets", icon: ShoppingBasket, label: "Cestas", testId: "menu-baskets" },
+    { path: "/dashboard/dicas", icon: Lightbulb, label: "Dicas", testId: "menu-dicas" },
     { path: "/dashboard/duvidas", icon: Mail, label: "Dúvidas", testId: "menu-duvidas" },
     { path: "/dashboard/scripts", icon: Code, label: "Scripts", testId: "menu-scripts" },
     { path: "/dashboard/pedidos", icon: ShoppingCart, label: "Pedidos", testId: "menu-pedidos" },

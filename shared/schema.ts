@@ -88,6 +88,7 @@ export const contactInfo = mysqlTable("contact_info", {
   instagram: varchar("instagram", { length: 255 }),
   facebook: varchar("facebook", { length: 255 }),
   tiktok: varchar("tiktok", { length: 255 }),
+  linkedin: varchar("linkedin", { length: 255 }),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
@@ -101,6 +102,7 @@ export const contactInfoSchema = z.object({
   instagram: z.string().optional().or(z.literal("")),
   facebook: z.string().optional().or(z.literal("")),
   tiktok: z.string().optional().or(z.literal("")),
+  linkedin: z.string().optional().or(z.literal("")),
 });
 
 export type ContactInfo = typeof contactInfo.$inferSelect;
@@ -457,3 +459,24 @@ export const whatsappAiConfigSchema = z.object({
 export type WhatsappConnection = typeof whatsappConnections.$inferSelect;
 export type InsertWhatsappConnection = z.infer<typeof whatsappConnectionSchema>;
 export type UpdateWhatsappAiConfig = z.infer<typeof whatsappAiConfigSchema>;
+
+// Blog tips/posts table
+export const blogPosts = mysqlTable("blog_posts", {
+  id: int("id").primaryKey().autoincrement(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content", { length: 16777215 }).notNull(), // MEDIUMTEXT
+  imagePath: varchar("image_path", { length: 500 }),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
+export const blogPostSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  content: z.string().min(1, "Content is required"),
+  imagePath: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = z.infer<typeof blogPostSchema>;

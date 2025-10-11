@@ -67,10 +67,10 @@ export default function HeroSection() {
       <div className="container mx-auto px-4 flex flex-col items-center text-center pt-20 relative z-10" style={{height: '850px'}}>
         <h1 className="text-7xl font-bold leading-tight mt-20">
           Mais do que um delivery, <br />
-          uma bênção para a sua mesa!
+          uma bênção para a sua mesa e o seu negócio!
         </h1>
         <p className="mt-6 text-lg max-w-2xl mb-8">
-          HortiBless entrega frutas, legumes e verduras selecionados, frescos da estação, em cestas avulsas ou planos por assinatura, direto na sua casa
+          HortiBless entrega frutas, legumes, verduras e temperos frescos da estação, selecionados com carinho, entregues em cestas avulsas ou por assinatura, para nutrir sua família e impulsionar seu negócio.
         </p>
         <div className="flex gap-4 mt-4">
           <a href="/#contact" className="bg-[#133903] text-white px-8 py-4 rounded-lg font-semibold hover:bg-[#0f2b02] transition-colors shadow-lg">
@@ -109,16 +109,16 @@ export default function HeroSection() {
             </div>
             <h3 className="text-lg font-bold mb-3 text-white">Cultivo Sustentável</h3>
             <p className="text-sm text-gray-200 text-center leading-relaxed">
-              Trabalhamos com produtores locais que utilizam práticas responsáveis e respeitam o meio ambiente.
+              Trabalhamos com produtores que utilizam práticas responsáveis e respeitam o meio ambiente.
             </p>
           </div>
           <div className="bg-[#2E593F] p-6 rounded-lg shadow-xl text-center flex flex-col items-center justify-start hover:bg-[#1f3e2b] transition-colors h-full" data-testid="feature-local">
             <div className="bg-[#133903] rounded-full p-4 mb-4 shadow-lg">
               <span className="iconify text-white" data-icon="mdi:handshake" data-width="40"></span>
             </div>
-            <h3 className="text-lg font-bold mb-3 text-white">Apoio ao Produtor Local</h3>
+            <h3 className="text-lg font-bold mb-3 text-white">Flexibilidade de Planos</h3>
             <p className="text-sm text-gray-200 text-center leading-relaxed">
-              Valorizamos a agricultura familiar, incentivando pequenos produtores e fortalecendo a economia da nossa região.
+              Opções de planos personalizados ou cestas avulsas para atender diferentes necessidades
             </p>
           </div>
         </div>

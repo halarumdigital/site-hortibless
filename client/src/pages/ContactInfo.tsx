@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contactInfoSchema, type UpdateContactInfo } from "@shared/schema";
 import { Phone, Menu, Mail, MapPin, Save } from "lucide-react";
-import { FaWhatsapp, FaInstagram, FaFacebook, FaTiktok } from "react-icons/fa";
+import { FaWhatsapp, FaInstagram, FaFacebook, FaTiktok, FaLinkedin } from "react-icons/fa";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 
 interface ContactInfo {
@@ -25,6 +25,7 @@ interface ContactInfo {
   instagram?: string;
   facebook?: string;
   tiktok?: string;
+  linkedin?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -81,6 +82,7 @@ export default function ContactInfo() {
       instagram: contactData?.info?.instagram || "",
       facebook: contactData?.info?.facebook || "",
       tiktok: contactData?.info?.tiktok || "",
+      linkedin: contactData?.info?.linkedin || "",
     },
     values: {
       whatsapp: contactData?.info?.whatsapp || "",
@@ -89,6 +91,7 @@ export default function ContactInfo() {
       instagram: contactData?.info?.instagram || "",
       facebook: contactData?.info?.facebook || "",
       tiktok: contactData?.info?.tiktok || "",
+      linkedin: contactData?.info?.linkedin || "",
     },
   });
 
@@ -223,7 +226,7 @@ export default function ContactInfo() {
 
                     <div className="border-t pt-6">
                       <h3 className="text-lg font-semibold mb-4">Redes Sociais</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                           control={form.control}
                           name="instagram"
@@ -281,6 +284,28 @@ export default function ContactInfo() {
                                 <Input
                                   data-testid="input-tiktok"
                                   placeholder="@usuario"
+                                  {...field}
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="linkedin"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <FaLinkedin className="text-blue-700" />
+                                LinkedIn
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  data-testid="input-linkedin"
+                                  placeholder="https://linkedin.com/in/..."
                                   {...field}
                                   value={field.value || ""}
                                 />

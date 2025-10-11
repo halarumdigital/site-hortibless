@@ -1,13 +1,4 @@
 import { OpenAI } from "openai";
-import * as dotenv from 'dotenv';
-
-dotenv.config();
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-if (!OPENAI_API_KEY) {
-  console.warn('⚠️  OPENAI_API_KEY não configurado. Por favor, configure no arquivo .env');
-}
 
 interface AiConfig {
   aiModel?: string;
@@ -19,21 +10,27 @@ interface AiConfig {
 class AiService {
   private openai: OpenAI | null = null;
 
-  constructor() {
-    if (OPENAI_API_KEY) {
+  // Lazy initialization - cria a instância do OpenAI apenas quando necessário
+  private getOpenAI(): OpenAI {
+    if (!this.openai) {
+      const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+      if (!OPENAI_API_KEY) {
+        throw new Error("OPENAI_API_KEY não está configurado. Verifique o arquivo .env");
+      }
+
       this.openai = new OpenAI({
         apiKey: OPENAI_API_KEY,
       });
     }
+    return this.openai;
   }
 
   async generateResponse(message: string, config: AiConfig): Promise<string> {
-    if (!this.openai) {
-      throw new Error("OpenAI não está configurado. Verifique a chave API.");
-    }
+    const openai = this.getOpenAI();
 
     try {
-      const completion = await this.openai.chat.completions.create({
+      const completion = await openai.chat.completions.create({
         model: config.aiModel || "gpt-4o-mini",
         messages: [
           {

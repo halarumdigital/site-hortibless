@@ -35,6 +35,11 @@ export default function Header() {
                 <span className="iconify" data-icon="mdi:facebook" data-width="16"></span>
               </a>
             )}
+            {contactInfo?.linkedin && (
+              <a href={contactInfo.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-gray-300" data-testid="link-linkedin">
+                <span className="iconify" data-icon="mdi:linkedin" data-width="16"></span>
+              </a>
+            )}
             {contactInfo?.tiktok && (
               <a href={contactInfo.tiktok} target="_blank" rel="noopener noreferrer" className="hover:text-gray-300" data-testid="link-tiktok">
                 <span className="iconify" data-icon="ic:baseline-tiktok" data-width="16"></span>
@@ -67,6 +72,7 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-8 text-gray-700 font-medium">
             <a href="/#home" className="hover:text-[#2E593F]" data-testid="nav-home">Início</a>
             <a href="/cestas" className="hover:text-[#2E593F]" data-testid="nav-baskets">Cestas</a>
+            <a href="/dicas" className="hover:text-[#2E593F]" data-testid="nav-dicas">Dicas</a>
             <a href="/sobre" className="hover:text-[#2E593F]" data-testid="nav-about">Sobre</a>
             <a href="/contato" className="hover:text-[#2E593F]" data-testid="nav-contact">Contato</a>
           </div>

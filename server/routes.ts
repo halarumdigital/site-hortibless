@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema } from "@shared/schema";
+import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema, blogPostSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -2629,6 +2629,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         message: error.message || "Failed to test AI"
       });
+    }
+  });
+
+  // Blog Posts Routes
+  app.get("/api/blog-posts", async (req, res) => {
+    try {
+      const posts = await storage.getAllBlogPosts();
+      res.json({ success: true, posts });
+    } catch (error: any) {
+      console.error('Error fetching blog posts:', error);
+      res.status(500).json({ message: error.message || "Failed to fetch blog posts" });
+    }
+  });
+
+  app.post("/api/blog-posts", requireAuth, requireAdmin, upload.single("image"), async (req, res) => {
+    try {
+      const data = blogPostSchema.parse({
+        title: req.body.title,
+        content: req.body.content,
+        imagePath: req.file ? `/uploads/${req.file.filename}` : undefined,
+        isActive: req.body.isActive === "true" || req.body.isActive === true,
+      });
+
+      const post = await storage.createBlogPost(data);
+      res.json({ success: true, post });
+    } catch (error: any) {
+      console.error('Error creating blog post:', error);
+      res.status(400).json({ message: error.message || "Failed to create blog post" });
+    }
+  });
+
+  app.put("/api/blog-posts/:id", requireAuth, requireAdmin, upload.single("image"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data = blogPostSchema.parse({
+        title: req.body.title,
+        content: req.body.content,
+        imagePath: req.file ? `/uploads/${req.file.filename}` : req.body.imagePath,
+        isActive: req.body.isActive === "true" || req.body.isActive === true,
+      });
+
+      const post = await storage.updateBlogPost(id, data);
+      res.json({ success: true, post });
+    } catch (error: any) {
+      console.error('Error updating blog post:', error);
+      res.status(400).json({ message: error.message || "Failed to update blog post" });
+    }
+  });
+
+  app.delete("/api/blog-posts/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBlogPost(id);
+      res.json({ success: true, message: "Blog post deleted successfully" });
+    } catch (error: any) {
+      console.error('Error deleting blog post:', error);
+      res.status(500).json({ message: error.message || "Failed to delete blog post" });
     }
   });
 

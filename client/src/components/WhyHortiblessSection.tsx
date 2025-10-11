@@ -2,8 +2,8 @@ export default function WhyHortiblessSection() {
   const benefits = [
     {
       icon: "mdi:home-heart",
-      title: "Conveniência sem sair de casa",
-      description: "Entrega direto na porta"
+      title: "Conveniência para sua casa ou seu negócio",
+      description: "Entrega direta na sua casa ou no seu negócio"
     },
     {
       icon: "mdi:calendar-sync",

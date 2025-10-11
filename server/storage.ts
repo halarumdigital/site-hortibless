@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost } from "@shared/schema";
 import { db } from "./db";
-import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections } from "@shared/schema";
+import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -80,6 +80,11 @@ export interface IStorage {
   updateWhatsappConnectionStatus(id: number, status: string): Promise<WhatsappConnection | undefined>;
   updateWhatsappAiConfig(id: number, config: UpdateWhatsappAiConfig): Promise<WhatsappConnection | undefined>;
   deleteWhatsappConnection(id: number): Promise<boolean>;
+  getAllBlogPosts(): Promise<BlogPost[]>;
+  getActiveBlogPosts(): Promise<BlogPost[]>;
+  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, post: InsertBlogPost): Promise<BlogPost | undefined>;
+  deleteBlogPost(id: number): Promise<boolean>;
 }
 
 export class MySQLStorage implements IStorage {
@@ -608,6 +613,45 @@ export class MySQLStorage implements IStorage {
 
   async deleteWhatsappConnection(id: number): Promise<boolean> {
     await db.delete(whatsappConnections).where(eq(whatsappConnections.id, id));
+    return true;
+  }
+
+  async getAllBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
+  }
+
+  async getActiveBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts)
+      .where(eq(blogPosts.isActive, true))
+      .orderBy(desc(blogPosts.createdAt));
+  }
+
+  async createBlogPost(insertPost: InsertBlogPost): Promise<BlogPost> {
+    const [post] = await db.insert(blogPosts).values({
+      title: insertPost.title,
+      content: insertPost.content,
+      imagePath: insertPost.imagePath,
+      isActive: insertPost.isActive !== undefined ? insertPost.isActive : true,
+    }).$returningId();
+
+    const [created] = await db.select().from(blogPosts).where(eq(blogPosts.id, post.id)).limit(1);
+    return created;
+  }
+
+  async updateBlogPost(id: number, updatePost: InsertBlogPost): Promise<BlogPost | undefined> {
+    await db.update(blogPosts).set({
+      title: updatePost.title,
+      content: updatePost.content,
+      imagePath: updatePost.imagePath,
+      isActive: updatePost.isActive !== undefined ? updatePost.isActive : true,
+    }).where(eq(blogPosts.id, id));
+
+    const [updated] = await db.select().from(blogPosts).where(eq(blogPosts.id, id)).limit(1);
+    return updated;
+  }
+
+  async deleteBlogPost(id: number): Promise<boolean> {
+    await db.delete(blogPosts).where(eq(blogPosts.id, id));
     return true;
   }
 }
