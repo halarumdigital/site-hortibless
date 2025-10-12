@@ -2247,12 +2247,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Webhook do WhatsApp (Evolution API)
-  app.post("/api/webhook/whatsapp", async (req, res) => {
+  // Webhook do WhatsApp (Evolution API) - Handler principal
+  const handleWhatsAppWebhook = async (req: any, res: any) => {
     try {
       console.log("📱 =================================");
       console.log("📱 WEBHOOK WHATSAPP CHAMADO!");
       console.log("📱 Timestamp:", new Date().toISOString());
+      console.log("📱 URL:", req.url);
       console.log("📱 Body:", JSON.stringify(req.body, null, 2));
       console.log("📱 =================================");
 
@@ -2265,7 +2266,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Processar apenas eventos de mensagens recebidas
-      if (event !== "messages.upsert") {
+      // Aceita tanto "messages.upsert" quanto "MESSAGES_UPSERT"
+      const eventLower = event.toLowerCase().replace(/_/g, '.');
+      if (eventLower !== "messages.upsert") {
         console.log("ℹ️  Evento ignorado:", event);
         return res.status(200).json({ success: true });
       }
@@ -2338,7 +2341,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Retorna 200 mesmo com erro para não reenviar
       return res.status(200).json({ success: true, error: error.message });
     }
-  });
+  };
+
+  // Registrar rotas do webhook (múltiplas rotas para compatibilidade)
+  app.post("/api/webhook/whatsapp", handleWhatsAppWebhook);
+  app.post("/api/webhook/whatsapp/messages-upsert", handleWhatsAppWebhook);
+  app.post("/api/webhook/whatsapp/:event", handleWhatsAppWebhook);
 
   // WhatsApp Connections routes
   app.get("/api/whatsapp-connections", requireAuth, requireAdmin, async (_req, res) => {
