@@ -1,4 +1,5 @@
 import { OpenAI } from "openai";
+import * as fs from "fs";
 
 interface AiConfig {
   aiModel?: string;
@@ -50,6 +51,31 @@ class AiService {
     } catch (error: any) {
       console.error('❌ Erro ao gerar resposta da IA:', error);
       throw new Error(`Erro ao gerar resposta: ${error.message}`);
+    }
+  }
+
+  /**
+   * Transcreve um arquivo de áudio usando Whisper da OpenAI
+   * @param audioFilePath - Caminho para o arquivo de áudio
+   * @returns Texto transcrito
+   */
+  async transcribeAudio(audioFilePath: string): Promise<string> {
+    const openai = this.getOpenAI();
+
+    try {
+      console.log('🎤 Iniciando transcrição de áudio:', audioFilePath);
+
+      const transcription = await openai.audio.transcriptions.create({
+        file: fs.createReadStream(audioFilePath),
+        model: "whisper-1",
+        language: "pt", // Português
+      });
+
+      console.log('✅ Transcrição concluída:', transcription.text);
+      return transcription.text;
+    } catch (error: any) {
+      console.error('❌ Erro ao transcrever áudio:', error);
+      throw new Error(`Erro ao transcrever áudio: ${error.message}`);
     }
   }
 }

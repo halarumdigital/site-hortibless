@@ -233,6 +233,59 @@ class EvolutionService {
       body
     );
   }
+
+  /**
+   * Baixa um arquivo de mídia (áudio, imagem, vídeo, etc.) do WhatsApp
+   * @param instanceName - Nome da instância
+   * @param messageId - ID da mensagem
+   * @param convertToMp4 - Se true, converte o áudio para MP4 (útil para Whisper)
+   * @returns Buffer com o conteúdo do arquivo
+   */
+  async downloadMedia(instanceName: string, messageId: string, convertToMp4: boolean = false): Promise<Buffer> {
+    if (!this.baseUrl || !this.apiToken) {
+      throw new Error('Evolution API não configurada');
+    }
+
+    const url = `${this.baseUrl}/message/downloadMedia/${instanceName}`;
+
+    console.log(`📥 Baixando mídia: ${url}`);
+    console.log(`📋 Message ID: ${messageId}`);
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'apikey': this.apiToken,
+    };
+
+    const body = {
+      messageId: messageId,
+      convertToMp4: convertToMp4,
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      console.log(`📥 Status da resposta: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erro ao baixar mídia: ${response.status} - ${errorText}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      console.log(`✅ Mídia baixada: ${buffer.length} bytes`);
+
+      return buffer;
+    } catch (error: any) {
+      console.error('❌ Erro ao baixar mídia:', error);
+      throw error;
+    }
+  }
 }
 
 export const evolutionService = new EvolutionService();

@@ -2296,20 +2296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Extrair dados da mensagem
       const from = message.key.remoteJid; // Número do remetente
-      const messageText = message.message?.conversation ||
-                         message.message?.extendedTextMessage?.text ||
-                         "";
-
-      if (!messageText) {
-        console.log("ℹ️  Mensagem sem texto, ignorando");
-        return res.status(200).json({ success: true });
-      }
-
-      console.log("📩 Mensagem recebida:", {
-        from,
-        text: messageText,
-        instance: instance,
-      });
+      const messageId = message.key.id;
 
       // Buscar a conexão pelo instanceName
       const connections = await storage.getAllWhatsappConnections();
@@ -2325,6 +2312,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("ℹ️  IA não está habilitada para esta conexão");
         return res.status(200).json({ success: true });
       }
+
+      // Verificar se é uma mensagem de áudio
+      const isAudio = !!message.message?.audioMessage;
+      let messageText = "";
+
+      if (isAudio) {
+        console.log("🎤 Mensagem de áudio detectada!");
+
+        try {
+          // Baixar o áudio
+          const audioBuffer = await evolutionService.downloadMedia(instance, messageId, true);
+
+          // Salvar temporariamente
+          const tempDir = './temp';
+          if (!require('fs').existsSync(tempDir)) {
+            require('fs').mkdirSync(tempDir, { recursive: true });
+          }
+
+          const tempFilePath = `${tempDir}/audio_${messageId}.mp4`;
+          require('fs').writeFileSync(tempFilePath, audioBuffer);
+
+          console.log(`💾 Áudio salvo em: ${tempFilePath}`);
+
+          // Transcrever o áudio
+          messageText = await aiService.transcribeAudio(tempFilePath);
+
+          console.log(`📝 Transcrição: ${messageText}`);
+
+          // Deletar arquivo temporário
+          require('fs').unlinkSync(tempFilePath);
+
+        } catch (error: any) {
+          console.error('❌ Erro ao processar áudio:', error);
+          await evolutionService.sendTextMessage(
+            instance,
+            from,
+            "Desculpe, não consegui processar seu áudio. Por favor, tente novamente."
+          );
+          return res.status(200).json({ success: true });
+        }
+      } else {
+        // Mensagem de texto
+        messageText = message.message?.conversation ||
+                     message.message?.extendedTextMessage?.text ||
+                     "";
+      }
+
+      if (!messageText) {
+        console.log("ℹ️  Mensagem sem texto ou áudio, ignorando");
+        return res.status(200).json({ success: true });
+      }
+
+      console.log("📩 Mensagem recebida:", {
+        from,
+        text: messageText,
+        instance: instance,
+        isAudio: isAudio,
+      });
 
       console.log("🤖 Gerando resposta com IA...");
 
