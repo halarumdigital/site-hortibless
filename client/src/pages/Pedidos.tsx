@@ -24,6 +24,7 @@ interface OneTimePurchase {
   deliveryAddress: string;
   totalAmount: string;
   paymentMethod: string;
+  excludedItems?: string;
   cardNumber?: string;
   cardName?: string;
   cardExpiry?: string;
@@ -48,6 +49,7 @@ interface Order {
   deliveryAddress: string;
   frequency: string;
   totalAmount: string;
+  excludedItems?: string;
   status: string;
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;
@@ -284,6 +286,15 @@ export default function Pedidos() {
             <div class="info-row"><span class="value">${purchase.deliveryAddress}</span></div>
           </div>
 
+          ${purchase.excludedItems ? `
+          <div class="section">
+            <h2>⚠️ Itens que o Cliente NÃO Deseja Receber</h2>
+            <div class="info-row" style="background: #FFF3E0; padding: 15px; border-radius: 8px; border-left: 4px solid #FF9800;">
+              <span class="value" style="color: #E65100; font-weight: bold;">${purchase.excludedItems}</span>
+            </div>
+          </div>
+          ` : ''}
+
           <div class="section">
             <h2>Informações do Produto</h2>
             <div class="info-row"><span class="label">Cesta:</span><span class="value">${basket?.name || 'N/A'}</span></div>
@@ -419,6 +430,15 @@ export default function Pedidos() {
             <h2>Endereço de Entrega</h2>
             <div class="info-row"><span class="value">${order.deliveryAddress}</span></div>
           </div>
+
+          ${order.excludedItems ? `
+          <div class="section">
+            <h2>⚠️ Itens que o Cliente NÃO Deseja Receber</h2>
+            <div class="info-row" style="background: #FFF3E0; padding: 15px; border-radius: 8px; border-left: 4px solid #FF9800;">
+              <span class="value" style="color: #E65100; font-weight: bold;">${order.excludedItems}</span>
+            </div>
+          </div>
+          ` : ''}
 
           <div class="section">
             <h2>Informações do Produto</h2>
@@ -731,6 +751,17 @@ export default function Pedidos() {
                   }
                 </p>
               </div>
+
+              {/* Itens Excluídos */}
+              {viewingOrder.excludedItems && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-[#133903]">Itens que o Cliente NÃO Deseja Receber</h3>
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <p className="text-sm font-medium text-orange-800 mb-2">⚠️ Observação Importante:</p>
+                    <p className="text-gray-700 whitespace-pre-wrap">{viewingOrder.excludedItems}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Produto */}
               {viewingBasket && (

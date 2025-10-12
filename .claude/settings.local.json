@@ -43,7 +43,8 @@
       "Bash(do echo \"=== Processando $page ===\")",
       "Bash(git checkout:*)",
       "Bash(for file in Faq.tsx SeasonalCalendar.tsx Pedidos.tsx Scripts.tsx)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

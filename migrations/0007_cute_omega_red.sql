@@ -1,0 +1,1 @@
+ALTER TABLE `faqs` ADD `category` varchar(100) DEFAULT 'Geral' NOT NULL;

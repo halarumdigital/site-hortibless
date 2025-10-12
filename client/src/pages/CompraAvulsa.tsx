@@ -8,8 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { CreditCard, Receipt, QrCode } from "lucide-react";
+import { CreditCard, Receipt, QrCode, Package } from "lucide-react";
+import { ProductPortfolioModal } from "@/components/ProductPortfolioModal";
 
 interface Basket {
   id: number;
@@ -51,6 +53,8 @@ export default function CompraAvulsa() {
 
   const [sameAddress, setSameAddress] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState<"cartao" | "boleto" | "pix">("cartao");
+  const [excludedItems, setExcludedItems] = useState("");
+  const [portfolioModalOpen, setPortfolioModalOpen] = useState(false);
 
   // Card payment fields
   const [cardNumber, setCardNumber] = useState("");
@@ -60,6 +64,7 @@ export default function CompraAvulsa() {
 
   // Payment result state
   const [paymentResult, setPaymentResult] = useState<{
+    purchaseId?: number;
     pixQrCode?: string;
     pixPayload?: string;
     bankSlipUrl?: string;
@@ -195,6 +200,7 @@ export default function CompraAvulsa() {
         deliveryAddress: buildDeliveryAddress(),
         totalAmount: basket.priceLoose ? Number(basket.priceLoose).toFixed(2) : "0.00",
         paymentMethod,
+        excludedItems,
         cardNumber: paymentMethod === "cartao" ? cardNumber.replace(/\D/g, '') : undefined,
         cardName: paymentMethod === "cartao" ? cardName : undefined,
         cardExpiry: paymentMethod === "cartao" ? cardExpiry : undefined,
@@ -221,6 +227,7 @@ export default function CompraAvulsa() {
           console.log("📋 Payload:", data.pixPayload?.substring(0, 100));
 
           setPaymentResult({
+            purchaseId: data.purchase.id,
             pixQrCode: data.pixQrCode,
             pixPayload: data.pixPayload,
           });
@@ -237,6 +244,7 @@ export default function CompraAvulsa() {
           });
         } else if (paymentMethod === "boleto" && data.bankSlipUrl) {
           setPaymentResult({
+            purchaseId: data.purchase.id,
             bankSlipUrl: data.bankSlipUrl,
           });
           toast({
@@ -244,13 +252,13 @@ export default function CompraAvulsa() {
             description: "Acesse o link para imprimir seu boleto.",
           });
         } else {
-          // Cartão - redireciona
+          // Cartão - redireciona para página de obrigado
           toast({
             title: "Compra realizada com sucesso!",
             description: "Pagamento processado.",
           });
           setTimeout(() => {
-            setLocation("/");
+            setLocation(`/obrigado/${data.purchase.id}?type=avulsa`);
           }, 2000);
         }
       } else {
@@ -433,18 +441,16 @@ export default function CompraAvulsa() {
 
                   <div className="border-t pt-4 flex gap-4">
                     <Button
-                      onClick={() => setLocation("/")}
-                      variant="outline"
-                      className="flex-1"
+                      onClick={() => {
+                        if (paymentResult?.purchaseId) {
+                          setLocation(`/obrigado/${paymentResult.purchaseId}?type=avulsa`);
+                        } else {
+                          setLocation("/");
+                        }
+                      }}
+                      className="flex-1 bg-[#133903] hover:bg-[#0f2b02]"
                     >
-                      Voltar para Home
-                    </Button>
-                    <Button
-                      onClick={() => setPaymentResult(null)}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Nova Compra
+                      Continuar
                     </Button>
                   </div>
                 </CardContent>
@@ -710,6 +716,42 @@ export default function CompraAvulsa() {
                     </CardContent>
                   </Card>
 
+                  {/* Excluded Items */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Itens da Cesta</CardTitle>
+                      <CardDescription>Indique os itens que não deseja receber</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full border-[#133903] text-[#133903] hover:bg-[#133903] hover:text-white"
+                        onClick={() => setPortfolioModalOpen(true)}
+                      >
+                        <Package className="w-4 h-4 mr-2" />
+                        Clique aqui para ver os itens da cesta
+                      </Button>
+
+                      <div>
+                        <Label htmlFor="excludedItems">
+                          Itens que NÃO deseja receber *
+                        </Label>
+                        <Textarea
+                          id="excludedItems"
+                          value={excludedItems}
+                          onChange={(e) => setExcludedItems(e.target.value)}
+                          required
+                          placeholder="Ex: Tomate, Alface, Cenoura..."
+                          className="min-h-[100px]"
+                        />
+                        <p className="text-sm text-gray-500 mt-2">
+                          Liste os itens que você não deseja receber em sua cesta, separados por vírgula.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Payment Method */}
                   <Card>
                     <CardHeader>
@@ -913,6 +955,12 @@ export default function CompraAvulsa() {
       </main>
 
       <Footer />
+
+      {/* Product Portfolio Modal */}
+      <ProductPortfolioModal
+        open={portfolioModalOpen}
+        onOpenChange={setPortfolioModalOpen}
+      />
     </div>
   );
 }

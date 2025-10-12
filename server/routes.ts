@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema, blogPostSchema } from "@shared/schema";
+import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, productPortfolioSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema, blogPostSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -882,6 +882,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/faqs/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = faqSchema.partial().parse(req.body);
+      const faq = await storage.updateFaq(id, validatedData);
+
+      res.json({
+        success: true,
+        message: "FAQ updated successfully",
+        faq
+      });
+    } catch (error: any) {
+      console.error("Update FAQ error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to update FAQ"
+      });
+    }
+  });
+
   app.delete("/api/faqs/:id", requireAuth, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -1048,6 +1068,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: error.message || "Failed to delete comparative table"
+      });
+    }
+  });
+
+  // Product Portfolio routes
+  app.get("/api/product-portfolio", async (req, res) => {
+    try {
+      const items = await storage.getActiveProductPortfolio();
+      res.json({ success: true, items });
+    } catch (error: any) {
+      console.error("Get product portfolio error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get product portfolio"
+      });
+    }
+  });
+
+  app.get("/api/product-portfolio/all", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const items = await storage.getAllProductPortfolio();
+      res.json({ success: true, items });
+    } catch (error: any) {
+      console.error("Get all product portfolio error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get product portfolio"
+      });
+    }
+  });
+
+  app.post("/api/product-portfolio", requireAuth, requireAdmin, upload.single("image"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Image file is required"
+        });
+      }
+
+      const imagePath = `/uploads/${req.file.filename}`;
+
+      const validatedData = productPortfolioSchema.parse({
+        imagePath,
+      });
+
+      const item = await storage.createProductPortfolio(validatedData);
+
+      res.json({
+        success: true,
+        message: "Product portfolio created successfully",
+        item
+      });
+    } catch (error: any) {
+      console.error("Create product portfolio error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to create product portfolio"
+      });
+    }
+  });
+
+  app.delete("/api/product-portfolio/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteProductPortfolio(id);
+
+      res.json({
+        success: true,
+        message: "Product portfolio deleted successfully"
+      });
+    } catch (error: any) {
+      console.error("Delete product portfolio error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to delete product portfolio"
       });
     }
   });

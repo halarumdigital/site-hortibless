@@ -11,18 +11,29 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { faqSchema, type InsertFaq } from "@shared/schema";
-import { Menu, HelpCircle, Trash2, Plus } from "lucide-react";
+import { Menu, HelpCircle, Trash2, Plus, Edit as EditIcon } from "lucide-react";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Faq {
   id: number;
   question: string;
   answer: string;
+  category: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const FAQ_CATEGORIES = [
+  "GERAL",
+  "CESTAS E PRODUTOS",
+  "ASSINATURAS",
+  "PAGAMENTOS",
+  "ATENDIMENTO EMPRESARIAL (B2B)",
+  "ENTREGAS",
+];
 
 export default function Faq() {
   const { user, isLoading: authLoading } = useAuth(true);
@@ -30,6 +41,7 @@ export default function Faq() {
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [deletingFaqId, setDeletingFaqId] = useState<number | null>(null);
+  const [editingFaq, setEditingFaq] = useState<Faq | null>(null);
 
   const { data: faqsData, isLoading: faqsLoading } = useQuery<{ success: boolean; faqs: Faq[] }>({
     queryKey: ["/api/faqs/all"],
@@ -41,6 +53,7 @@ export default function Faq() {
     defaultValues: {
       question: "",
       answer: "",
+      category: "GERAL",
       isActive: true,
     },
   });
@@ -61,13 +74,33 @@ export default function Faq() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/faqs/all"] });
-      toast({ title: "FAQ created successfully" });
-      form.reset();
+      toast({ title: "FAQ criada com sucesso" });
+      form.reset({ question: "", answer: "", category: "GERAL", isActive: true });
     },
     onError: (error: Error) => {
       console.error("Create error:", error);
       toast({
-        title: "Failed to create FAQ",
+        title: "Falha ao criar FAQ",
+        description: error.message,
+        variant: "destructive"
+      });
+    },
+  });
+
+  const updateFaqMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertFaq> }) => {
+      return await apiRequest("PUT", `/api/faqs/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/faqs/all"] });
+      toast({ title: "FAQ atualizada com sucesso" });
+      setEditingFaq(null);
+      form.reset({ question: "", answer: "", category: "GERAL", isActive: true });
+    },
+    onError: (error: Error) => {
+      console.error("Update error:", error);
+      toast({
+        title: "Falha ao atualizar FAQ",
         description: error.message,
         variant: "destructive"
       });
@@ -128,20 +161,26 @@ export default function Faq() {
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-4xl mx-auto space-y-6">
-            {/* Add FAQ Form */}
+            {/* Add/Edit FAQ Form */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Plus className="w-5 h-5" />
-                  Adicionar Nova Pergunta
+                  {editingFaq ? <EditIcon className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                  {editingFaq ? "Editar Pergunta" : "Adicionar Nova Pergunta"}
                 </CardTitle>
                 <CardDescription>
-                  Adicione perguntas frequentes e suas respostas
+                  {editingFaq ? "Edite a pergunta e resposta" : "Adicione perguntas frequentes e suas respostas"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit((data) => createFaqMutation.mutate(data))} className="space-y-4">
+                  <form onSubmit={form.handleSubmit((data) => {
+                    if (editingFaq) {
+                      updateFaqMutation.mutate({ id: editingFaq.id, data });
+                    } else {
+                      createFaqMutation.mutate(data);
+                    }
+                  })} className="space-y-4">
                     <FormField
                       control={form.control}
                       name="question"
@@ -178,13 +217,55 @@ export default function Faq() {
                       )}
                     />
 
-                    <Button
-                      type="submit"
-                      disabled={createFaqMutation.isPending}
-                      className="w-full sm:w-auto bg-[#133903] hover:bg-[#6a9e24]"
-                    >
-                      {createFaqMutation.isPending ? "Salvando..." : "Adicionar FAQ"}
-                    </Button>
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Categoria</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione uma categoria" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {FAQ_CATEGORIES.map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex gap-2">
+                      <Button
+                        type="submit"
+                        disabled={createFaqMutation.isPending || updateFaqMutation.isPending}
+                        className="bg-[#133903] hover:bg-[#6a9e24]"
+                      >
+                        {editingFaq
+                          ? (updateFaqMutation.isPending ? "Atualizando..." : "Atualizar FAQ")
+                          : (createFaqMutation.isPending ? "Salvando..." : "Adicionar FAQ")
+                        }
+                      </Button>
+                      {editingFaq && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingFaq(null);
+                            form.reset({ question: "", answer: "", category: "GERAL", isActive: true });
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                      )}
+                    </div>
                   </form>
                 </Form>
               </CardContent>
@@ -215,22 +296,45 @@ export default function Faq() {
                           <div className="flex-1 space-y-2">
                             <div className="flex items-start gap-2">
                               <HelpCircle className="w-5 h-5 text-[#133903] mt-0.5 flex-shrink-0" />
-                              <p className="font-semibold text-gray-900 dark:text-white">
-                                {faq.question}
-                              </p>
+                              <div className="flex-1">
+                                <p className="font-semibold text-gray-900 dark:text-white">
+                                  {faq.question}
+                                </p>
+                                <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-[#133903] text-white rounded">
+                                  {faq.category}
+                                </span>
+                              </div>
                             </div>
                             <p className="text-gray-600 dark:text-gray-300 pl-7">
                               {faq.answer}
                             </p>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeletingFaqId(faq.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingFaq(faq);
+                                form.reset({
+                                  question: faq.question,
+                                  answer: faq.answer,
+                                  category: faq.category,
+                                  isActive: faq.isActive,
+                                });
+                              }}
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            >
+                              <EditIcon className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setDeletingFaqId(faq.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}

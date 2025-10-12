@@ -8,7 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { ProductPortfolioModal } from "@/components/ProductPortfolioModal";
+import { Package } from "lucide-react";
 
 interface Basket {
   id: number;
@@ -50,6 +53,8 @@ export default function Carrinho() {
 
   const [sameAddress, setSameAddress] = useState(true);
   const [frequency, setFrequency] = useState<"semanal" | "quinzenal" | "mensal">("mensal");
+  const [excludedItems, setExcludedItems] = useState("");
+  const [portfolioModalOpen, setPortfolioModalOpen] = useState(false);
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
@@ -199,6 +204,7 @@ export default function Carrinho() {
         deliveryAddress: buildDeliveryAddress(),
         frequency,
         totalAmount: calculateMonthlyTotal(),
+        excludedItems,
         cardNumber: cardNumber.replace(/\D/g, ''),
         cardName,
         cardExpiry,
@@ -221,9 +227,9 @@ export default function Carrinho() {
           description: "Você receberá um e-mail de confirmação em breve.",
         });
 
-        // Redirect to success page or home
+        // Redirect to thank you page
         setTimeout(() => {
-          setLocation("/");
+          setLocation(`/obrigado/${data.order.id}?type=assinatura`);
         }, 2000);
       } else {
         toast({
@@ -532,6 +538,42 @@ export default function Carrinho() {
                     </CardContent>
                   </Card>
 
+                  {/* Excluded Items */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Itens da Cesta</CardTitle>
+                      <CardDescription>Indique os itens que não deseja receber</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full border-[#133903] text-[#133903] hover:bg-[#133903] hover:text-white"
+                        onClick={() => setPortfolioModalOpen(true)}
+                      >
+                        <Package className="w-4 h-4 mr-2" />
+                        Clique aqui para ver os itens da cesta
+                      </Button>
+
+                      <div>
+                        <Label htmlFor="excludedItems">
+                          Itens que NÃO deseja receber *
+                        </Label>
+                        <Textarea
+                          id="excludedItems"
+                          value={excludedItems}
+                          onChange={(e) => setExcludedItems(e.target.value)}
+                          required
+                          placeholder="Ex: Tomate, Alface, Cenoura..."
+                          className="min-h-[100px]"
+                        />
+                        <p className="text-sm text-gray-500 mt-2">
+                          Liste os itens que você não deseja receber em sua cesta, separados por vírgula.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Payment Information */}
                   <Card>
                     <CardHeader>
@@ -679,6 +721,12 @@ export default function Carrinho() {
       </main>
 
       <Footer />
+
+      {/* Product Portfolio Modal */}
+      <ProductPortfolioModal
+        open={portfolioModalOpen}
+        onOpenChange={setPortfolioModalOpen}
+      />
     </div>
   );
 }

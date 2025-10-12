@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type ProductPortfolio, type InsertProductPortfolio, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost } from "@shared/schema";
 import { db } from "./db";
-import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts } from "@shared/schema";
+import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, productPortfolio, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -42,6 +42,7 @@ export interface IStorage {
   getAllFaqs(): Promise<Faq[]>;
   getActiveFaqs(): Promise<Faq[]>;
   createFaq(faq: InsertFaq): Promise<Faq>;
+  updateFaq(id: number, faq: Partial<InsertFaq>): Promise<Faq | undefined>;
   deleteFaq(id: number): Promise<boolean>;
   getAllSeasonalCalendarItems(): Promise<SeasonalCalendar[]>;
   getActiveSeasonalCalendarItems(): Promise<SeasonalCalendar[]>;
@@ -51,6 +52,10 @@ export interface IStorage {
   getActiveComparativeTables(): Promise<ComparativeTable[]>;
   createComparativeTable(item: InsertComparativeTable): Promise<ComparativeTable>;
   deleteComparativeTable(id: number): Promise<boolean>;
+  getAllProductPortfolio(): Promise<ProductPortfolio[]>;
+  getActiveProductPortfolio(): Promise<ProductPortfolio[]>;
+  createProductPortfolio(item: InsertProductPortfolio): Promise<ProductPortfolio>;
+  deleteProductPortfolio(id: number): Promise<boolean>;
   getAllLooseItems(): Promise<LooseItem[]>;
   getActiveLooseItems(): Promise<LooseItem[]>;
   createLooseItem(item: InsertLooseItem): Promise<LooseItem>;
@@ -356,11 +361,18 @@ export class MySQLStorage implements IStorage {
     const [faq] = await db.insert(faqs).values({
       question: insertFaq.question,
       answer: insertFaq.answer,
+      category: insertFaq.category || "GERAL",
       isActive: insertFaq.isActive !== undefined ? insertFaq.isActive : true,
     }).$returningId();
 
     const [created] = await db.select().from(faqs).where(eq(faqs.id, faq.id)).limit(1);
     return created;
+  }
+
+  async updateFaq(id: number, updateFaq: Partial<InsertFaq>): Promise<Faq | undefined> {
+    await db.update(faqs).set(updateFaq).where(eq(faqs.id, id));
+    const [updated] = await db.select().from(faqs).where(eq(faqs.id, id)).limit(1);
+    return updated;
   }
 
   async deleteFaq(id: number): Promise<boolean> {
@@ -413,6 +425,31 @@ export class MySQLStorage implements IStorage {
 
   async deleteComparativeTable(id: number): Promise<boolean> {
     await db.delete(comparativeTables).where(eq(comparativeTables.id, id));
+    return true;
+  }
+
+  async getAllProductPortfolio(): Promise<ProductPortfolio[]> {
+    return await db.select().from(productPortfolio).orderBy(desc(productPortfolio.createdAt));
+  }
+
+  async getActiveProductPortfolio(): Promise<ProductPortfolio[]> {
+    return await db.select().from(productPortfolio)
+      .where(eq(productPortfolio.isActive, true))
+      .orderBy(desc(productPortfolio.createdAt));
+  }
+
+  async createProductPortfolio(insertItem: InsertProductPortfolio): Promise<ProductPortfolio> {
+    const [item] = await db.insert(productPortfolio).values({
+      imagePath: insertItem.imagePath,
+      isActive: insertItem.isActive !== undefined ? insertItem.isActive : true,
+    }).$returningId();
+
+    const [created] = await db.select().from(productPortfolio).where(eq(productPortfolio.id, item.id)).limit(1);
+    return created;
+  }
+
+  async deleteProductPortfolio(id: number): Promise<boolean> {
+    await db.delete(productPortfolio).where(eq(productPortfolio.id, id));
     return true;
   }
 

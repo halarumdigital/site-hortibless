@@ -23,6 +23,7 @@ import Regions from "@/pages/Regions";
 import Faq from "@/pages/Faq";
 import SeasonalCalendar from "@/pages/SeasonalCalendar";
 import ComparativeTable from "@/pages/ComparativeTable";
+import PortfolioProdutos from "@/pages/PortfolioProdutos";
 import LooseItems from "@/pages/LooseItems";
 import Baskets from "@/pages/Baskets";
 import Dicas from "@/pages/Dicas";
@@ -33,6 +34,7 @@ import WhatsAppIA from "@/pages/WhatsAppIA";
 import Carrinho from "@/pages/Carrinho";
 import CompraAvulsa from "@/pages/CompraAvulsa";
 import TermosUso from "@/pages/TermosUso";
+import Obrigado from "@/pages/Obrigado";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -50,6 +52,7 @@ function Router() {
       <Route path="/carrinho" component={Carrinho}/>
       <Route path="/compra-avulsa" component={CompraAvulsa}/>
       <Route path="/termos-de-uso" component={TermosUso}/>
+      <Route path="/obrigado/:orderId" component={Obrigado}/>
       <Route path="/login" component={Login}/>
       <Route path="/dashboard" component={Dashboard}/>
       <Route path="/dashboard/users" component={Users}/>
@@ -62,6 +65,7 @@ function Router() {
       <Route path="/dashboard/faq" component={Faq}/>
       <Route path="/dashboard/seasonal-calendar" component={SeasonalCalendar}/>
       <Route path="/dashboard/comparative-table" component={ComparativeTable}/>
+      <Route path="/dashboard/portfolio-produtos" component={PortfolioProdutos}/>
       <Route path="/dashboard/loose-items" component={LooseItems}/>
       <Route path="/dashboard/baskets" component={Baskets}/>
       <Route path="/dashboard/dicas" component={Dicas}/>

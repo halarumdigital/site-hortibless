@@ -197,6 +197,7 @@ export const faqs = mysqlTable("faqs", {
   id: int("id").primaryKey().autoincrement(),
   question: text("question").notNull(),
   answer: text("answer").notNull(),
+  category: varchar("category", { length: 100 }).notNull().default("GERAL"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
@@ -205,6 +206,7 @@ export const faqs = mysqlTable("faqs", {
 export const faqSchema = z.object({
   question: z.string().min(1, "Question is required"),
   answer: z.string().min(1, "Answer is required"),
+  category: z.string().min(1, "Category is required"),
   isActive: z.boolean().optional(),
 });
 
@@ -335,6 +337,7 @@ export const orders = mysqlTable("orders", {
   deliveryAddress: text("delivery_address").notNull(),
   frequency: varchar("frequency", { length: 20 }).notNull(), // 'semanal', 'quinzenal', 'mensal'
   totalAmount: varchar("total_amount", { length: 50 }).notNull(),
+  excludedItems: text("excluded_items"), // Itens que o cliente NÃO deseja receber
   cardNumber: varchar("card_number", { length: 19 }),
   cardName: varchar("card_name", { length: 255 }),
   cardExpiry: varchar("card_expiry", { length: 7 }),
@@ -358,6 +361,7 @@ export const orderSchema = z.object({
     required_error: "Periodicidade é obrigatória",
   }),
   totalAmount: z.string(),
+  excludedItems: z.string().min(1, "Por favor, indique os itens que não deseja receber"),
   cardNumber: z.string().optional(),
   cardName: z.string().optional(),
   cardExpiry: z.string().optional(),
@@ -380,6 +384,7 @@ export const oneTimePurchases = mysqlTable("one_time_purchases", {
   deliveryAddress: text("delivery_address").notNull(),
   totalAmount: varchar("total_amount", { length: 50 }).notNull(),
   paymentMethod: varchar("payment_method", { length: 20 }).notNull(), // 'cartao', 'boleto', 'pix'
+  excludedItems: text("excluded_items"), // Itens que o cliente NÃO deseja receber
   // Card payment fields
   cardNumber: varchar("card_number", { length: 19 }),
   cardName: varchar("card_name", { length: 255 }),
@@ -408,6 +413,7 @@ export const oneTimePurchaseSchema = z.object({
   paymentMethod: z.enum(["cartao", "boleto", "pix"], {
     required_error: "Método de pagamento é obrigatório",
   }),
+  excludedItems: z.string().min(1, "Por favor, indique os itens que não deseja receber"),
   cardNumber: z.string().optional(),
   cardName: z.string().optional(),
   cardExpiry: z.string().optional(),
@@ -480,3 +486,20 @@ export const blogPostSchema = z.object({
 
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof blogPostSchema>;
+
+// Product Portfolio table
+export const productPortfolio = mysqlTable("product_portfolio", {
+  id: int("id").primaryKey().autoincrement(),
+  imagePath: varchar("image_path", { length: 500 }).notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
+export const productPortfolioSchema = z.object({
+  imagePath: z.string().min(1, "Image path is required"),
+  isActive: z.boolean().optional(),
+});
+
+export type ProductPortfolio = typeof productPortfolio.$inferSelect;
+export type InsertProductPortfolio = z.infer<typeof productPortfolioSchema>;
