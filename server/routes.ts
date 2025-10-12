@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import { asaasService } from "./services/asaas.service";
 import { evolutionService } from "./services/evolution.service";
 import { aiService } from "./services/ai.service";
+import * as fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -2347,13 +2348,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Salvar temporariamente
           const tempDir = './temp';
-          if (!require('fs').existsSync(tempDir)) {
-            require('fs').mkdirSync(tempDir, { recursive: true });
+          if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
           }
 
           // Salvar como .ogg (formato original do WhatsApp)
           const tempFilePath = `${tempDir}/audio_${messageId}.ogg`;
-          require('fs').writeFileSync(tempFilePath, audioBuffer);
+          fs.writeFileSync(tempFilePath, audioBuffer);
 
           console.log(`💾 Áudio salvo em: ${tempFilePath}`);
 
@@ -2363,7 +2364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`📝 Transcrição: ${messageText}`);
 
           // Deletar arquivo temporário
-          require('fs').unlinkSync(tempFilePath);
+          fs.unlinkSync(tempFilePath);
 
         } catch (error: any) {
           console.error('❌ Erro ao processar áudio:', error);
