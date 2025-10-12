@@ -2321,8 +2321,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("🎤 Mensagem de áudio detectada!");
 
         try {
-          // Baixar o áudio
-          const audioBuffer = await evolutionService.downloadMedia(instance, messageId, true);
+          const audioUrl = message.message.audioMessage.url;
+          console.log(`📥 URL do áudio: ${audioUrl}`);
+
+          // Baixar o áudio diretamente da URL
+          const response = await fetch(audioUrl);
+          if (!response.ok) {
+            throw new Error(`Erro ao baixar áudio: ${response.status}`);
+          }
+
+          const audioBuffer = Buffer.from(await response.arrayBuffer());
+          console.log(`✅ Áudio baixado: ${audioBuffer.length} bytes`);
 
           // Salvar temporariamente
           const tempDir = './temp';
@@ -2330,7 +2339,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             require('fs').mkdirSync(tempDir, { recursive: true });
           }
 
-          const tempFilePath = `${tempDir}/audio_${messageId}.mp4`;
+          // Salvar como .ogg (formato original do WhatsApp)
+          const tempFilePath = `${tempDir}/audio_${messageId}.ogg`;
           require('fs').writeFileSync(tempFilePath, audioBuffer);
 
           console.log(`💾 Áudio salvo em: ${tempFilePath}`);
