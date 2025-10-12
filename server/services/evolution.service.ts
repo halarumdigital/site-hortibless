@@ -237,10 +237,10 @@ class EvolutionService {
   /**
    * Baixa um arquivo de mídia (áudio, imagem, vídeo, etc.) do WhatsApp
    * @param instanceName - Nome da instância
-   * @param messageKey - Chave da mensagem com remoteJid, id e fromMe
+   * @param message - Objeto completo da mensagem
    * @returns Buffer com o conteúdo do arquivo decodificado
    */
-  async downloadMedia(instanceName: string, messageKey: { remoteJid: string, id: string, fromMe: boolean }): Promise<Buffer> {
+  async downloadMedia(instanceName: string, message: any): Promise<Buffer> {
     if (!this.baseUrl || !this.apiToken) {
       throw new Error('Evolution API não configurada');
     }
@@ -249,19 +249,16 @@ class EvolutionService {
     const url = `${this.baseUrl}/chat/getBase64FromMediaMessage/${instanceName}`;
 
     console.log(`📥 Baixando mídia decodificada: ${url}`);
-    console.log(`📋 Message Key:`, messageKey);
+    console.log(`📋 Message:`, JSON.stringify(message, null, 2));
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'apikey': this.apiToken,
     };
 
+    // Enviar a mensagem completa
     const body = {
-      key: {
-        remoteJid: messageKey.remoteJid,
-        id: messageKey.id,
-        fromMe: messageKey.fromMe,
-      },
+      message: message,
       convertToMp4: false, // Manter formato original (ogg/opus)
     };
 
@@ -280,6 +277,8 @@ class EvolutionService {
       }
 
       const result = await response.json();
+
+      console.log(`📋 Resposta da API:`, JSON.stringify(result, null, 2));
 
       // A resposta deve conter o base64 da mídia
       if (!result.base64) {

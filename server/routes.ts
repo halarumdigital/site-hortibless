@@ -2329,11 +2329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Usar a Evolution API para baixar e decodificar o áudio
           console.log("📥 Baixando áudio via Evolution API...");
-          audioBuffer = await evolutionService.downloadMedia(instance, {
-            remoteJid: message.key.remoteJid,
-            id: message.key.id,
-            fromMe: message.key.fromMe,
-          });
+          audioBuffer = await evolutionService.downloadMedia(instance, message);
 
           // Salvar temporariamente
           const tempDir = './temp';
