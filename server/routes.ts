@@ -2327,24 +2327,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const audioMessage = message.message.audioMessage;
           let audioBuffer: Buffer;
 
-          // Verificar se o áudio veio em base64 (configuração do webhook)
-          if (audioMessage.base64 || data.base64) {
-            console.log("📦 Áudio em base64 detectado");
-            const base64Data = audioMessage.base64 || data.base64;
-            audioBuffer = Buffer.from(base64Data, 'base64');
-            console.log(`✅ Áudio decodificado: ${audioBuffer.length} bytes`);
-          } else if (audioMessage.url) {
-            // Fallback: baixar da URL se não tiver base64
-            console.log(`📥 Baixando áudio da URL: ${audioMessage.url}`);
-            const response = await fetch(audioMessage.url);
-            if (!response.ok) {
-              throw new Error(`Erro ao baixar áudio: ${response.status}`);
-            }
-            audioBuffer = Buffer.from(await response.arrayBuffer());
-            console.log(`✅ Áudio baixado: ${audioBuffer.length} bytes`);
-          } else {
-            throw new Error("Áudio não possui base64 nem URL");
-          }
+          // Usar a Evolution API para baixar e decodificar o áudio
+          console.log("📥 Baixando áudio via Evolution API...");
+          audioBuffer = await evolutionService.downloadMedia(instance, {
+            remoteJid: message.key.remoteJid,
+            id: message.key.id,
+            fromMe: message.key.fromMe,
+          });
 
           // Salvar temporariamente
           const tempDir = './temp';

@@ -237,19 +237,19 @@ class EvolutionService {
   /**
    * Baixa um arquivo de mídia (áudio, imagem, vídeo, etc.) do WhatsApp
    * @param instanceName - Nome da instância
-   * @param messageId - ID da mensagem
-   * @param convertToMp4 - Se true, converte o áudio para MP4 (útil para Whisper)
-   * @returns Buffer com o conteúdo do arquivo
+   * @param messageKey - Chave da mensagem com remoteJid, id e fromMe
+   * @returns Buffer com o conteúdo do arquivo decodificado
    */
-  async downloadMedia(instanceName: string, messageId: string, convertToMp4: boolean = false): Promise<Buffer> {
+  async downloadMedia(instanceName: string, messageKey: { remoteJid: string, id: string, fromMe: boolean }): Promise<Buffer> {
     if (!this.baseUrl || !this.apiToken) {
       throw new Error('Evolution API não configurada');
     }
 
-    const url = `${this.baseUrl}/message/downloadMedia/${instanceName}`;
+    // Endpoint correto: /chat/getBase64FromMediaMessage
+    const url = `${this.baseUrl}/chat/getBase64FromMediaMessage/${instanceName}`;
 
-    console.log(`📥 Baixando mídia: ${url}`);
-    console.log(`📋 Message ID: ${messageId}`);
+    console.log(`📥 Baixando mídia decodificada: ${url}`);
+    console.log(`📋 Message Key:`, messageKey);
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -257,8 +257,12 @@ class EvolutionService {
     };
 
     const body = {
-      messageId: messageId,
-      convertToMp4: convertToMp4,
+      key: {
+        remoteJid: messageKey.remoteJid,
+        id: messageKey.id,
+        fromMe: messageKey.fromMe,
+      },
+      convertToMp4: false, // Manter formato original (ogg/opus)
     };
 
     try {
@@ -275,10 +279,19 @@ class EvolutionService {
         throw new Error(`Erro ao baixar mídia: ${response.status} - ${errorText}`);
       }
 
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      const result = await response.json();
 
-      console.log(`✅ Mídia baixada: ${buffer.length} bytes`);
+      // A resposta deve conter o base64 da mídia
+      if (!result.base64) {
+        throw new Error('Resposta não contém base64');
+      }
+
+      console.log(`✅ Base64 recebido, tamanho: ${result.base64.length} caracteres`);
+
+      // Decodificar base64 para buffer
+      const buffer = Buffer.from(result.base64, 'base64');
+
+      console.log(`✅ Mídia decodificada: ${buffer.length} bytes`);
 
       return buffer;
     } catch (error: any) {
