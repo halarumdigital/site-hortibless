@@ -2274,9 +2274,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Pegar informações da mensagem
-      const message = data.messages?.[0];
-      if (!message) {
-        console.warn("⚠️  Mensagem não encontrada no webhook");
+      // A estrutura pode variar: data.messages[0] ou diretamente data
+      const message = data.messages?.[0] || data;
+
+      console.log("🔍 Estrutura da mensagem:", {
+        hasMessages: !!data.messages,
+        hasKey: !!message.key,
+        hasMessage: !!message.message,
+      });
+
+      if (!message.key) {
+        console.warn("⚠️  Mensagem não encontrada no webhook (sem key)");
         return res.status(200).json({ success: true });
       }
 
