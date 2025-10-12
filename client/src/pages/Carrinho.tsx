@@ -663,6 +663,12 @@ export default function Carrinho() {
                       <p className="text-xs">
                         O valor total mensal de <strong>R$ {calculateMonthlyTotal()}</strong> será cobrado uma vez por mês no cartão cadastrado.
                       </p>
+                      <p className="text-xs mt-2">
+                        Ao finalizar o pedido, você concorda com nossos{" "}
+                        <a href="/termos-de-uso" target="_blank" className="text-[#133903] font-semibold hover:underline">
+                          Termos de Uso
+                        </a>.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

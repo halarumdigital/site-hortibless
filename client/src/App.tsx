@@ -32,6 +32,7 @@ import Pedidos from "@/pages/Pedidos";
 import WhatsAppIA from "@/pages/WhatsAppIA";
 import Carrinho from "@/pages/Carrinho";
 import CompraAvulsa from "@/pages/CompraAvulsa";
+import TermosUso from "@/pages/TermosUso";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/dicas" component={DicasBlog}/>
       <Route path="/carrinho" component={Carrinho}/>
       <Route path="/compra-avulsa" component={CompraAvulsa}/>
+      <Route path="/termos-de-uso" component={TermosUso}/>
       <Route path="/login" component={Login}/>
       <Route path="/dashboard" component={Dashboard}/>
       <Route path="/dashboard/users" component={Users}/>

@@ -5,16 +5,10 @@ export default function Footer() {
   const { contactInfo } = useContactInfo();
   const { settings } = useSiteSettings();
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle newsletter subscription
-    alert('Newsletter subscription functionality would be implemented here');
-  };
-
   return (
     <footer className="bg-[#1A472A] text-white pt-16 pb-8">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Company Info */}
           <div>
             <div className="flex items-center mb-4" data-testid="footer-logo">
@@ -87,26 +81,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Newsletter */}
-          <div>
-            <h4 className="text-lg font-bold mb-4">Newsletter</h4>
-            <p className="text-gray-300 mb-4">Subscribe to get the latest updates and offers.</p>
-            <form className="flex" onSubmit={handleNewsletterSubmit}>
-              <input 
-                type="email" 
-                placeholder="Your email" 
-                className="flex-1 px-4 py-2 rounded-l-lg text-gray-800 focus:outline-none"
-                data-testid="input-newsletter-email"
-              />
-              <button 
-                type="submit" 
-                className="bg-[#133903] px-4 py-2 rounded-r-lg hover:bg-[#6a9f24] transition-colors"
-                data-testid="button-newsletter-submit"
-              >
-                <span className="iconify" data-icon="mdi:send" data-width="20"></span>
-              </button>
-            </form>
-          </div>
         </div>
 
         {/* Bottom Bar */}
@@ -117,6 +91,7 @@ export default function Footer() {
               Feito pela <a href="https://halarum.dev" target="_blank" rel="noopener noreferrer" className="hover:text-[#133903] transition-colors font-semibold">Halarum.dev</a>
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
+              <a href="/termos-de-uso" className="hover:text-[#133903] transition-colors" data-testid="footer-terms">Termos de Uso</a>
               <a href="#" className="hover:text-[#133903] transition-colors" data-testid="footer-privacy">Política de Privacidade</a>
             </div>
           </div>

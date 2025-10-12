@@ -897,6 +897,12 @@ export default function CompraAvulsa() {
                       <p className="text-xs">
                         Esta é uma compra avulsa, sem renovação automática. Você receberá seu pedido uma única vez.
                       </p>
+                      <p className="text-xs mt-2">
+                        Ao finalizar a compra, você concorda com nossos{" "}
+                        <a href="/termos-de-uso" target="_blank" className="text-[#133903] font-semibold hover:underline">
+                          Termos de Uso
+                        </a>.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

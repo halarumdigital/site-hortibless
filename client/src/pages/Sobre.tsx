@@ -128,7 +128,7 @@ export default function Sobre() {
                   />
                 </div>
                 <div>
-                  <h2 className="text-4xl font-bold text-[#2E593F] mb-6">NOSSA HISTÓRIA</h2>
+                  <h2 className="text-4xl font-bold text-[#2E593F] mb-6">Nossa História</h2>
                   <div className="space-y-4 text-gray-700 text-lg">
                     <p>
                       A ideia da HortiBless nasceu do desejo de transformar a forma como pessoas e negócios consomem hortifruti — com mais praticidade, saúde e confiança. Em meio à rotina corrida, percebemos a necessidade de um serviço que garantisse alimentos sempre frescos, selecionados e entregues com carinho, tanto para famílias quanto para estabelecimentos que valorizam qualidade e sabor em cada preparo.
@@ -196,15 +196,15 @@ export default function Sobre() {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
               <div>
-                <div className="text-5xl font-bold mb-2">20+</div>
+                <div className="text-5xl font-bold mb-2">50+</div>
                 <div className="text-gray-200">Famílias e Negócios Atendidos</div>
               </div>
               <div>
-                <div className="text-5xl font-bold mb-2">20+</div>
+                <div className="text-5xl font-bold mb-2">34+</div>
                 <div className="text-gray-200">Variedades de Frutas</div>
               </div>
               <div>
-                <div className="text-5xl font-bold mb-2">20+</div>
+                <div className="text-5xl font-bold mb-2">28+</div>
                 <div className="text-gray-200">Variedades de Legumes</div>
               </div>
               <div>

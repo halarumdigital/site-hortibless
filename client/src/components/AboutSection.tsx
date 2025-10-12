@@ -12,53 +12,19 @@ export default function AboutSection() {
             />
           </div>
           <div>
-            <p className="text-[#133903] font-semibold mb-2">ABOUT US</p>
-            <h2 className="text-4xl font-bold text-[#2E593F] mb-6">We Are Leader in Hydroponic Technology</h2>
+            <h2 className="text-4xl font-bold text-[#2E593F] mb-6">Sobre nós</h2>
             <p className="text-gray-600 mb-6">
-              ZATPLANT is a pioneering company in the field of hydroponic farming and sustainable agriculture. 
-              With over 10 years of experience, we've helped thousands of farmers and businesses transition to 
-              efficient, eco-friendly growing methods.
+              Na HortiBless, acreditamos que cada refeição é uma oportunidade de cuidar de pessoas e negócios, oferecendo produtos hortifruti frescos, selecionados e da estação. Nossa missão é levar saúde, sabor e praticidade diretamente para a mesa — seja de famílias que valorizam alimentação equilibrada, seja de estabelecimentos que buscam qualidade e frescor em cada preparo.
             </p>
             <p className="text-gray-600 mb-6">
-              Our mission is to revolutionize agriculture through innovative hydroponic solutions that save water, 
-              increase yield, and promote sustainable food production for future generations.
+              Por meio dos nossos planos de assinatura e entregas personalizadas, criamos experiências que unem conveniência, sofisticação e frescor, tornando cada refeição mais especial e nutritiva. Trabalhamos para que alimentação saudável e saborosa faça parte do dia a dia de todos que confiam na HortiBless.
             </p>
-            <div className="grid grid-cols-2 gap-6 mb-8">
-              <div className="flex items-start" data-testid="feature-expert-team">
-                <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:check-circle" data-width="24"></span>
-                <div>
-                  <h4 className="font-semibold text-[#2E593F]">Expert Team</h4>
-                  <p className="text-sm text-gray-600">Certified professionals</p>
-                </div>
-              </div>
-              <div className="flex items-start" data-testid="feature-quality-products">
-                <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:check-circle" data-width="24"></span>
-                <div>
-                  <h4 className="font-semibold text-[#2E593F]">Quality Products</h4>
-                  <p className="text-sm text-gray-600">Premium equipment</p>
-                </div>
-              </div>
-              <div className="flex items-start" data-testid="feature-support">
-                <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:check-circle" data-width="24"></span>
-                <div>
-                  <h4 className="font-semibold text-[#2E593F]">24/7 Support</h4>
-                  <p className="text-sm text-gray-600">Always here to help</p>
-                </div>
-              </div>
-              <div className="flex items-start" data-testid="feature-eco-friendly">
-                <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:check-circle" data-width="24"></span>
-                <div>
-                  <h4 className="font-semibold text-[#2E593F]">Eco-Friendly</h4>
-                  <p className="text-sm text-gray-600">Sustainable solutions</p>
-                </div>
-              </div>
-            </div>
-            <button 
-              className="bg-[#133903] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
-              data-testid="button-discover-more"
+            <a
+              href="/sobre"
+              className="inline-block bg-[#133903] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors"
             >
-              Discover More
-            </button>
+              Ver mais
+            </a>
           </div>
         </div>
       </div>

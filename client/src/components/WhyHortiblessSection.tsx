@@ -18,7 +18,7 @@ export default function WhyHortiblessSection() {
     {
       icon: "mdi:basket-outline",
       title: "Cestas no tamanho ideal",
-      description: "Pequena, média ou grande"
+      description: "Pequena, média, grande ou personalizada"
     },
     {
       icon: "mdi:food-apple",
