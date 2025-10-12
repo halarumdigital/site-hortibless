@@ -2319,19 +2319,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (isAudio) {
         console.log("🎤 Mensagem de áudio detectada!");
+        console.log("🔍 Campos do audioMessage:", Object.keys(message.message.audioMessage));
+        console.log("🔍 Campos do data:", Object.keys(data));
 
         try {
-          const audioUrl = message.message.audioMessage.url;
-          console.log(`📥 URL do áudio: ${audioUrl}`);
+          const audioMessage = message.message.audioMessage;
+          let audioBuffer: Buffer;
 
-          // Baixar o áudio diretamente da URL
-          const response = await fetch(audioUrl);
-          if (!response.ok) {
-            throw new Error(`Erro ao baixar áudio: ${response.status}`);
+          // Verificar se o áudio veio em base64 (configuração do webhook)
+          if (audioMessage.base64 || data.base64) {
+            console.log("📦 Áudio em base64 detectado");
+            const base64Data = audioMessage.base64 || data.base64;
+            audioBuffer = Buffer.from(base64Data, 'base64');
+            console.log(`✅ Áudio decodificado: ${audioBuffer.length} bytes`);
+          } else if (audioMessage.url) {
+            // Fallback: baixar da URL se não tiver base64
+            console.log(`📥 Baixando áudio da URL: ${audioMessage.url}`);
+            const response = await fetch(audioMessage.url);
+            if (!response.ok) {
+              throw new Error(`Erro ao baixar áudio: ${response.status}`);
+            }
+            audioBuffer = Buffer.from(await response.arrayBuffer());
+            console.log(`✅ Áudio baixado: ${audioBuffer.length} bytes`);
+          } else {
+            throw new Error("Áudio não possui base64 nem URL");
           }
-
-          const audioBuffer = Buffer.from(await response.arrayBuffer());
-          console.log(`✅ Áudio baixado: ${audioBuffer.length} bytes`);
 
           // Salvar temporariamente
           const tempDir = './temp';
