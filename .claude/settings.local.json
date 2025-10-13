@@ -45,7 +45,10 @@
       "Bash(for file in Faq.tsx SeasonalCalendar.tsx Pedidos.tsx Scripts.tsx)",
       "Bash(del:*)",
       "Bash(npx tsc:*)",
-      "Bash(move:*)"
+      "Bash(move:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "ask": []

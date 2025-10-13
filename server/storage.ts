@@ -1,5 +1,5 @@
 import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type ProductPortfolio, type InsertProductPortfolio, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost } from "@shared/schema";
-import { db } from "./db";
+import { db, connection } from "./db";
 import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, productPortfolio, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -146,24 +146,21 @@ export class MySQLStorage implements IStorage {
 
   async verifyPassword(username: string, password: string): Promise<User | null> {
     try {
-      // Usando query SQL direta para evitar problemas com Drizzle ORM em produção
-      const result = await db.execute<User>(
-        `SELECT id, name, email, username, password, phone, role, is_active as isActive, created_at as createdAt, updated_at as updatedAt
-         FROM users
-         WHERE username = ?
-         LIMIT 1`,
+      // Usar conexão MySQL2 direta para evitar problemas com Drizzle em produção
+      const [rows] = await connection.execute(
+        'SELECT id, name, email, username, password, phone, role, is_active, created_at, updated_at FROM users WHERE username = ? LIMIT 1',
         [username]
       );
 
-      const rows = Array.isArray(result) ? result : result.rows || [];
-      if (rows.length === 0) return null;
+      const users = rows as any[];
+      if (!users || users.length === 0) return null;
 
-      const user = rows[0] as any;
+      const user = users[0];
       const isValid = await bcrypt.compare(password, user.password);
 
       if (!isValid) return null;
 
-      // Converter is_active para isActive se necessário
+      // Converter campos do MySQL para o formato esperado
       return {
         id: user.id,
         name: user.name,
@@ -172,9 +169,9 @@ export class MySQLStorage implements IStorage {
         password: user.password,
         phone: user.phone || null,
         role: user.role,
-        isActive: user.isActive === 1 || user.isActive === true,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        isActive: user.is_active === 1 || user.is_active === true,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at
       };
     } catch (error) {
       console.error('Error in verifyPassword:', error);
