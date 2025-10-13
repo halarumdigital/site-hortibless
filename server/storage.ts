@@ -145,11 +145,41 @@ export class MySQLStorage implements IStorage {
   }
 
   async verifyPassword(username: string, password: string): Promise<User | null> {
-    const user = await this.getUserByUsername(username);
-    if (!user) return null;
-    
-    const isValid = await bcrypt.compare(password, user.password);
-    return isValid ? user : null;
+    try {
+      // Usando query SQL direta para evitar problemas com Drizzle ORM em produção
+      const result = await db.execute<User>(
+        `SELECT id, name, email, username, password, phone, role, is_active as isActive, created_at as createdAt, updated_at as updatedAt
+         FROM users
+         WHERE username = ?
+         LIMIT 1`,
+        [username]
+      );
+
+      const rows = Array.isArray(result) ? result : result.rows || [];
+      if (rows.length === 0) return null;
+
+      const user = rows[0] as any;
+      const isValid = await bcrypt.compare(password, user.password);
+
+      if (!isValid) return null;
+
+      // Converter is_active para isActive se necessário
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        password: user.password,
+        phone: user.phone || null,
+        role: user.role,
+        isActive: user.isActive === 1 || user.isActive === true,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+    } catch (error) {
+      console.error('Error in verifyPassword:', error);
+      return null;
+    }
   }
 
   async saveContactMessage(message: InsertContactMessage): Promise<ContactMessage> {
