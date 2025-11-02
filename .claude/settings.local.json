@@ -48,7 +48,9 @@
       "Bash(move:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Read(//e/**)",
+      "Bash(nul)"
     ],
     "deny": [],
     "ask": []

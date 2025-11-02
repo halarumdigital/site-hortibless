@@ -503,3 +503,59 @@ export const productPortfolioSchema = z.object({
 
 export type ProductPortfolio = typeof productPortfolio.$inferSelect;
 export type InsertProductPortfolio = z.infer<typeof productPortfolioSchema>;
+
+// Chat Conversations table
+export const conversations = mysqlTable("conversations", {
+  id: int("id").primaryKey().autoincrement(),
+  customerId: int("customer_id"),
+  customerName: varchar("customer_name", { length: 255 }).notNull(),
+  customerEmail: varchar("customer_email", { length: 255 }),
+  customerWhatsapp: varchar("customer_whatsapp", { length: 50 }).notNull(),
+  agentId: int("agent_id"),
+  agentName: varchar("agent_name", { length: 255 }),
+  status: varchar("status", { length: 50 }).notNull().default("active"), // active, closed, pending
+  channel: varchar("channel", { length: 50 }).notNull().default("whatsapp"), // whatsapp, web, etc
+  lastMessageAt: timestamp("last_message_at"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
+// Chat Messages table
+export const conversationMessages = mysqlTable("conversation_messages", {
+  id: int("id").primaryKey().autoincrement(),
+  conversationId: int("conversation_id").notNull(),
+  sender: varchar("sender", { length: 50 }).notNull(), // user, agent, system
+  senderName: varchar("sender_name", { length: 255 }),
+  message: text("message").notNull(),
+  messageType: varchar("message_type", { length: 50 }).notNull().default("text"), // text, image, audio, video, document
+  mediaUrl: varchar("media_url", { length: 500 }),
+  isRead: boolean("is_read").notNull().default(false),
+  metadata: text("metadata"), // JSON string for additional data
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Schemas for conversations
+export const conversationSchema = z.object({
+  customerName: z.string().min(1, "Nome do cliente é obrigatório"),
+  customerEmail: z.string().email("Email inválido").optional().or(z.literal("")),
+  customerWhatsapp: z.string().min(1, "WhatsApp é obrigatório"),
+  agentId: z.number().optional(),
+  agentName: z.string().optional(),
+  status: z.enum(["active", "closed", "pending"]).optional(),
+  channel: z.enum(["whatsapp", "web", "telegram"]).optional(),
+});
+
+export const conversationMessageSchema = z.object({
+  conversationId: z.number().min(1, "ID da conversa é obrigatório"),
+  sender: z.enum(["user", "agent", "system"]),
+  senderName: z.string().optional(),
+  message: z.string().min(1, "Mensagem é obrigatória"),
+  messageType: z.enum(["text", "image", "audio", "video", "document"]).optional(),
+  mediaUrl: z.string().optional(),
+  metadata: z.string().optional(),
+});
+
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = z.infer<typeof conversationSchema>;
+export type ConversationMessage = typeof conversationMessages.$inferSelect;
+export type InsertConversationMessage = z.infer<typeof conversationMessageSchema>;

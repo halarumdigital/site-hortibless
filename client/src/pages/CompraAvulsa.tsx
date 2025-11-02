@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, Receipt, QrCode, Package } from "lucide-react";
 import { ProductPortfolioModal } from "@/components/ProductPortfolioModal";
+import { WhatsAppFreteButton } from "@/components/WhatsAppFreteButton";
 
 interface Basket {
   id: number;
@@ -880,6 +881,9 @@ export default function CompraAvulsa() {
                       </CardContent>
                     </Card>
                   )}
+
+                  {/* WhatsApp Frete Grátis */}
+                  <WhatsAppFreteButton />
 
                   <Button
                     type="submit"

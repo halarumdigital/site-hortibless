@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { ProductPortfolioModal } from "@/components/ProductPortfolioModal";
+import { WhatsAppFreteButton } from "@/components/WhatsAppFreteButton";
 import { Package } from "lucide-react";
 
 interface Basket {
@@ -632,6 +633,9 @@ export default function Carrinho() {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* WhatsApp Frete Grátis */}
+                  <WhatsAppFreteButton />
 
                   <Button
                     type="submit"
