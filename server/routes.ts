@@ -1,7 +1,9 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, productPortfolioSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema, blogPostSchema } from "@shared/schema";
+import { db } from "./db";
+import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, productPortfolioSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema, blogPostSchema, conversations, conversationMessages } from "@shared/schema";
+import { desc } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -2299,6 +2301,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const from = message.key.remoteJid; // Número do remetente
       const messageId = message.key.id;
 
+      // Extrair informações do remetente
+      const senderNumber = from.replace('@s.whatsapp.net', '').replace('@g.us', '');
+      const senderName = message.pushName || senderNumber;
+
       // Buscar a conexão pelo instanceName
       const connections = await storage.getAllWhatsappConnections();
       const connection = connections.find(c => c.instanceName === instance);
@@ -2308,11 +2314,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(200).json({ success: true });
       }
 
-      // Verificar se a IA está habilitada
-      if (!connection.aiEnabled) {
-        console.log("ℹ️  IA não está habilitada para esta conexão");
-        return res.status(200).json({ success: true });
-      }
+      // Criar ou buscar conversa existente
+      const conversation = await storage.createOrGetConversation(senderNumber, senderName);
+      console.log("💬 Conversa:", conversation.id, "- Cliente:", conversation.customerName);
 
       // Verificar se é uma mensagem de áudio
       const isAudio = !!message.message?.audioMessage;
@@ -2379,6 +2383,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isAudio: isAudio,
       });
 
+      // Salvar mensagem do usuário no banco
+      await storage.createConversationMessage({
+        conversationId: conversation.id,
+        sender: 'user',
+        senderName: senderName,
+        message: messageText,
+        messageType: isAudio ? 'audio' : 'text',
+      });
+      console.log("💾 Mensagem do usuário salva no banco");
+
+      // Verificar se a IA está habilitada
+      if (!connection.aiEnabled) {
+        console.log("ℹ️  IA não está habilitada para esta conexão");
+
+        // Salvar mensagem de sistema indicando que IA está desabilitada
+        await storage.createConversationMessage({
+          conversationId: conversation.id,
+          sender: 'system',
+          message: 'IA desabilitada para esta conexão',
+          messageType: 'text',
+        });
+
+        return res.status(200).json({ success: true });
+      }
+
       console.log("🤖 Gerando resposta com IA...");
 
       // Gerar resposta com IA
@@ -2390,6 +2419,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       console.log("✅ Resposta gerada:", aiResponse);
+
+      // Salvar resposta da IA no banco
+      await storage.createConversationMessage({
+        conversationId: conversation.id,
+        sender: 'agent',
+        senderName: 'IA Assistant',
+        message: aiResponse,
+        messageType: 'text',
+      });
+      console.log("💾 Resposta da IA salva no banco");
 
       // Enviar resposta via Evolution API
       await evolutionService.sendTextMessage(instance, from, aiResponse);
@@ -2408,6 +2447,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/webhook/whatsapp", handleWhatsAppWebhook);
   app.post("/api/webhook/whatsapp/messages-upsert", handleWhatsAppWebhook);
   app.post("/api/webhook/whatsapp/:event", handleWhatsAppWebhook);
+
+  // Conversations API
+  app.get("/api/conversations", requireAuth, async (req, res) => {
+    try {
+      const allConversations = await db.select()
+        .from(conversations)
+        .orderBy(desc(conversations.lastMessageAt));
+      res.json({ success: true, conversations: allConversations });
+    } catch (error: any) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  app.get("/api/conversations/:id", requireAuth, async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const conversation = await storage.getConversation(conversationId);
+
+      if (!conversation) {
+        return res.status(404).json({ success: false, message: "Conversation not found" });
+      }
+
+      const messages = await storage.getConversationMessages(conversationId);
+      await storage.markMessagesAsRead(conversationId);
+
+      res.json({ success: true, conversation, messages });
+    } catch (error: any) {
+      console.error("Error fetching conversation:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  app.post("/api/conversations/:id/messages", requireAuth, async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const { message, sender = 'agent' } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ success: false, message: "Message is required" });
+      }
+
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ success: false, message: "Conversation not found" });
+      }
+
+      const newMessage = await storage.createConversationMessage({
+        conversationId,
+        sender,
+        senderName: req.session.user?.name || 'Agent',
+        message,
+        messageType: 'text',
+      });
+
+      res.json({ success: true, message: newMessage });
+    } catch (error: any) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
 
   // WhatsApp Connections routes
   app.get("/api/whatsapp-connections", requireAuth, requireAdmin, async (_req, res) => {

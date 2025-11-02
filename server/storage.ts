@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type ProductPortfolio, type InsertProductPortfolio, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type ProductPortfolio, type InsertProductPortfolio, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost, type Conversation, type InsertConversation, type ConversationMessage, type InsertConversationMessage } from "@shared/schema";
 import { db, connection } from "./db";
-import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, productPortfolio, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts } from "@shared/schema";
+import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, productPortfolio, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts, conversations, conversationMessages } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -90,6 +90,14 @@ export interface IStorage {
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
   updateBlogPost(id: number, post: InsertBlogPost): Promise<BlogPost | undefined>;
   deleteBlogPost(id: number): Promise<boolean>;
+  // Conversations
+  createOrGetConversation(whatsapp: string, customerName?: string): Promise<Conversation>;
+  getConversation(id: number): Promise<Conversation | undefined>;
+  getConversationByWhatsapp(whatsapp: string): Promise<Conversation | undefined>;
+  updateConversationStatus(id: number, status: string): Promise<Conversation | undefined>;
+  createConversationMessage(message: InsertConversationMessage): Promise<ConversationMessage>;
+  getConversationMessages(conversationId: number): Promise<ConversationMessage[]>;
+  markMessagesAsRead(conversationId: number): Promise<void>;
 }
 
 export class MySQLStorage implements IStorage {
@@ -717,6 +725,84 @@ export class MySQLStorage implements IStorage {
   async deleteBlogPost(id: number): Promise<boolean> {
     await db.delete(blogPosts).where(eq(blogPosts.id, id));
     return true;
+  }
+
+  // Conversations implementation
+  async createOrGetConversation(whatsapp: string, customerName?: string): Promise<Conversation> {
+    // Check if conversation already exists
+    const existing = await this.getConversationByWhatsapp(whatsapp);
+    if (existing) {
+      // Update last message time
+      await db.update(conversations)
+        .set({ lastMessageAt: new Date() })
+        .where(eq(conversations.id, existing.id));
+      return existing;
+    }
+
+    // Create new conversation
+    const [newConversation] = await db.insert(conversations).values({
+      customerWhatsapp: whatsapp,
+      customerName: customerName || whatsapp,
+      status: 'active',
+      channel: 'whatsapp',
+      lastMessageAt: new Date()
+    }).$returningId();
+
+    const created = await this.getConversation(newConversation.id);
+    if (!created) throw new Error("Failed to create conversation");
+    return created;
+  }
+
+  async getConversation(id: number): Promise<Conversation | undefined> {
+    const [conversation] = await db.select()
+      .from(conversations)
+      .where(eq(conversations.id, id))
+      .limit(1);
+    return conversation;
+  }
+
+  async getConversationByWhatsapp(whatsapp: string): Promise<Conversation | undefined> {
+    const [conversation] = await db.select()
+      .from(conversations)
+      .where(eq(conversations.customerWhatsapp, whatsapp))
+      .orderBy(desc(conversations.createdAt))
+      .limit(1);
+    return conversation;
+  }
+
+  async updateConversationStatus(id: number, status: string): Promise<Conversation | undefined> {
+    await db.update(conversations)
+      .set({ status })
+      .where(eq(conversations.id, id));
+    return await this.getConversation(id);
+  }
+
+  async createConversationMessage(message: InsertConversationMessage): Promise<ConversationMessage> {
+    const [newMessage] = await db.insert(conversationMessages).values(message).$returningId();
+
+    // Update conversation's last message time
+    await db.update(conversations)
+      .set({ lastMessageAt: new Date() })
+      .where(eq(conversations.id, message.conversationId));
+
+    const [created] = await db.select()
+      .from(conversationMessages)
+      .where(eq(conversationMessages.id, newMessage.id))
+      .limit(1);
+    return created;
+  }
+
+  async getConversationMessages(conversationId: number): Promise<ConversationMessage[]> {
+    return await db.select()
+      .from(conversationMessages)
+      .where(eq(conversationMessages.conversationId, conversationId))
+      .orderBy(conversationMessages.createdAt);
+  }
+
+  async markMessagesAsRead(conversationId: number): Promise<void> {
+    await db.update(conversationMessages)
+      .set({ isRead: true })
+      .where(eq(conversationMessages.conversationId, conversationId));
   }
 }
 
