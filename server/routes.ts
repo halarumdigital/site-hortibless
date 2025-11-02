@@ -2410,15 +2410,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log("🤖 Gerando resposta com IA...");
 
-      // Gerar resposta com IA
-      const aiResponse = await aiService.generateResponse(messageText, {
-        aiModel: connection.aiModel || "gpt-4o-mini",
-        aiTemperature: connection.aiTemperature || "0.7",
-        aiMaxTokens: connection.aiMaxTokens || 1000,
-        aiPrompt: connection.aiPrompt || "Você é um assistente virtual útil e amigável.",
-      });
+      // Buscar histórico de mensagens da conversa
+      const conversationHistory = await storage.getConversationMessages(conversation.id);
+      console.log(`📚 Histórico carregado: ${conversationHistory.length} mensagens anteriores`);
 
-      console.log("✅ Resposta gerada:", aiResponse);
+      // Pegar as últimas mensagens do assistente para evitar duplicação
+      const lastAssistantMessages = conversationHistory
+        .filter(msg => msg.sender === 'agent')
+        .slice(-3)
+        .map(msg => msg.message);
+
+      // Gerar resposta com IA usando histórico
+      const aiResponse = await aiService.generateResponseWithHistory(
+        messageText,
+        {
+          aiModel: connection.aiModel || "gpt-4o-mini",
+          aiTemperature: connection.aiTemperature || "0.7",
+          aiMaxTokens: connection.aiMaxTokens || 1000,
+          aiPrompt: connection.aiPrompt || "Você é um assistente virtual útil e amigável.",
+        },
+        conversationHistory,
+        lastAssistantMessages
+      );
+
+      console.log("✅ Resposta gerada com histórico:", aiResponse);
+
+      // Verificar se a resposta não é duplicada antes de salvar
+      const isDuplicate = lastAssistantMessages.some(
+        lastMsg => lastMsg.toLowerCase().trim() === aiResponse.toLowerCase().trim()
+      );
+
+      if (isDuplicate) {
+        console.log("⚠️  Resposta duplicada detectada após geração. Algo deu errado.");
+      }
 
       // Salvar resposta da IA no banco
       await storage.createConversationMessage({
@@ -2428,7 +2452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: aiResponse,
         messageType: 'text',
       });
-      console.log("💾 Resposta da IA salva no banco");
+      console.log("💾 Resposta da IA salva no banco (sem duplicação)");
 
       // Enviar resposta via Evolution API
       await evolutionService.sendTextMessage(instance, from, aiResponse);
