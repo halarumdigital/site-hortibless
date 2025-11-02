@@ -2478,6 +2478,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allConversations = await db.select()
         .from(conversations)
         .orderBy(desc(conversations.lastMessageAt));
+
+      console.log(`📊 [GET /api/conversations] Returning ${allConversations.length} conversations`);
+      allConversations.forEach((conv: any) => {
+        console.log(`  - Conv ${conv.id}: ${conv.customerName} - Status: "${conv.status}"`);
+      });
+
       res.json({ success: true, conversations: allConversations });
     } catch (error: any) {
       console.error("Error fetching conversations:", error);
@@ -2504,6 +2510,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update conversation status
+  app.patch("/api/conversations/:id/status", requireAuth, async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const { status } = req.body;
+
+      console.log(`📝 [PATCH /api/conversations/${conversationId}/status] Updating to status: "${status}"`);
+
+      if (!status) {
+        return res.status(400).json({ success: false, message: "Status is required" });
+      }
+
+      const updatedConversation = await storage.updateConversationStatus(conversationId, status);
+
+      if (!updatedConversation) {
+        return res.status(404).json({ success: false, message: "Conversation not found" });
+      }
+
+      console.log(`✅ [PATCH] Conversation ${conversationId} updated. New status in DB: "${updatedConversation.status}"`);
+
+      res.json({ success: true, conversation: updatedConversation });
+    } catch (error: any) {
+      console.error("Error updating conversation status:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
   app.post("/api/conversations/:id/messages", requireAuth, async (req, res) => {
     try {
       const conversationId = parseInt(req.params.id);
@@ -2516,6 +2549,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conversation = await storage.getConversation(conversationId);
       if (!conversation) {
         return res.status(404).json({ success: false, message: "Conversation not found" });
+      }
+
+      // Se é a primeira mensagem do agente, mudar status para in_progress
+      if (sender === 'agent' && conversation.status !== 'in_progress' && conversation.status !== 'closed') {
+        await storage.updateConversationStatus(conversationId, 'in_progress');
       }
 
       const newMessage = await storage.createConversationMessage({

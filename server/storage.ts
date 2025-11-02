@@ -743,7 +743,7 @@ export class MySQLStorage implements IStorage {
     const [newConversation] = await db.insert(conversations).values({
       customerWhatsapp: whatsapp,
       customerName: customerName || whatsapp,
-      status: 'active',
+      status: 'pending', // Inicia como "Não atendido"
       channel: 'whatsapp',
       lastMessageAt: new Date()
     }).$returningId();
@@ -771,10 +771,16 @@ export class MySQLStorage implements IStorage {
   }
 
   async updateConversationStatus(id: number, status: string): Promise<Conversation | undefined> {
+    console.log(`🔧 [Storage] Updating conversation ${id} status to: "${status}"`);
+
     await db.update(conversations)
-      .set({ status })
+      .set({ status, updatedAt: new Date() })
       .where(eq(conversations.id, id));
-    return await this.getConversation(id);
+
+    const updated = await this.getConversation(id);
+    console.log(`✅ [Storage] Conversation ${id} fetched after update. Status: "${updated?.status}"`);
+
+    return updated;
   }
 
   async createConversationMessage(message: InsertConversationMessage): Promise<ConversationMessage> {

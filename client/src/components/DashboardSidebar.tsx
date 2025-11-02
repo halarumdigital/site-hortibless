@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, Menu, X, Settings, Phone, Image, Images, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp, MessageCircle, Lightbulb, Briefcase } from "lucide-react";
+import { LogOut, Users, Menu, X, Settings, Phone, Image, Headphones, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp, MessageCircle, Lightbulb, Briefcase } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface DashboardSidebarProps {
@@ -21,7 +21,7 @@ export function DashboardSidebar({ user, isSidebarOpen, setIsSidebarOpen, onLogo
     { path: "/dashboard/site-settings", icon: Settings, label: "Configurações do Site", testId: "menu-site-settings" },
     { path: "/dashboard/contact-info", icon: Phone, label: "Contatos", testId: "menu-contact-info" },
     { path: "/dashboard/banners", icon: Image, label: "Banners", testId: "menu-banners" },
-    { path: "/dashboard/gallery", icon: Images, label: "Galeria", testId: "menu-gallery" },
+    { path: "/dashboard/crm", icon: Headphones, label: "CRM", testId: "menu-crm" },
     { path: "/dashboard/testimonials", icon: MessageSquare, label: "Depoimentos", testId: "menu-testimonials" },
     { path: "/dashboard/regions", icon: MapPin, label: "Regiões de Atendimento", testId: "menu-regions" },
     { path: "/dashboard/faq", icon: HelpCircle, label: "FAQ", testId: "menu-faq" },

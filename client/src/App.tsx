@@ -17,7 +17,7 @@ import Users from "@/pages/Users";
 import SiteSettings from "@/pages/SiteSettings";
 import ContactInfo from "@/pages/ContactInfo";
 import Banners from "@/pages/Banners";
-import Gallery from "@/pages/Gallery";
+import CRM from "@/pages/CRM";
 import Testimonials from "@/pages/Testimonials";
 import Regions from "@/pages/Regions";
 import Faq from "@/pages/Faq";
@@ -59,7 +59,7 @@ function Router() {
       <Route path="/dashboard/site-settings" component={SiteSettings}/>
       <Route path="/dashboard/contact-info" component={ContactInfo}/>
       <Route path="/dashboard/banners" component={Banners}/>
-      <Route path="/dashboard/gallery" component={Gallery}/>
+      <Route path="/dashboard/crm" component={CRM}/>
       <Route path="/dashboard/testimonials" component={Testimonials}/>
       <Route path="/dashboard/regions" component={Regions}/>
       <Route path="/dashboard/faq" component={Faq}/>
