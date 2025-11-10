@@ -7,6 +7,7 @@ dotenv.config({ path: resolve(process.cwd(), ".env"), override: true });
 
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import createMemoryStore from "memorystore";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -41,15 +42,26 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: false }));
 app.use('/uploads', express.static('uploads'));
 
+// Configurar MemoryStore para evitar problemas de sessão em memória
+// que causavam logout após ~24 horas
+const MemoryStore = createMemoryStore(session);
+
 app.use(
   session({
+    // Store persistente com limpeza automática
+    store: new MemoryStore({
+      checkPeriod: 86400000, // Limpar sessões expiradas a cada 24h (em ms)
+      ttl: 604800000, // TTL de 7 dias (em ms)
+      stale: false, // Não retornar sessões expiradas
+    }),
     secret: process.env.SESSION_SECRET || "zatplant-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Renovar cookie a cada requisição (evita expiração durante uso)
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: parseInt(process.env.SESSION_MAX_AGE || String(1000 * 60 * 60 * 24 * 7)), // 7 dias ao invés de 1
       sameSite: 'lax',
     },
   })

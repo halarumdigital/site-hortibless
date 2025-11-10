@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { db } from "./db";
+import { db, connection } from "./db";
 import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, productPortfolioSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema, blogPostSchema, conversations, conversationMessages } from "@shared/schema";
 import { desc } from "drizzle-orm";
 import multer from "multer";
@@ -55,6 +55,31 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint para monitoramento
+  app.get("/api/health", async (_req, res) => {
+    try {
+      // Testar conexão com banco de dados
+      const conn = await connection.getConnection();
+      await conn.ping();
+      conn.release();
+
+      res.json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        database: "connected",
+        uptime: process.uptime()
+      });
+    } catch (error) {
+      console.error("Health check failed:", error);
+      res.status(503).json({
+        status: "unhealthy",
+        timestamp: new Date().toISOString(),
+        database: "disconnected",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   app.post("/api/login", async (req, res) => {
     try {
       const { username, password } = loginSchema.parse(req.body);

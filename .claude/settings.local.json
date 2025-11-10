@@ -50,7 +50,9 @@
       "Bash(git commit:*)",
       "Bash(git reset:*)",
       "Read(//e/**)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(test -d \"F:\\site-hortibless\\uploads\")",
+      "Bash(test -d \"F:\\site-hortibless\\dist\\uploads\")"
     ],
     "deny": [],
     "ask": []
