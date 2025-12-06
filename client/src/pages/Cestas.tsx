@@ -82,7 +82,7 @@ export default function Cestas() {
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-[#1A472A] to-[#2E593F] text-white py-20">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-5xl font-bold mb-4">PLANOS HORTIBLESS</h1>
+            <h1 className="text-5xl font-bold mb-4">Planos Hortibless</h1>
             <p className="text-xl text-gray-200 max-w-2xl mx-auto">
               Escolha o plano ideal para sua casa ou seu negócio. Produtos frescos e selecionados direto da horta — prontos para nutrir famílias e impulsionar negócios.
             </p>
@@ -219,7 +219,7 @@ export default function Cestas() {
               <div className="max-w-6xl mx-auto">
                 <div className="bg-white rounded-xl border-2 border-gray-200 shadow-lg overflow-hidden">
                   <div className="bg-gradient-to-r from-[#1A472A] to-[#2E593F] text-white p-6">
-                    <h2 className="text-3xl font-bold text-center">CALENDÁRIO DA ESTAÇÃO</h2>
+                    <h2 className="text-3xl font-bold text-center">Calendário da Estação</h2>
                   </div>
                   <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

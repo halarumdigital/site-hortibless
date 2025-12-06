@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type ProductPortfolio, type InsertProductPortfolio, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost, type Conversation, type InsertConversation, type ConversationMessage, type InsertConversationMessage } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type ProductPortfolio, type InsertProductPortfolio, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost, type Conversation, type InsertConversation, type ConversationMessage, type InsertConversationMessage, type AboutUs, type UpdateAboutUs } from "@shared/schema";
 import { db, connection } from "./db";
-import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, productPortfolio, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts, conversations, conversationMessages } from "@shared/schema";
+import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, productPortfolio, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts, conversations, conversationMessages, aboutUs } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -809,6 +809,28 @@ export class MySQLStorage implements IStorage {
     await db.update(conversationMessages)
       .set({ isRead: true })
       .where(eq(conversationMessages.conversationId, conversationId));
+  }
+
+  // About Us methods
+  async getAboutUs(): Promise<AboutUs | undefined> {
+    const [result] = await db.select().from(aboutUs).limit(1);
+    return result;
+  }
+
+  async updateAboutUs(data: Partial<UpdateAboutUs>): Promise<AboutUs> {
+    const existing = await this.getAboutUs();
+
+    if (existing) {
+      await db.update(aboutUs)
+        .set(data)
+        .where(eq(aboutUs.id, existing.id));
+      const [updated] = await db.select().from(aboutUs).where(eq(aboutUs.id, existing.id)).limit(1);
+      return updated;
+    } else {
+      const [newEntry] = await db.insert(aboutUs).values(data).$returningId();
+      const [created] = await db.select().from(aboutUs).where(eq(aboutUs.id, newEntry.id)).limit(1);
+      return created;
+    }
   }
 }
 

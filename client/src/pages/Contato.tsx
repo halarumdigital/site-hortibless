@@ -209,6 +209,11 @@ export default function Contato() {
                           <span className="iconify" data-icon="ic:baseline-tiktok" data-width="32"></span>
                         </a>
                       )}
+                      {contactInfo?.linkedin && (
+                        <a href={contactInfo.linkedin} target="_blank" rel="noopener noreferrer" className="text-[#133903] hover:text-[#6a9f24] transition-colors">
+                          <span className="iconify" data-icon="mdi:linkedin" data-width="32"></span>
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>

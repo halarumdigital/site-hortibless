@@ -52,7 +52,8 @@
       "Read(//e/**)",
       "Bash(nul)",
       "Bash(test -d \"F:\\site-hortibless\\uploads\")",
-      "Bash(test -d \"F:\\site-hortibless\\dist\\uploads\")"
+      "Bash(test -d \"F:\\site-hortibless\\dist\\uploads\")",
+      "Bash(/home/gilliard/.nvm/versions/node/v22.11.0/bin/npx tsx scripts/create-about-us-table.ts)"
     ],
     "deny": [],
     "ask": []

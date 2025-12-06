@@ -2,9 +2,24 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useQuery } from "@tanstack/react-query";
+
+interface AboutUs {
+  id: number;
+  image1Path: string | null;
+  image2Path: string | null;
+  image3Path: string | null;
+}
 
 export default function Sobre() {
   const { settings } = useSiteSettings();
+
+  const { data: aboutUsData } = useQuery<{ success: boolean; aboutUs: AboutUs | null }>({
+    queryKey: ["/api/about-us"],
+  });
+
+  const image2Src = aboutUsData?.aboutUs?.image2Path || "/uploads/about-farmer1.png";
+  const image3Src = aboutUsData?.aboutUs?.image3Path || "/uploads/about-farmer2.jpg";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -61,8 +76,8 @@ export default function Sobre() {
 
               <div className="order-first lg:order-last">
                 <img
-                  src="/uploads/about-farmer1.png"
-                  alt="Agricultor HortiBless"
+                  src={image2Src}
+                  alt="Nosso Propósito - HortiBless"
                   className="w-full h-auto rounded-xl shadow-lg object-cover"
                 />
               </div>
@@ -122,8 +137,8 @@ export default function Sobre() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div>
                   <img
-                    src="/uploads/about-farmer2.jpg"
-                    alt="Como tudo começou - HortiBless"
+                    src={image3Src}
+                    alt="Nossa História - HortiBless"
                     className="w-full h-auto rounded-xl shadow-lg object-cover"
                   />
                 </div>

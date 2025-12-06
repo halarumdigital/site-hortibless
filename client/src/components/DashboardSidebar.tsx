@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, Menu, X, Settings, Phone, Image, Headphones, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp, MessageCircle, Lightbulb, Briefcase } from "lucide-react";
+import { LogOut, Users, Menu, X, Settings, Phone, Image, Headphones, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp, MessageCircle, Lightbulb, Briefcase, Info } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface DashboardSidebarProps {
@@ -19,6 +19,7 @@ export function DashboardSidebar({ user, isSidebarOpen, setIsSidebarOpen, onLogo
     { path: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "menu-dashboard" },
     { path: "/dashboard/users", icon: Users, label: "Usuários", testId: "menu-users" },
     { path: "/dashboard/site-settings", icon: Settings, label: "Configurações do Site", testId: "menu-site-settings" },
+    { path: "/dashboard/about-us", icon: Info, label: "Sobre Nós", testId: "menu-about-us" },
     { path: "/dashboard/contact-info", icon: Phone, label: "Contatos", testId: "menu-contact-info" },
     { path: "/dashboard/banners", icon: Image, label: "Banners", testId: "menu-banners" },
     { path: "/dashboard/crm", icon: Headphones, label: "CRM", testId: "menu-crm" },

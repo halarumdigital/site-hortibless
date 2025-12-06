@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db, connection } from "./db";
-import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, productPortfolioSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema, blogPostSchema, conversations, conversationMessages } from "@shared/schema";
+import { contactMessageSchema, loginSchema, insertUserSchema, updateUserSchema, siteSettingsSchema, contactInfoSchema, bannerSchema, youtubeVideoSchema, testimonialSchema, serviceRegionSchema, faqSchema, seasonalCalendarSchema, comparativeTableSchema, productPortfolioSchema, looseItemSchema, basketSchema, basketItemSchema, orderSchema, oneTimePurchaseSchema, whatsappConnectionSchema, blogPostSchema, conversations, conversationMessages, aboutUsSchema } from "@shared/schema";
 import { desc } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
@@ -3038,6 +3038,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error deleting blog post:', error);
       res.status(500).json({ message: error.message || "Failed to delete blog post" });
+    }
+  });
+
+  // About Us routes
+  app.get("/api/about-us", async (_req, res) => {
+    try {
+      const aboutUs = await storage.getAboutUs();
+      res.json({ success: true, aboutUs });
+    } catch (error: any) {
+      console.error('Error fetching about us:', error);
+      res.status(500).json({ message: error.message || "Failed to fetch about us" });
+    }
+  });
+
+  app.put("/api/about-us", requireAuth, requireAdmin, upload.fields([
+    { name: 'image1', maxCount: 1 },
+    { name: 'image2', maxCount: 1 },
+    { name: 'image3', maxCount: 1 }
+  ]), async (req, res) => {
+    try {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+      const updateData: any = {};
+
+      if (files?.image1?.[0]) {
+        updateData.image1Path = `/uploads/${files.image1[0].filename}`;
+      } else if (req.body.image1Path !== undefined) {
+        updateData.image1Path = req.body.image1Path || null;
+      }
+
+      if (files?.image2?.[0]) {
+        updateData.image2Path = `/uploads/${files.image2[0].filename}`;
+      } else if (req.body.image2Path !== undefined) {
+        updateData.image2Path = req.body.image2Path || null;
+      }
+
+      if (files?.image3?.[0]) {
+        updateData.image3Path = `/uploads/${files.image3[0].filename}`;
+      } else if (req.body.image3Path !== undefined) {
+        updateData.image3Path = req.body.image3Path || null;
+      }
+
+      const aboutUs = await storage.updateAboutUs(updateData);
+      res.json({ success: true, aboutUs });
+    } catch (error: any) {
+      console.error('Error updating about us:', error);
+      res.status(400).json({ message: error.message || "Failed to update about us" });
+    }
+  });
+
+  app.delete("/api/about-us/image/:imageNumber", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const imageNumber = parseInt(req.params.imageNumber);
+      if (imageNumber < 1 || imageNumber > 3) {
+        return res.status(400).json({ message: "Invalid image number" });
+      }
+
+      const fieldName = `image${imageNumber}Path` as 'image1Path' | 'image2Path' | 'image3Path';
+      const aboutUs = await storage.updateAboutUs({ [fieldName]: null });
+      res.json({ success: true, aboutUs });
+    } catch (error: any) {
+      console.error('Error deleting about us image:', error);
+      res.status(500).json({ message: error.message || "Failed to delete image" });
     }
   });
 

@@ -23,12 +23,19 @@ interface Basket {
   imagePath?: string;
 }
 
+interface ServiceRegion {
+  id: number;
+  name: string;
+  isActive: boolean;
+}
+
 export default function CompraAvulsa() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [basket, setBasket] = useState<Basket | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [serviceRegions, setServiceRegions] = useState<ServiceRegion[]>([]);
 
   // Form state
   const [customerName, setCustomerName] = useState("");
@@ -112,6 +119,20 @@ export default function CompraAvulsa() {
     };
 
     fetchBasket();
+
+    // Fetch service regions
+    const fetchServiceRegions = async () => {
+      try {
+        const response = await fetch('/api/service-regions');
+        if (response.ok) {
+          const data = await response.json();
+          setServiceRegions(data.regions || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch service regions:", error);
+      }
+    };
+    fetchServiceRegions();
   }, [toast, setLocation]);
 
   useEffect(() => {
@@ -626,6 +647,25 @@ export default function CompraAvulsa() {
                       <CardTitle>Endereço de Entrega</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      {/* Service Regions */}
+                      {serviceRegions.length > 0 && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                            Regiões de Atendimento:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {serviceRegions.map((region) => (
+                              <span
+                                key={region.id}
+                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#133903]/10 text-[#133903] dark:bg-[#6a9e24]/20 dark:text-[#6a9e24]"
+                              >
+                                {region.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="flex items-center space-x-2">
                         <input
                           type="checkbox"

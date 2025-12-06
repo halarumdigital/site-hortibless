@@ -1,12 +1,27 @@
+import { useQuery } from "@tanstack/react-query";
+
+interface AboutUs {
+  id: number;
+  image1Path: string | null;
+  image2Path: string | null;
+  image3Path: string | null;
+}
+
 export default function AboutSection() {
+  const { data: aboutUsData } = useQuery<{ success: boolean; aboutUs: AboutUs | null }>({
+    queryKey: ["/api/about-us"],
+  });
+
+  const imageSrc = aboutUsData?.aboutUs?.image1Path || "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600";
+
   return (
     <section className="bg-white py-20 wave-bottom">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
-            <img 
-              src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600" 
-              alt="Hydroponic vertical farm" 
+            <img
+              src={imageSrc}
+              alt="Sobre a HortiBless"
               className="rounded-xl shadow-lg w-full h-auto"
               data-testid="img-about-hydroponic-farm"
             />

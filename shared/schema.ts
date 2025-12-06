@@ -559,3 +559,22 @@ export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = z.infer<typeof conversationSchema>;
 export type ConversationMessage = typeof conversationMessages.$inferSelect;
 export type InsertConversationMessage = z.infer<typeof conversationMessageSchema>;
+
+// About Us table
+export const aboutUs = mysqlTable("about_us", {
+  id: int("id").primaryKey().autoincrement(),
+  image1Path: varchar("image1_path", { length: 500 }),
+  image2Path: varchar("image2_path", { length: 500 }),
+  image3Path: varchar("image3_path", { length: 500 }),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
+export const aboutUsSchema = z.object({
+  image1Path: z.string().optional().or(z.literal("")),
+  image2Path: z.string().optional().or(z.literal("")),
+  image3Path: z.string().optional().or(z.literal("")),
+});
+
+export type AboutUs = typeof aboutUs.$inferSelect;
+export type UpdateAboutUs = z.infer<typeof aboutUsSchema>;

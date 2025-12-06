@@ -31,6 +31,7 @@ import Duvidas from "@/pages/Duvidas";
 import Scripts from "@/pages/Scripts";
 import Pedidos from "@/pages/Pedidos";
 import WhatsAppIA from "@/pages/WhatsAppIA";
+import AboutUs from "@/pages/AboutUs";
 import Carrinho from "@/pages/Carrinho";
 import CompraAvulsa from "@/pages/CompraAvulsa";
 import TermosUso from "@/pages/TermosUso";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard}/>
       <Route path="/dashboard/users" component={Users}/>
       <Route path="/dashboard/site-settings" component={SiteSettings}/>
+      <Route path="/dashboard/about-us" component={AboutUs}/>
       <Route path="/dashboard/contact-info" component={ContactInfo}/>
       <Route path="/dashboard/banners" component={Banners}/>
       <Route path="/dashboard/crm" component={CRM}/>
