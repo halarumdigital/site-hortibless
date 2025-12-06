@@ -60,7 +60,7 @@ export default function Sobre() {
                       <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:sprout" data-width="28"></span>
                       <div>
                         <h3 className="text-lg font-bold text-[#2E593F] mb-1">Frescor da Estação</h3>
-                        <p className="text-gray-700 text-sm">Frutas, verduras e legumes sempre no auge do sabor e da colheita</p>
+                        <p className="text-gray-700 text-sm">Frutas, verduras, legumes e tempero sempre no auge do sabor e da colheita</p>
                       </div>
                     </div>
                     <div className="flex items-start">

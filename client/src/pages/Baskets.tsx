@@ -14,9 +14,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { basketSchema, type InsertBasket } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Menu, Trash2, Plus, Package, ShoppingBasket, Edit, Save } from "lucide-react";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+
+interface Plan {
+  id: number;
+  name: string;
+}
 
 interface Basket {
   id: number;
@@ -25,6 +31,7 @@ interface Basket {
   priceLoose?: string;
   priceSubscription?: string;
   imagePath?: string;
+  planId?: number | null;
   isActive: boolean;
   isFeatured: boolean;
   createdAt: Date;
@@ -57,6 +64,11 @@ export default function Baskets() {
 
   const { data: basketsData, isLoading: basketsLoading } = useQuery<{ success: boolean; baskets: Basket[] }>({
     queryKey: ["/api/baskets/all"],
+    enabled: !!user,
+  });
+
+  const { data: plansData } = useQuery<{ success: boolean; plans: Plan[] }>({
+    queryKey: ["/api/plans"],
     enabled: !!user,
   });
 
@@ -246,6 +258,7 @@ export default function Baskets() {
     if (data.priceSubscription) formData.append("priceSubscription", data.priceSubscription);
     if (selectedFile) formData.append("image", selectedFile);
     formData.append("isFeatured", String(data.isFeatured || false));
+    if (data.planId) formData.append("planId", String(data.planId));
 
     createBasketMutation.mutate({ formData });
   };
@@ -263,6 +276,12 @@ export default function Baskets() {
   const getItemName = (itemId: number) => {
     const item = looseItemsData?.items.find(i => i.id === itemId);
     return item ? `${item.name} (${item.category})` : "Item desconhecido";
+  };
+
+  const getPlanName = (planId: number | null | undefined) => {
+    if (!planId) return null;
+    const plan = plansData?.plans?.find(p => p.id === planId);
+    return plan ? plan.name : null;
   };
 
   return (
@@ -335,6 +354,35 @@ export default function Baskets() {
                               {...field}
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="planId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Plano</FormLabel>
+                          <Select
+                            onValueChange={(value) => field.onChange(value === "none" ? null : Number(value))}
+                            value={field.value ? String(field.value) : "none"}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione um plano (opcional)" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">Nenhum plano</SelectItem>
+                              {plansData?.plans?.map((plan) => (
+                                <SelectItem key={plan.id} value={String(plan.id)}>
+                                  {plan.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -456,6 +504,11 @@ export default function Baskets() {
                         )}
                         <div className="p-4">
                           <h3 className="font-semibold text-lg mb-2">{basket.name}</h3>
+                          {getPlanName(basket.planId) && (
+                            <span className="inline-block bg-[#133903] text-white text-xs px-2 py-1 rounded mb-2">
+                              {getPlanName(basket.planId)}
+                            </span>
+                          )}
                           {basket.description && (
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                               {basket.description}
@@ -614,6 +667,7 @@ export default function Baskets() {
               setSelectedFile={setSelectedFile}
               imagePreview={imagePreview}
               setImagePreview={setImagePreview}
+              plans={plansData?.plans || []}
             />
           )}
         </DialogContent>
@@ -655,7 +709,8 @@ function EditBasketForm({
   selectedFile,
   setSelectedFile,
   imagePreview,
-  setImagePreview
+  setImagePreview,
+  plans
 }: {
   basket: Basket;
   onSubmit: (formData: FormData) => void;
@@ -664,6 +719,7 @@ function EditBasketForm({
   setSelectedFile: (file: File | null) => void;
   imagePreview: string | null;
   setImagePreview: (preview: string | null) => void;
+  plans: Plan[];
 }) {
   const form = useForm<InsertBasket>({
     resolver: zodResolver(basketSchema),
@@ -672,6 +728,7 @@ function EditBasketForm({
       description: basket.description || "",
       priceLoose: basket.priceLoose || "",
       priceSubscription: basket.priceSubscription || "",
+      planId: basket.planId || null,
       isFeatured: basket.isFeatured || false,
     },
   });
@@ -696,6 +753,7 @@ function EditBasketForm({
     if (data.priceSubscription) formData.append("priceSubscription", data.priceSubscription);
     if (selectedFile) formData.append("image", selectedFile);
     formData.append("isFeatured", String(data.isFeatured || false));
+    formData.append("planId", data.planId ? String(data.planId) : "");
 
     onSubmit(formData);
   };
@@ -729,6 +787,35 @@ function EditBasketForm({
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="planId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Plano</FormLabel>
+              <Select
+                onValueChange={(value) => field.onChange(value === "none" ? null : Number(value))}
+                value={field.value ? String(field.value) : "none"}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um plano (opcional)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum plano</SelectItem>
+                  {plans?.map((plan) => (
+                    <SelectItem key={plan.id} value={String(plan.id)}>
+                      {plan.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, Menu, X, Settings, Phone, Image, Headphones, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp, MessageCircle, Lightbulb, Briefcase, Info } from "lucide-react";
+import { LogOut, Users, Menu, X, Settings, Phone, Image, Headphones, MessageSquare, MapPin, HelpCircle, Calendar, Table, Package, ShoppingBasket, Mail, Code, ShoppingCart, TrendingUp, MessageCircle, Lightbulb, Briefcase, Info, ClipboardList } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface DashboardSidebarProps {
@@ -31,6 +31,7 @@ export function DashboardSidebar({ user, isSidebarOpen, setIsSidebarOpen, onLogo
     { path: "/dashboard/portfolio-produtos", icon: Briefcase, label: "Portfolio de Produtos", testId: "menu-portfolio-produtos" },
     { path: "/dashboard/loose-items", icon: Package, label: "Itens Avulsos", testId: "menu-loose-items" },
     { path: "/dashboard/baskets", icon: ShoppingBasket, label: "Cestas", testId: "menu-baskets" },
+    { path: "/dashboard/plans", icon: ClipboardList, label: "Planos", testId: "menu-plans" },
     { path: "/dashboard/dicas", icon: Lightbulb, label: "Dicas", testId: "menu-dicas" },
     { path: "/dashboard/duvidas", icon: Mail, label: "Dúvidas", testId: "menu-duvidas" },
     { path: "/dashboard/scripts", icon: Code, label: "Scripts", testId: "menu-scripts" },

@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type ProductPortfolio, type InsertProductPortfolio, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost, type Conversation, type InsertConversation, type ConversationMessage, type InsertConversationMessage, type AboutUs, type UpdateAboutUs } from "@shared/schema";
+import { type User, type InsertUser, type UpdateUser, type ContactMessage, type InsertContactMessage, type SiteSettings, type UpdateSiteSettings, type ContactInfo, type UpdateContactInfo, type Banner, type InsertBanner, type GalleryItem, type InsertGalleryItem, type Testimonial, type InsertTestimonial, type ServiceRegion, type InsertServiceRegion, type Faq, type InsertFaq, type SeasonalCalendar, type InsertSeasonalCalendar, type ComparativeTable, type InsertComparativeTable, type ProductPortfolio, type InsertProductPortfolio, type LooseItem, type InsertLooseItem, type Basket, type InsertBasket, type BasketItem, type InsertBasketItem, type TrackingScripts, type UpdateTrackingScripts, type Order, type InsertOrder, type OneTimePurchase, type InsertOneTimePurchase, type WhatsappConnection, type InsertWhatsappConnection, type UpdateWhatsappAiConfig, type BlogPost, type InsertBlogPost, type Conversation, type InsertConversation, type ConversationMessage, type InsertConversationMessage, type AboutUs, type UpdateAboutUs, type Plan, type InsertPlan } from "@shared/schema";
 import { db, connection } from "./db";
-import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, productPortfolio, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts, conversations, conversationMessages, aboutUs } from "@shared/schema";
+import { users, siteSettings, contactInfo, contactMessages, banners, gallery, testimonials, serviceRegions, faqs, seasonalCalendar, comparativeTables, productPortfolio, looseItems, baskets, basketItems, trackingScripts, orders, oneTimePurchases, whatsappConnections, blogPosts, conversations, conversationMessages, aboutUs, plans } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -831,6 +831,37 @@ export class MySQLStorage implements IStorage {
       const [created] = await db.select().from(aboutUs).where(eq(aboutUs.id, newEntry.id)).limit(1);
       return created;
     }
+  }
+
+  // Plans methods
+  async getAllPlans(): Promise<Plan[]> {
+    return db.select().from(plans).orderBy(plans.order);
+  }
+
+  async getActivePlans(): Promise<Plan[]> {
+    return db.select().from(plans).where(eq(plans.isActive, true)).orderBy(plans.order);
+  }
+
+  async getPlan(id: number): Promise<Plan | undefined> {
+    const [result] = await db.select().from(plans).where(eq(plans.id, id)).limit(1);
+    return result;
+  }
+
+  async createPlan(data: InsertPlan): Promise<Plan> {
+    const [result] = await db.insert(plans).values(data).$returningId();
+    const [created] = await db.select().from(plans).where(eq(plans.id, result.id)).limit(1);
+    return created;
+  }
+
+  async updatePlan(id: number, data: Partial<InsertPlan>): Promise<Plan | undefined> {
+    await db.update(plans).set(data).where(eq(plans.id, id));
+    const [updated] = await db.select().from(plans).where(eq(plans.id, id)).limit(1);
+    return updated;
+  }
+
+  async deletePlan(id: number): Promise<boolean> {
+    await db.delete(plans).where(eq(plans.id, id));
+    return true;
   }
 }
 

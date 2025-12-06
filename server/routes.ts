@@ -1304,6 +1304,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         priceLoose: req.body.priceLoose,
         priceSubscription: req.body.priceSubscription,
         imagePath,
+        planId: req.body.planId ? parseInt(req.body.planId) : null,
         isFeatured: req.body.isFeatured === 'true' || req.body.isFeatured === true,
       });
 
@@ -1326,11 +1327,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/baskets/:id", requireAuth, requireAdmin, upload.single("image"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const planIdValue = req.body.planId && req.body.planId !== "" ? parseInt(req.body.planId) : null;
       let updateData: any = {
         name: req.body.name,
         description: req.body.description,
         priceLoose: req.body.priceLoose,
         priceSubscription: req.body.priceSubscription,
+        planId: planIdValue,
         isFeatured: req.body.isFeatured === 'true' || req.body.isFeatured === true,
       };
 
@@ -3101,6 +3104,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error deleting about us image:', error);
       res.status(500).json({ message: error.message || "Failed to delete image" });
+    }
+  });
+
+  // Plans routes
+  app.get("/api/plans", async (_req, res) => {
+    try {
+      const plans = await storage.getAllPlans();
+      res.json({ success: true, plans });
+    } catch (error: any) {
+      console.error("Get plans error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get plans"
+      });
+    }
+  });
+
+  app.get("/api/plans/active", async (_req, res) => {
+    try {
+      const plans = await storage.getActivePlans();
+      res.json({ success: true, plans });
+    } catch (error: any) {
+      console.error("Get active plans error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get plans"
+      });
+    }
+  });
+
+  app.get("/api/plans/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const plan = await storage.getPlan(id);
+
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          message: "Plan not found"
+        });
+      }
+
+      res.json({ success: true, plan });
+    } catch (error: any) {
+      console.error("Get plan error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to get plan"
+      });
+    }
+  });
+
+  app.post("/api/plans", requireAuth, requireAdmin, upload.single("image"), async (req, res) => {
+    try {
+      let imagePath = req.body.imagePath;
+
+      if (req.file) {
+        imagePath = `/uploads/${req.file.filename}`;
+      }
+
+      const planData = {
+        name: req.body.name,
+        description: req.body.description || null,
+        imagePath: imagePath || null,
+        isActive: true,
+        order: 0,
+      };
+
+      const plan = await storage.createPlan(planData);
+
+      res.json({
+        success: true,
+        message: "Plan created successfully",
+        plan
+      });
+    } catch (error: any) {
+      console.error("Create plan error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to create plan"
+      });
+    }
+  });
+
+  app.put("/api/plans/:id", requireAuth, requireAdmin, upload.single("image"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      let updateData: any = {
+        name: req.body.name,
+        description: req.body.description || null,
+      };
+
+      if (req.file) {
+        updateData.imagePath = `/uploads/${req.file.filename}`;
+      }
+
+      const plan = await storage.updatePlan(id, updateData);
+
+      res.json({
+        success: true,
+        message: "Plan updated successfully",
+        plan
+      });
+    } catch (error: any) {
+      console.error("Update plan error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to update plan"
+      });
+    }
+  });
+
+  app.delete("/api/plans/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deletePlan(id);
+
+      res.json({
+        success: true,
+        message: "Plan deleted successfully"
+      });
+    } catch (error: any) {
+      console.error("Delete plan error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to delete plan"
+      });
     }
   });
 

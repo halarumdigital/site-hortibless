@@ -10,6 +10,7 @@ import ArticlesPage from "@/pages/ArticlesPage";
 import Contato from "@/pages/Contato";
 import Sobre from "@/pages/Sobre";
 import Cestas from "@/pages/Cestas";
+import PlanosPage from "@/pages/PlanosPage";
 import DicasBlog from "@/pages/DicasBlog";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
@@ -26,6 +27,7 @@ import ComparativeTable from "@/pages/ComparativeTable";
 import PortfolioProdutos from "@/pages/PortfolioProdutos";
 import LooseItems from "@/pages/LooseItems";
 import Baskets from "@/pages/Baskets";
+import Plans from "@/pages/Plans";
 import Dicas from "@/pages/Dicas";
 import Duvidas from "@/pages/Duvidas";
 import Scripts from "@/pages/Scripts";
@@ -49,6 +51,7 @@ function Router() {
       <Route path="/contato" component={Contato}/>
       <Route path="/sobre" component={Sobre}/>
       <Route path="/cestas" component={Cestas}/>
+      <Route path="/planos" component={PlanosPage}/>
       <Route path="/dicas" component={DicasBlog}/>
       <Route path="/carrinho" component={Carrinho}/>
       <Route path="/compra-avulsa" component={CompraAvulsa}/>
@@ -70,6 +73,7 @@ function Router() {
       <Route path="/dashboard/portfolio-produtos" component={PortfolioProdutos}/>
       <Route path="/dashboard/loose-items" component={LooseItems}/>
       <Route path="/dashboard/baskets" component={Baskets}/>
+      <Route path="/dashboard/plans" component={Plans}/>
       <Route path="/dashboard/dicas" component={Dicas}/>
       <Route path="/dashboard/duvidas" component={Duvidas}/>
       <Route path="/dashboard/scripts" component={Scripts}/>

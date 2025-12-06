@@ -272,6 +272,7 @@ export const baskets = mysqlTable("baskets", {
   priceLoose: varchar("price_loose", { length: 50 }),
   priceSubscription: varchar("price_subscription", { length: 50 }),
   imagePath: varchar("image_path", { length: 500 }),
+  planId: int("plan_id"),
   isActive: boolean("is_active").notNull().default(true),
   isFeatured: boolean("is_featured").notNull().default(false),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -292,6 +293,7 @@ export const basketSchema = z.object({
   priceLoose: z.string().optional(),
   priceSubscription: z.string().optional(),
   imagePath: z.string().optional(),
+  planId: z.number().optional().nullable(),
   isActive: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
 });
@@ -578,3 +580,26 @@ export const aboutUsSchema = z.object({
 
 export type AboutUs = typeof aboutUs.$inferSelect;
 export type UpdateAboutUs = z.infer<typeof aboutUsSchema>;
+
+// Plans table
+export const plans = mysqlTable("plans", {
+  id: int("id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  imagePath: varchar("image_path", { length: 500 }),
+  isActive: boolean("is_active").notNull().default(true),
+  order: int("order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+});
+
+export const planSchema = z.object({
+  name: z.string().min(1, "Nome do plano é obrigatório"),
+  description: z.string().optional(),
+  imagePath: z.string().optional(),
+  isActive: z.boolean().optional(),
+  order: z.number().optional(),
+});
+
+export type Plan = typeof plans.$inferSelect;
+export type InsertPlan = z.infer<typeof planSchema>;

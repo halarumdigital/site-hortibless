@@ -71,6 +71,7 @@ export default function Header() {
           </div>
           <div className="hidden md:flex items-center space-x-8 text-gray-700 font-medium">
             <a href="/#home" className="hover:text-[#2E593F]" data-testid="nav-home">Início</a>
+            <a href="/planos" className="hover:text-[#2E593F]" data-testid="nav-plans">Planos</a>
             <a href="/cestas" className="hover:text-[#2E593F]" data-testid="nav-baskets">Cestas</a>
             <a href="/dicas" className="hover:text-[#2E593F]" data-testid="nav-dicas">Dicas</a>
             <a href="/sobre" className="hover:text-[#2E593F]" data-testid="nav-about">Sobre</a>
