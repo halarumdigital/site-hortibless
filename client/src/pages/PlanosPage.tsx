@@ -390,6 +390,19 @@ export default function PlanosPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Informativo sobre as safras */}
+                    <div className="mt-8 pt-6 border-t border-gray-200 bg-[#EFF6EF] rounded-xl p-6">
+                      <p className="text-gray-700 mb-4">
+                        A HortiBless trabalha exclusivamente com frutas, legumes, verduras e temperos pertencentes às safras <strong className="text-[#2E593F]">Plena</strong> e <strong className="text-[#2E593F]">Moderada</strong>, respeitando o ciclo natural de cada estação.
+                      </p>
+                      <p className="text-gray-700 mb-4">
+                        Dessa forma, garantimos cestas sempre frescas, saborosas e nutritivas, com excelente diversidade e o padrão de qualidade que faz parte da essência HortiBless.
+                      </p>
+                      <p className="text-gray-700 font-semibold">
+                        <strong className="text-red-600">Importante:</strong> itens classificados como Safra Limitada não são utilizados na composição das cestas HortiBless.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

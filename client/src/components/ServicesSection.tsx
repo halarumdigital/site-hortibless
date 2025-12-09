@@ -1,57 +1,58 @@
 export default function ServicesSection() {
   return (
-    <section className="bg-[#EFF6EF] pt-64 pb-20" style={{position: 'relative', zIndex: 1}}>
+    <section className="bg-[#EFF6EF] pt-16 md:pt-64 pb-16 md:pb-20" style={{position: 'relative', zIndex: 1}}>
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <p className="text-[#133903] font-semibold mb-2">COMO FUNCIONA</p>
-          <h2 className="text-4xl font-bold text-[#2E593F] mb-4">Simples e Prático</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+        <div className="text-center mb-8 md:mb-16">
+          <p className="text-gray-500 font-medium tracking-widest text-xs md:text-sm mb-2">COMO FUNCIONA</p>
+          <h2 className="text-2xl md:text-4xl font-bold text-[#1A4731] mb-2 md:mb-4">Simples e Prático</h2>
+          <p className="text-gray-500 text-sm md:text-base max-w-2xl mx-auto">
             Em poucos passos, garanta praticidade e frescor para a sua casa ou para o seu negócio.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Mobile: 2 colunas / Desktop: 4 colunas */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-6xl mx-auto">
           {/* Passo 1 */}
-          <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow" data-testid="step-1">
-            <div className="w-16 h-16 bg-[#133903] rounded-full flex items-center justify-center mb-6">
-              <span className="iconify text-white" data-icon="fa6-solid:basket-shopping" data-width="32"></span>
+          <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-shadow flex flex-col items-start text-left gap-4" data-testid="step-1">
+            <div className="w-14 h-14 md:w-16 md:h-16 bg-[#1A4731] rounded-full flex items-center justify-center">
+              <span className="iconify text-white text-2xl md:text-3xl" data-icon="mdi:shopping-outline"></span>
             </div>
-            <h3 className="text-xl font-bold text-[#2E593F] mb-4">Passo 1</h3>
-            <p className="text-gray-600">
+            <h3 className="text-lg md:text-xl font-bold text-[#1A4731]">Passo 1</h3>
+            <p className="text-gray-500 text-sm md:text-base">
               Escolha seu plano ou cesta avulsa.
             </p>
           </div>
 
           {/* Passo 2 */}
-          <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow" data-testid="step-2">
-            <div className="w-16 h-16 bg-[#133903] rounded-full flex items-center justify-center mb-6">
-              <span className="iconify text-white" data-icon="mdi:calendar-clock" data-width="32"></span>
+          <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-shadow flex flex-col items-start text-left gap-4" data-testid="step-2">
+            <div className="w-14 h-14 md:w-16 md:h-16 bg-[#1A4731] rounded-full flex items-center justify-center">
+              <span className="iconify text-white text-2xl md:text-3xl" data-icon="mdi:calendar-clock-outline"></span>
             </div>
-            <h3 className="text-xl font-bold text-[#2E593F] mb-4">Passo 2</h3>
-            <p className="text-gray-600">
-              Selecione a frequência de entrega
+            <h3 className="text-lg md:text-xl font-bold text-[#1A4731]">Passo 2</h3>
+            <p className="text-gray-500 text-sm md:text-base">
+              Selecione a frequência de entrega.
             </p>
           </div>
 
           {/* Passo 3 */}
-          <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow" data-testid="step-3">
-            <div className="w-16 h-16 bg-[#133903] rounded-full flex items-center justify-center mb-6">
-              <span className="iconify text-white" data-icon="fa6-solid:box-open" data-width="32"></span>
+          <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-shadow flex flex-col items-start text-left gap-4" data-testid="step-3">
+            <div className="w-14 h-14 md:w-16 md:h-16 bg-[#1A4731] rounded-full flex items-center justify-center">
+              <span className="iconify text-white text-2xl md:text-3xl" data-icon="mdi:package-variant"></span>
             </div>
-            <h3 className="text-xl font-bold text-[#2E593F] mb-4">Passo 3</h3>
-            <p className="text-gray-600">
-              Receba em casa ou no seu negócio frutas, legumes, verduras e temperos frescos da estação
+            <h3 className="text-lg md:text-xl font-bold text-[#1A4731]">Passo 3</h3>
+            <p className="text-gray-500 text-sm md:text-base">
+              Receba em casa ou no seu negócio frutas, legumes, verduras e temperos frescos da estação.
             </p>
           </div>
 
           {/* Passo 4 */}
-          <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow" data-testid="step-4">
-            <div className="w-16 h-16 bg-[#133903] rounded-full flex items-center justify-center mb-6">
-              <span className="iconify text-white" data-icon="fa6-solid:face-smile-wink" data-width="32"></span>
+          <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-shadow flex flex-col items-start text-left gap-4" data-testid="step-4">
+            <div className="w-14 h-14 md:w-16 md:h-16 bg-[#1A4731] rounded-full flex items-center justify-center">
+              <span className="iconify text-white text-2xl md:text-3xl" data-icon="mdi:emoticon-happy-outline"></span>
             </div>
-            <h3 className="text-xl font-bold text-[#2E593F] mb-4">Passo 4</h3>
-            <p className="text-gray-600">
-              Viva mais saúde, praticidade e sabor todos os dias
+            <h3 className="text-lg md:text-xl font-bold text-[#1A4731]">Passo 4</h3>
+            <p className="text-gray-500 text-sm md:text-base">
+              Viva mais saúde, praticidade e sabor todos os dias.
             </p>
           </div>
         </div>
