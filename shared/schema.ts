@@ -345,6 +345,7 @@ export const orders = mysqlTable("orders", {
   cardExpiry: varchar("card_expiry", { length: 7 }),
   cardCvv: varchar("card_cvv", { length: 4 }),
   status: varchar("status", { length: 50 }).notNull().default("pending"), // 'pending', 'confirmed', 'cancelled', 'active'
+  orderType: varchar("order_type", { length: 50 }).default("assinatura"), // 'assinatura', 'personalizado'
   asaasCustomerId: varchar("asaas_customer_id", { length: 255 }),
   asaasSubscriptionId: varchar("asaas_subscription_id", { length: 255 }),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -363,12 +364,13 @@ export const orderSchema = z.object({
     required_error: "Periodicidade é obrigatória",
   }),
   totalAmount: z.string(),
-  excludedItems: z.string().min(1, "Por favor, indique os itens que não deseja receber"),
+  excludedItems: z.string().optional(),
   cardNumber: z.string().optional(),
   cardName: z.string().optional(),
   cardExpiry: z.string().optional(),
   cardCvv: z.string().optional(),
   status: z.string().optional(),
+  orderType: z.string().optional(),
 });
 
 export type Order = typeof orders.$inferSelect;

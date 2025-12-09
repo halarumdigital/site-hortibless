@@ -1451,6 +1451,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = orderSchema.parse(req.body);
 
+      // Verificar se é um pedido personalizado (não processa pagamento)
+      if (validatedData.orderType === "personalizado") {
+        console.log("📝 Pedido personalizado recebido. Salvando sem processar pagamento.");
+        const order = await storage.createOrder(validatedData);
+        return res.json({
+          success: true,
+          message: "Pedido personalizado registrado com sucesso",
+          order
+        });
+      }
+
       // Verificar se o Asaas está configurado
       if (!asaasService.isConfigured()) {
         console.warn("⚠️  Asaas não configurado. Salvando pedido sem processar pagamento.");

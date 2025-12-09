@@ -53,10 +53,11 @@ interface Order {
   status: string;
   asaasCustomerId?: string;
   asaasSubscriptionId?: string;
+  orderType?: string;
   createdAt: Date;
 }
 
-type CombinedOrder = (OneTimePurchase | Order) & { orderType: 'avulsa' | 'assinatura' };
+type CombinedOrder = (OneTimePurchase | Order) & { displayType: 'avulsa' | 'assinatura' | 'personalizado' };
 
 interface Basket {
   id: number;
@@ -73,7 +74,7 @@ export default function Pedidos() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<CombinedOrder | null>(null);
   const [viewingBasket, setViewingBasket] = useState<Basket | null>(null);
-  const [editingStatus, setEditingStatus] = useState<{ id: number; type: 'avulsa' | 'assinatura' } | null>(null);
+  const [editingStatus, setEditingStatus] = useState<{ id: number; type: 'avulsa' | 'assinatura' | 'personalizado' } | null>(null);
   const [combinedOrders, setCombinedOrders] = useState<CombinedOrder[]>([]);
 
   const { data: purchasesData, isLoading: purchasesLoading, refetch: refetchPurchases } = useQuery<{ success: boolean; purchases: OneTimePurchase[] }>({
@@ -92,12 +93,12 @@ export default function Pedidos() {
   React.useEffect(() => {
     const purchases: CombinedOrder[] = (purchasesData?.purchases || []).map(p => ({
       ...p,
-      orderType: 'avulsa' as const
+      displayType: 'avulsa' as const
     }));
 
     const orders: CombinedOrder[] = (ordersData?.orders || []).map(o => ({
       ...o,
-      orderType: 'assinatura' as const
+      displayType: o.orderType === 'personalizado' ? 'personalizado' as const : 'assinatura' as const
     }));
 
     const combined = [...purchases, ...orders].sort((a, b) =>
@@ -155,8 +156,8 @@ export default function Pedidos() {
     return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
 
-  const getStatusOptions = (orderType: 'avulsa' | 'assinatura') => {
-    if (orderType === 'assinatura') {
+  const getStatusOptions = (displayType: 'avulsa' | 'assinatura' | 'personalizado') => {
+    if (displayType === 'assinatura' || displayType === 'personalizado') {
       return [
         { value: "pending", label: "Pendente" },
         { value: "active", label: "Ativa" },
@@ -197,9 +198,9 @@ export default function Pedidos() {
     }
   };
 
-  const handleStatusChange = async (orderId: number, orderType: 'avulsa' | 'assinatura', newStatus: string) => {
+  const handleStatusChange = async (orderId: number, displayType: 'avulsa' | 'assinatura' | 'personalizado', newStatus: string) => {
     try {
-      const endpoint = orderType === 'assinatura'
+      const endpoint = displayType === 'assinatura' || displayType === 'personalizado'
         ? `/api/orders/${orderId}/status`
         : `/api/one-time-purchases/${orderId}/status`;
 
@@ -571,11 +572,14 @@ export default function Pedidos() {
                       </TableHeader>
                       <TableBody>
                         {combinedOrders.map((order) => (
-                          <TableRow key={`${order.orderType}-${order.id}`}>
+                          <TableRow key={`${order.displayType}-${order.id}`}>
                             <TableCell className="font-medium">#{order.id}</TableCell>
                             <TableCell>
-                              <Badge variant={order.orderType === 'assinatura' ? 'default' : 'outline'}>
-                                {order.orderType === 'assinatura' ? 'Assinatura' : 'Avulsa'}
+                              <Badge
+                                variant={order.displayType === 'personalizado' ? 'secondary' : order.displayType === 'assinatura' ? 'default' : 'outline'}
+                                className={order.displayType === 'personalizado' ? 'bg-purple-100 text-purple-800' : ''}
+                              >
+                                {order.displayType === 'personalizado' ? 'Personalizado' : order.displayType === 'assinatura' ? 'Assinatura' : 'Avulsa'}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -586,22 +590,22 @@ export default function Pedidos() {
                             </TableCell>
                             <TableCell>{formatDate(order.createdAt)}</TableCell>
                             <TableCell>
-                              {order.orderType === 'assinatura'
-                                ? `${(order as Order).frequency.charAt(0).toUpperCase() + (order as Order).frequency.slice(1)} - R$ ${(order as Order).totalAmount}`
+                              {order.displayType === 'assinatura' || order.displayType === 'personalizado'
+                                ? `${(order as Order).frequency.charAt(0).toUpperCase() + (order as Order).frequency.slice(1)}${order.displayType !== 'personalizado' ? ` - R$ ${(order as Order).totalAmount}` : ''}`
                                 : getPaymentMethodLabel((order as OneTimePurchase).paymentMethod)
                               }
                             </TableCell>
                             <TableCell>
-                              {editingStatus && editingStatus.id === order.id && editingStatus.type === order.orderType ? (
+                              {editingStatus && editingStatus.id === order.id && editingStatus.type === order.displayType ? (
                                 <Select
                                   defaultValue={order.status}
-                                  onValueChange={(value) => handleStatusChange(order.id, order.orderType, value)}
+                                  onValueChange={(value) => handleStatusChange(order.id, order.displayType, value)}
                                 >
                                   <SelectTrigger className="w-[140px]">
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {getStatusOptions(order.orderType).map((option) => (
+                                    {getStatusOptions(order.displayType).map((option) => (
                                       <SelectItem key={option.value} value={option.value}>
                                         {option.label}
                                       </SelectItem>
@@ -614,7 +618,7 @@ export default function Pedidos() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setEditingStatus({ id: order.id, type: order.orderType })}
+                                    onClick={() => setEditingStatus({ id: order.id, type: order.displayType })}
                                   >
                                     <EditIcon className="w-3 h-3" />
                                   </Button>
@@ -634,7 +638,7 @@ export default function Pedidos() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => order.orderType === 'assinatura'
+                                  onClick={() => order.displayType === 'assinatura' || order.displayType === 'personalizado'
                                     ? handleDownloadSubscriptionPDF(order as Order)
                                     : handleDownloadPDF(order as OneTimePurchase)
                                   }
@@ -668,8 +672,11 @@ export default function Pedidos() {
             <DialogTitle>
               Detalhes do Pedido #{viewingOrder?.id}
               {viewingOrder && (
-                <Badge className="ml-2" variant={viewingOrder.orderType === 'assinatura' ? 'default' : 'outline'}>
-                  {viewingOrder.orderType === 'assinatura' ? 'Assinatura' : 'Avulsa'}
+                <Badge
+                  className={`ml-2 ${viewingOrder.displayType === 'personalizado' ? 'bg-purple-100 text-purple-800' : ''}`}
+                  variant={viewingOrder.displayType === 'personalizado' ? 'secondary' : viewingOrder.displayType === 'assinatura' ? 'default' : 'outline'}
+                >
+                  {viewingOrder.displayType === 'personalizado' ? 'Personalizado' : viewingOrder.displayType === 'assinatura' ? 'Assinatura' : 'Avulsa'}
                 </Badge>
               )}
             </DialogTitle>
@@ -688,10 +695,10 @@ export default function Pedidos() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">
-                    {viewingOrder.orderType === 'assinatura' ? 'Frequência' : 'Método de Pagamento'}
+                    {viewingOrder.displayType === 'assinatura' || viewingOrder.displayType === 'personalizado' ? 'Frequência' : 'Método de Pagamento'}
                   </p>
                   <p className="mt-1">
-                    {viewingOrder.orderType === 'assinatura'
+                    {viewingOrder.displayType === 'assinatura' || viewingOrder.displayType === 'personalizado'
                       ? `${(viewingOrder as Order).frequency.charAt(0).toUpperCase() + (viewingOrder as Order).frequency.slice(1)}`
                       : getPaymentMethodLabel((viewingOrder as OneTimePurchase).paymentMethod)
                     }
@@ -699,12 +706,22 @@ export default function Pedidos() {
                 </div>
               </div>
 
-              {/* Valor Total para Assinaturas */}
-              {viewingOrder.orderType === 'assinatura' && (
+              {/* Valor Total para Assinaturas (não personalizado) */}
+              {viewingOrder.displayType === 'assinatura' && (
                 <div>
                   <p className="text-sm font-medium text-gray-500">Valor Mensal</p>
                   <p className="text-2xl font-bold text-[#133903] mt-1">
                     R$ {(viewingOrder as Order).totalAmount}
+                  </p>
+                </div>
+              )}
+
+              {/* Aviso para Personalizado */}
+              {viewingOrder.displayType === 'personalizado' && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <p className="text-sm font-medium text-purple-800 mb-1">📝 Pedido Personalizado</p>
+                  <p className="text-sm text-purple-700">
+                    Este pedido aguarda contato da equipe para definição de valores e confirmação dos itens.
                   </p>
                 </div>
               )}
@@ -732,7 +749,7 @@ export default function Pedidos() {
                   <div className="col-span-2">
                     <p className="text-sm font-medium text-gray-500">Endereço de Cadastro</p>
                     <p className="mt-1">
-                      {viewingOrder.orderType === 'assinatura'
+                      {viewingOrder.displayType === 'assinatura' || viewingOrder.displayType === 'personalizado'
                         ? (viewingOrder as Order).customerAddress
                         : (viewingOrder as OneTimePurchase).customerAddress
                       }
@@ -745,26 +762,70 @@ export default function Pedidos() {
               <div>
                 <h3 className="text-lg font-semibold mb-3 text-[#133903]">Endereço de Entrega</h3>
                 <p>
-                  {viewingOrder.orderType === 'assinatura'
+                  {viewingOrder.displayType === 'assinatura' || viewingOrder.displayType === 'personalizado'
                     ? (viewingOrder as Order).deliveryAddress
                     : (viewingOrder as OneTimePurchase).deliveryAddress
                   }
                 </p>
               </div>
 
-              {/* Itens Excluídos */}
+              {/* Itens Selecionados (Personalizado) ou Itens Excluídos */}
               {viewingOrder.excludedItems && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-[#133903]">Itens que o Cliente NÃO Deseja Receber</h3>
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                    <p className="text-sm font-medium text-orange-800 mb-2">⚠️ Observação Importante:</p>
-                    <p className="text-gray-700 whitespace-pre-wrap">{viewingOrder.excludedItems}</p>
+                  <h3 className="text-lg font-semibold mb-3 text-[#133903]">
+                    {viewingOrder.displayType === 'personalizado' && viewingOrder.excludedItems.includes('Itens Selecionados:')
+                      ? 'Itens Selecionados e Observações'
+                      : 'Itens que o Cliente NÃO Deseja Receber'
+                    }
+                  </h3>
+                  <div className={`rounded-lg p-4 ${
+                    viewingOrder.displayType === 'personalizado' && viewingOrder.excludedItems.includes('Itens Selecionados:')
+                      ? 'bg-green-50 border border-green-200'
+                      : 'bg-orange-50 border border-orange-200'
+                  }`}>
+                    {viewingOrder.displayType === 'personalizado' && viewingOrder.excludedItems.includes('Itens Selecionados:') ? (
+                      <>
+                        <p className="text-sm font-medium text-green-800 mb-2">🛒 Itens do Pedido:</p>
+                        <div className="text-gray-700 whitespace-pre-wrap">
+                          {viewingOrder.excludedItems.split('\n\n').map((section, idx) => {
+                            if (section.startsWith('Itens Selecionados:')) {
+                              const items = section.replace('Itens Selecionados: ', '');
+                              return (
+                                <div key={idx} className="mb-4">
+                                  <div className="space-y-1">
+                                    {items.split(' | ').map((category, catIdx) => (
+                                      <div key={catIdx} className="text-sm">
+                                        <span className="font-medium text-green-800">{category.split(':')[0]}:</span>
+                                        <span className="text-gray-700">{category.split(':')[1]}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            } else if (section.trim()) {
+                              return (
+                                <div key={idx} className="mt-4 pt-4 border-t border-green-200">
+                                  <p className="text-sm font-medium text-green-800 mb-1">📝 Observações Adicionais:</p>
+                                  <p className="text-gray-700">{section}</p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-orange-800 mb-2">⚠️ Observação Importante:</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{viewingOrder.excludedItems}</p>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
 
               {/* Produto */}
-              {viewingBasket && (
+              {viewingBasket && viewingOrder.displayType !== 'personalizado' && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 text-[#133903]">Produto</h3>
                   <div className="bg-gray-50 p-4 rounded-lg">
@@ -780,8 +841,8 @@ export default function Pedidos() {
               )}
 
               {/* Informações Asaas */}
-              {(viewingOrder.orderType === 'avulsa' && (viewingOrder as OneTimePurchase).asaasPaymentId) ||
-               (viewingOrder.orderType === 'assinatura' && (viewingOrder as Order).asaasSubscriptionId) ? (
+              {(viewingOrder.displayType === 'avulsa' && (viewingOrder as OneTimePurchase).asaasPaymentId) ||
+               (viewingOrder.displayType === 'assinatura' && (viewingOrder as Order).asaasSubscriptionId) ? (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 text-[#133903]">Informações Asaas</h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -791,17 +852,17 @@ export default function Pedidos() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">
-                        {viewingOrder.orderType === 'assinatura' ? 'ID da Assinatura' : 'ID do Pagamento'}
+                        {viewingOrder.displayType === 'assinatura' ? 'ID da Assinatura' : 'ID do Pagamento'}
                       </p>
                       <p className="mt-1 text-sm font-mono">
-                        {viewingOrder.orderType === 'assinatura'
+                        {viewingOrder.displayType === 'assinatura'
                           ? (viewingOrder as Order).asaasSubscriptionId
                           : (viewingOrder as OneTimePurchase).asaasPaymentId
                         }
                       </p>
                     </div>
                   </div>
-                  {viewingOrder.orderType === 'avulsa' && (viewingOrder as OneTimePurchase).asaasBankSlipUrl && (
+                  {viewingOrder.displayType === 'avulsa' && (viewingOrder as OneTimePurchase).asaasBankSlipUrl && (
                     <div className="mt-4">
                       <Button
                         variant="outline"
@@ -816,7 +877,7 @@ export default function Pedidos() {
 
               {/* Botão Download PDF */}
               <div className="flex justify-end pt-4 border-t">
-                <Button onClick={() => viewingOrder.orderType === 'assinatura'
+                <Button onClick={() => viewingOrder.displayType === 'assinatura' || viewingOrder.displayType === 'personalizado'
                   ? handleDownloadSubscriptionPDF(viewingOrder as Order)
                   : handleDownloadPDF(viewingOrder as OneTimePurchase)
                 }>

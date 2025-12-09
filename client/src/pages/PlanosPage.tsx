@@ -17,7 +17,8 @@ interface Basket {
   name: string;
   description: string | null;
   imagePath: string | null;
-  price: string;
+  priceLoose: string | null;
+  priceSubscription: string | null;
   isActive: boolean;
   planId: number | null;
 }
@@ -223,7 +224,7 @@ export default function PlanosPage() {
                             {planBaskets.map((basket) => (
                               <div
                                 key={basket.id}
-                                className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow"
+                                className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
                               >
                                 {basket.imagePath && (
                                   <div className="h-48 overflow-hidden">
@@ -234,16 +235,51 @@ export default function PlanosPage() {
                                     />
                                   </div>
                                 )}
-                                <div className="p-4">
+                                <div className="p-4 flex flex-col flex-grow">
                                   <h4 className="text-lg font-bold text-[#2E593F] mb-2">
                                     {basket.name}
                                   </h4>
                                   {basket.description && (
                                     <p className="text-gray-600 text-sm mb-3">{basket.description}</p>
                                   )}
-                                  <p className="text-[#133903] font-bold text-xl">
-                                    R$ {basket.price}
-                                  </p>
+
+                                  {/* Preços */}
+                                  {!plan.name.toLowerCase().includes('personalizado') && (
+                                    <div className="space-y-2 mb-4 flex-grow">
+                                      {basket.priceLoose && (
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-gray-600 text-sm">Avulso:</span>
+                                          <span className="text-[#133903] font-bold">R$ {basket.priceLoose}</span>
+                                        </div>
+                                      )}
+                                      {basket.priceSubscription && (
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-gray-600 text-sm">Assinatura:</span>
+                                          <span className="text-[#133903] font-bold">R$ {basket.priceSubscription}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {/* Botões */}
+                                  <div className="space-y-2 mt-auto">
+                                    {basket.priceLoose && !plan.name.toLowerCase().includes('personalizado') && (
+                                      <a
+                                        href={`/compra-avulsa?basketId=${basket.id}`}
+                                        className="block w-full text-center bg-[#2E593F] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#1e3d2a] transition-colors"
+                                      >
+                                        Comprar Avulso
+                                      </a>
+                                    )}
+                                    <a
+                                      href={plan.name.toLowerCase().includes('personalizado')
+                                        ? `/pedido-personalizado?basketId=${basket.id}`
+                                        : `/carrinho?basketId=${basket.id}`}
+                                      className="block w-full text-center bg-yellow-500 text-[#133903] px-4 py-2 rounded-lg font-semibold hover:bg-yellow-400 transition-colors"
+                                    >
+                                      Assinar
+                                    </a>
+                                  </div>
                                 </div>
                               </div>
                             ))}
