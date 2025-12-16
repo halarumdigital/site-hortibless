@@ -19,7 +19,7 @@ export default function ProductsButton() {
             className="bg-[#1A4731] text-white px-4 md:px-6 py-3 rounded-full text-xs md:text-base font-medium hover:bg-[#0f2b02] transition-colors inline-flex items-center gap-2 md:gap-3"
           >
             <span className="iconify text-lg md:text-xl" data-icon="mdi:basket-outline"></span>
-            <span>Produtos que compõe as Cestas Tradicionais e Personalizadas</span>
+            <span>Produtos que compõe as Cestas Tradicionais, Estilo de Vida e Personalizadas</span>
           </button>
         </div>
       </div>

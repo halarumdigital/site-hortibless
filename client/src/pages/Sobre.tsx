@@ -238,7 +238,7 @@ export default function Sobre() {
               Junte-se às centenas de famílias e negócios que já escolheram uma alimentação mais saudável, prática e sustentável.
             </p>
             <a
-              href="/cestas"
+              href="/planos"
               className="inline-block bg-[#133903] text-white px-8 py-4 rounded-lg font-semibold hover:bg-[#6a9f24] transition-colors text-lg"
             >
               Assinar Agora

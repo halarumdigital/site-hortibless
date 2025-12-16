@@ -55,7 +55,7 @@ export default function ProductsModal({ isOpen, onClose }: ProductsModalProps) {
       >
         {/* Header */}
         <div className="bg-[#133903] text-white p-6 flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Produtos que compõe as Cestas Tradicionais e Personalizadas</h2>
+          <h2 className="text-2xl font-bold">Produtos que compõe as Cestas Tradicionais, Estilo de Vida e Personalizadas</h2>
           <button
             onClick={onClose}
             className="text-white hover:text-gray-200 text-3xl font-bold"

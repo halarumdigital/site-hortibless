@@ -42,6 +42,7 @@ export default function Footer() {
             <h4 className="font-semibold text-lg mb-4">Acesso Rápido</h4>
             <ul className="space-y-2 text-sm text-gray-300">
               <li><a href="/" className="hover:underline" data-testid="footer-home">Início</a></li>
+              <li><a href="/planos" className="hover:underline" data-testid="footer-plans">Planos</a></li>
               <li><a href="/dicas" className="hover:underline" data-testid="footer-dicas">Dicas</a></li>
               <li><a href="/sobre" className="hover:underline" data-testid="footer-about">Sobre</a></li>
               <li><a href="/contato" className="hover:underline" data-testid="footer-contact">Contato</a></li>
