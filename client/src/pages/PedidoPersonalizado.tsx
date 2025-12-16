@@ -679,6 +679,7 @@ export default function PedidoPersonalizado() {
                           <SelectItem value="mensal">Mensal (1x por mês)</SelectItem>
                           <SelectItem value="quinzenal">Quinzenal (2x por mês)</SelectItem>
                           <SelectItem value="semanal">Semanal (4x por mês)</SelectItem>
+                          <SelectItem value="sob_demanda">Sob demanda (mediante consulta)</SelectItem>
                         </SelectContent>
                       </Select>
                     </CardContent>

@@ -52,22 +52,22 @@ export default function Sobre() {
                     <div className="flex items-start">
                       <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:fruit-cherries" data-width="28"></span>
                       <div>
-                        <h3 className="text-lg font-bold text-[#2E593F] mb-1">Qualidade e Origem Garantidas</h3>
-                        <p className="text-gray-700 text-sm">Selecionamos produtos diretamente do produtor, com rastreabilidade e confiança.</p>
+                        <h3 className="text-lg font-bold text-[#2E593F] mb-1">Seleção Cuidadosa</h3>
+                        <p className="text-gray-700 text-sm">Cada produto passa por critérios definidos de qualidade, aparência e frescor antes de compor nossas cestas.</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:sprout" data-width="28"></span>
                       <div>
                         <h3 className="text-lg font-bold text-[#2E593F] mb-1">Frescor da Estação</h3>
-                        <p className="text-gray-700 text-sm">Frutas, verduras, legumes e tempero sempre no auge do sabor e da colheita</p>
+                        <p className="text-gray-700 text-sm">Trabalhamos apenas com a safra plena e moderada, garantindo produtos naturalmente mais frescos e saborosos.</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <span className="iconify text-[#133903] mr-3 mt-1" data-icon="mdi:recycle" data-width="28"></span>
                       <div>
-                        <h3 className="text-lg font-bold text-[#2E593F] mb-1">Sustentabilidade em Ação</h3>
-                        <p className="text-gray-700 text-sm">Reduzimos desperdícios e cuidamos da natureza em cada processo.</p>
+                        <h3 className="text-lg font-bold text-[#2E593F] mb-1">Experiência e Cuidado</h3>
+                        <p className="text-gray-700 text-sm">Organizamos, montamos e entregamos com atenção a cada detalhe para levar mais praticidade e qualidade ao dia a dia.</p>
                       </div>
                     </div>
                   </div>
@@ -102,17 +102,17 @@ export default function Sobre() {
                 </div>
                 <h3 className="text-2xl font-bold text-[#2E593F] mb-4">Qualidade</h3>
                 <p className="text-gray-700">
-                  Compromisso com produtos de excelência, desde o cultivo até a entrega.
+                  Produtos selecionados com rigor, priorizando frescor, sabor e aparência.
                 </p>
               </div>
 
               <div className="bg-white rounded-xl p-8 shadow-lg text-center">
                 <div className="inline-block bg-[#EFF6EF] rounded-full p-4 mb-4">
-                  <span className="iconify text-[#133903]" data-icon="mdi:earth" data-width="48"></span>
+                  <span className="iconify text-[#133903]" data-icon="mdi:sprout" data-width="48"></span>
                 </div>
-                <h3 className="text-2xl font-bold text-[#2E593F] mb-4">Sustentabilidade</h3>
+                <h3 className="text-2xl font-bold text-[#2E593F] mb-4">Frescor</h3>
                 <p className="text-gray-700">
-                  Práticas que respeitam o meio ambiente e promovem a agricultura sustentável.
+                  Safras da estação para garantir produtos naturalmente mais saborosos e nutritivos.
                 </p>
               </div>
 
@@ -122,7 +122,7 @@ export default function Sobre() {
                 </div>
                 <h3 className="text-2xl font-bold text-[#2E593F] mb-4">Cuidado</h3>
                 <p className="text-gray-700">
-                  Atenção especial a cada detalhe para garantir sua satisfação e bem-estar.
+                  Atenção em cada detalhe para uma experiência prática e confiável.
                 </p>
               </div>
             </div>
