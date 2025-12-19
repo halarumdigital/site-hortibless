@@ -26,7 +26,7 @@ export default function TermosUso() {
               <div className="bg-[#EFF6EF] rounded-xl p-8 mb-8">
                 <h2 className="text-2xl font-bold text-[#2E593F] mb-4">TERMO DE ADESÃO – HORTIBLESS</h2>
                 <p className="text-gray-700 mb-2">Assinaturas e Compras Avulsas | Compromisso com qualidade e transparência</p>
-                <p className="text-gray-600 text-sm">Última atualização: [inserir data]</p>
+                <p className="text-gray-600 text-sm">Última atualização: Segunda-feira, 22 de dezembro de 2025</p>
               </div>
 
               <div className="space-y-6 text-gray-700">
@@ -67,9 +67,19 @@ export default function TermosUso() {
                 <div className="mt-8">
                   <h3 className="text-2xl font-bold text-[#2E593F] mb-4">2. PLANOS, COMPRAS AVULSAS E FREQUÊNCIA DE ENTREGA</h3>
                   <p className="mb-3">2.1. Modalidades de contratação:</p>
-                  <ul className="list-disc pl-8 mb-3">
-                    <li>Planos de Assinatura: entregas recorrentes com periodicidade semanal, quinzenal ou mensal.</li>
-                    <li>Compras Avulsas: realizadas de forma pontual, sem vínculo de recorrência.</li>
+                  <ul className="list-none pl-4 mb-3 space-y-3">
+                    <li>
+                      <strong>a) Planos de Assinatura (B2C):</strong><br />
+                      Entregas recorrentes destinadas a clientes pessoa física, com periodicidade semanal, quinzenal ou mensal, conforme plano contratado.
+                    </li>
+                    <li>
+                      <strong>b) Compras Avulsas (B2C):</strong><br />
+                      Contratações pontuais, sem vínculo de recorrência, com entrega realizada de acordo com as janelas logísticas disponíveis, podendo ocorrer com periodicidade semanal, quinzenal ou mensal, conforme escolha do cliente no momento da compra.
+                    </li>
+                    <li>
+                      <strong>c) Atendimento Empresarial (B2B):</strong><br />
+                      Para clientes empresariais, as entregas poderão ocorrer de acordo com a demanda, volume e necessidade operacional do cliente, mediante alinhamento prévio entre as partes, não estando limitadas às periodicidades fixas dos planos de assinatura.
+                    </li>
                   </ul>
                   <p className="mb-3">2.2. Tamanhos das cestas:</p>
                   <ul className="list-disc pl-8 mb-3">
@@ -92,7 +102,7 @@ export default function TermosUso() {
                   <h3 className="text-2xl font-bold text-[#2E593F] mb-4">3. PAGAMENTO</h3>
                   <p className="mb-3">3.1. O pagamento será processado através da plataforma Asaas, conforme modalidade escolhida:</p>
                   <ul className="list-disc pl-8 mb-3">
-                    <li>Assinaturas recorrentes: Pix Automático (recorrente); Cartão de crédito (recorrente).</li>
+                    <li>Assinaturas recorrentes: Cartão de crédito (recorrente).</li>
                     <li>Compras avulsas: Pix à vista; Cartão de crédito à vista; Boleto bancário.</li>
                   </ul>
                   <p className="mb-3">3.2. Boleto bancário não será aceito para planos de assinatura.</p>
@@ -138,8 +148,10 @@ export default function TermosUso() {
 
                 <div className="mt-8">
                   <h3 className="text-2xl font-bold text-[#2E593F] mb-4">7. EMISSÃO DE NOTA FISCAL</h3>
-                  <p className="mb-3">7.1. Emissão de NFSe ou NF-e conforme legislação vigente.</p>
-                  <p>7.2. Documento fiscal disponibilizado digitalmente após confirmação do pagamento.</p>
+                  <p className="mb-3">7.1. A HortiBless emitirá Nota Fiscal Eletrônica, conforme a natureza da operação e a legislação vigente, mediante solicitação do cliente.</p>
+                  <p className="mb-3">7.2. Para clientes empresariais (B2B), a emissão da nota fiscal poderá ser obrigatória, conforme exigências legais aplicáveis à operação.</p>
+                  <p className="mb-3">7.3. A solicitação deverá ser realizada pelo cliente por meio dos canais oficiais de atendimento, preferencialmente no momento da compra ou antes da entrega.</p>
+                  <p>7.4. A nota fiscal, quando emitida, será disponibilizada em formato digital após a confirmação do pagamento.</p>
                 </div>
 
                 <div className="mt-8">
