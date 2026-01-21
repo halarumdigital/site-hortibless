@@ -50,7 +50,7 @@ export default function BasketsSection() {
           <p className="text-[#133903] font-semibold mb-2">NOSSOS PLANOS</p>
           <h2 className="text-4xl font-bold text-[#2E593F] mb-4">Planos Hortibless</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Escolha o plano ideal para você e sua família
+            Escolha o plano ideal para sua casa ou seu negócio
           </p>
         </div>
 

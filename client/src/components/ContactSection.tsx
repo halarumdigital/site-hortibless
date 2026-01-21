@@ -75,9 +75,9 @@ export default function ContactSection() {
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 md:gap-8 max-w-4xl mx-auto text-left">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-8 max-w-5xl mx-auto text-left">
           {/* Contact Form */}
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg lg:w-2/3 w-full">
+          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg lg:w-1/2 w-full">
             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                 <div>
@@ -142,7 +142,7 @@ export default function ContactSection() {
           </div>
 
           {/* Contact Information & Map */}
-          <div className="lg:w-1/3 w-full space-y-6 md:space-y-8">
+          <div className="lg:w-1/2 w-full space-y-6 md:space-y-8">
             <div className="bg-white p-6 rounded-2xl shadow-lg">
               <h3 className="font-bold text-lg text-[#1A4731] mb-4">Informações de Contato</h3>
               <div className="space-y-4 text-gray-500">
@@ -169,11 +169,18 @@ export default function ContactSection() {
               </div>
             </div>
 
-            {/* Map Placeholder */}
-            <div className="bg-gray-200 p-6 rounded-2xl shadow-lg flex flex-col justify-center items-center text-center h-[150px]" data-testid="map-placeholder">
-              <span className="iconify text-4xl text-gray-500 mb-2" data-icon="mdi:map-outline"></span>
-              <p className="text-gray-500 text-sm">Map Integration</p>
-              <p className="text-gray-400 text-xs">Google Maps or similar service would be integrated here.</p>
+            {/* Google Maps */}
+            <div className="rounded-2xl shadow-lg overflow-hidden h-[300px]" data-testid="map-container">
+              <iframe
+                src="https://www.google.com/maps/d/u/1/embed?mid=1ObNJQ2BkXucUCfLptmVhlse7FBMwNnU&ll=-23.524801825964325,-46.84438455000001&z=12"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Mapa de áreas de entrega HortiBless"
+              ></iframe>
             </div>
           </div>
         </div>
